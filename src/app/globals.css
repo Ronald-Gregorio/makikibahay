@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'PT Sans', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 150 68% 93%; /* #DFF8EB */
+    --foreground: 217 96% 11%; /* #011638 */
+    --card: 150 68% 93%; /* #DFF8EB */
+    --card-foreground: 217 96% 11%; /* #011638 */
+    --popover: 150 68% 93%; /* #DFF8EB */
+    --popover-foreground: 217 96% 11%; /* #011638 */
+    --primary: 145 41% 22%; /* #214E34 */
+    --primary-foreground: 0 0% 80%; /* #CDCDCD */
+    --secondary: 220 22% 28%; /* #364156 */
+    --secondary-foreground: 0 0% 80%; /* #CDCDCD */
+    --muted: 220 22% 28%; /* #364156 */
+    --muted-foreground: 0 0% 80%; /* #CDCDCD with opacity */
+    --accent: 150 68% 93%; /* #DFF8EB */
+    --accent-foreground: 217 96% 11%; /* #011638 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 22% 28%; /* #364156 */
+    --input: 220 22% 28%; /* #364156 */
+    --ring: 145 41% 22%; /* #214E34 */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 217 96% 11%; /* #011638 */
+    --foreground: 0 0% 80%; /* #CDCDCD */
+    --card: 220 22% 28%; /* #364156 */
+    --card-foreground: 0 0% 80%; /* #CDCDCD */
+    --popover: 217 96% 11%; /* #011638 */
+    --popover-foreground: 0 0% 80%; /* #CDCDCD */
+    --primary: 145 41% 22%; /* #214E34 */
+    --primary-foreground: 0 0% 80%; /* #CDCDCD */
+    --secondary: 220 22% 28%; /* #364156 */
+    --secondary-foreground: 0 0% 80%; /* #CDCDCD */
+    --muted: 220 22% 28%; /* #364156 */
+    --muted-foreground: 0 0% 63%; /* #CDCDCD with opacity */
+    --accent: 150 68% 93%; /* #DFF8EB */
+    --accent-foreground: 217 96% 11%; /* #011638 */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 22% 28%; /* #364156 */
+    --input: 220 22% 28%; /* #364156 */
+    --ring: 145 41% 22%; /* #214E34 */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
