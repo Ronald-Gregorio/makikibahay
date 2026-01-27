@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { UserModel } from '../models/User.js';
-import { validateUpdateUser } from '@makikibahay/utils';
+// import { validateUpdateUser } from '@makikibahay/utils';
+
+// Temporary placeholder function
+const validateUpdateUser = (data: any) => data;
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();

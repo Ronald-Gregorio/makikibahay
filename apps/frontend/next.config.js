@@ -1,31 +1,25 @@
-{
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ['@makikibahay/types', '@makikibahay/ui', '@makikibahay/utils'],
+  images: {
+    remotePatterns: [
       {
-        "name": "next"
-      }
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
     ],
-    "paths": {
-      "@/*": ["./src/*"],
-      "@makikibahay/types": ["../../packages/types/src"],
-      "@makikibahay/ui": ["../../packages/ui/src"],
-      "@makikibahay/utils": ["../../packages/utils/src"]
-    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
+  },
+};
+
+module.exports = nextConfig;

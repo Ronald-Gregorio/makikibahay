@@ -6,7 +6,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.post('/', (req: AuthRequest, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   try {
     const { roomId, content, receiverId } = req.body;
     
@@ -24,8 +24,9 @@ router.post('/', (req: AuthRequest, res) => {
     await message.save();
     
     // Emit via Socket.io
+    const messageId = message._id;
     io.to(roomId).emit('messageReceived', {
-      id: message._id,
+      id: messageId,
       roomId,
       content,
       senderId: req.user!.id,
@@ -43,8 +44,9 @@ router.post('/', (req: AuthRequest, res) => {
 router.get('/:roomId', async (req, res) => {
   try {
     const MessageModel = require('../models/Message.js').MessageModel;
+    const { roomId } = req.params;
     const messages = await MessageModel.find({ roomId })
-      .populate('senderId', 'name avatar')
+      .populate({ path: 'senderId', select: 'name avatar' })
       .sort({ sentAt: 1 });
     
     res.json(messages);
@@ -54,7 +56,7 @@ router.get('/:roomId', async (req, res) => {
   }
 });
 
-router.put('/:messageId/read', authMiddleware, (req: AuthRequest, res) => {
+router.put('/:messageId/read', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const MessageModel = require('../models/Message.js').MessageModel;
     await MessageModel.findByIdAndUpdate(

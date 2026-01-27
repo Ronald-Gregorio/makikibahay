@@ -17,7 +17,7 @@ import type {
   CreateReviewRequest,
   CreateMessageRequest,
   CreateReportRequest
-} from '@makikibahay/types';
+} from '../../types/src/index';
 
 export class ValidationError extends Error {
   constructor(message: string, public details?: any) {

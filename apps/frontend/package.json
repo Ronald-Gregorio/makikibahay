@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +13,6 @@
   "dependencies": {
     "@makikibahay/types": "file:../../packages/types",
     "@makikibahay/ui": "file:../../packages/ui",
-    "@makikibahay/utils": "file:../../packages/utils",
     "@react-google-maps/api": "^2.19.0",
     "@react-three/fiber": "^8.15.0",
     "@react-three/drei": "^9.88.0",
