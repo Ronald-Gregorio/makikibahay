@@ -10,7 +10,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@makikibahay/types": "workspace:*",
+    "@makikibahay/types": "*",
     "zod": "^3.22.0"
   },
   "devDependencies": {

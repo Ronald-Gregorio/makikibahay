@@ -1,11 +1,11 @@
 
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@makikibahay/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@makikibahay/ui';
+import { Input } from '@makikibahay/ui';
+import { Label } from '@makikibahay/ui';
+import { Textarea } from '@makikibahay/ui';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Phone, MapPin } from 'lucide-react';
 

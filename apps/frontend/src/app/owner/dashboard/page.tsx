@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Button } from "@makikibahay/ui";
 import { PlusCircle, Edit, Trash2, Mail, BarChart, ShieldAlert } from "lucide-react";
 import { listings as initialListings } from "@/lib/mock-data";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,8 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
+import { Badge } from "@makikibahay/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@makikibahay/ui";
 import {
   Dialog,
   DialogContent,
@@ -30,12 +30,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@makikibahay/ui";
 import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@/lib/types";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@makikibahay/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
+import { Textarea } from "@makikibahay/ui";
 
 function ReportDialog({ reportedEntityName, reportedEntityType }: { reportedEntityName: string, reportedEntityType: 'user' }) {
     const { toast } = useToast();

@@ -3,13 +3,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+import { Button } from '@makikibahay/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@makikibahay/ui';
+import { Progress } from '@makikibahay/ui';
+import { Label } from '@makikibahay/ui';
+import { RadioGroup, RadioGroupItem } from '@makikibahay/ui';
+import { Checkbox } from '@makikibahay/ui';
+import { Input } from '@makikibahay/ui';
 import { MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';

@@ -19,7 +19,7 @@ interface SurveyData {
 }
 
 interface SurveyWizardProps {
-  onComplete: (data: SurveyData) => void;
+  onComplete: (data: UserPreferences) => void;
   initialData?: Partial<SurveyData>;
 }
 
@@ -48,16 +48,16 @@ const rules = [
 
 export default function SurveyWizard({ onComplete, initialData }: SurveyWizardProps) {
   const [step, setStep] = useState(1);
-  const [surveyData, setSurveyData] = useState<SurveyData>(
-    initialData || {
-      role: 'student',
-      accommodationType: 'solo',
-      priceMin: 3000,
-      priceMax: 8000,
-      amenities: [],
-      rules: [],
-      proximityMinutes: 10
-    }
+  const [surveyData, setSurveyData] = useState<SurveyData>({
+    role: 'student',
+    accommodationType: 'solo',
+    priceMin: 3000,
+    priceMax: 8000,
+    amenities: [],
+    rules: [],
+    proximityMinutes: 10,
+    ...initialData
+  }
   );
 
   const nextStep = () => {
@@ -84,7 +84,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
       },
       proximityMinutes: surveyData.proximityMinutes
     };
-    
+
     onComplete(userPreferences);
   };
 
@@ -114,7 +114,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       case 2:
         return (
           <div className="space-y-6">
@@ -143,7 +143,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       case 3:
         return (
           <div className="space-y-6">
@@ -163,7 +163,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       case 4:
         return (
           <div className="space-y-6">
@@ -188,7 +188,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       case 5:
         return (
           <div className="space-y-6">
@@ -212,7 +212,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       case 6:
         return (
           <div className="space-y-6">
@@ -244,7 +244,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
             </div>
           </div>
         );
-        
+
       default:
         return null;
     }
@@ -257,7 +257,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
       </CardHeader>
       <CardContent className="space-y-6">
         {renderStep()}
-        
+
         <div className="flex justify-between pt-6">
           <Button
             variant="outline"
@@ -266,7 +266,7 @@ export default function SurveyWizard({ onComplete, initialData }: SurveyWizardPr
           >
             Previous
           </Button>
-          
+
           {step < 6 ? (
             <Button onClick={nextStep}>
               Next

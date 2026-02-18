@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
+// import { Input } from '@makikibahay/ui'; // Unused
 import { Badge } from '@makikibahay/ui';
 import { Slider } from '@makikibahay/ui';
 import { Checkbox } from '@makikibahay/ui';
-import { Search, Filter, MapPin, BedDouble, Wifi } from 'lucide-react';
-import ListingCard from './ListingCard';
+import { Search, Filter, MapPin, BedDouble } from 'lucide-react';
+import api from '@/lib/api';
 
 interface FilterState {
   priceMin: number;
@@ -18,15 +18,15 @@ interface FilterState {
 }
 
 interface Listing {
-  id: string;
+  _id: string;
   name: string;
   address: string;
-  price_min: number;
-  price_max: number;
-  total_rooms: number;
-  available_rooms: number;
+  priceMin: number;
+  priceMax: number;
+  totalRooms: number;
+  availableRooms: number;
   amenities: string[];
-  cover_photo?: string;
+  coverPhoto?: string;
 }
 
 const accommodationTypes = [
@@ -52,7 +52,7 @@ export default function BrowsePage() {
     amenities: [],
     proximityMinutes: 10
   });
-  
+
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -75,9 +75,8 @@ export default function BrowsePage() {
       }
       params.append('proximityMinutes', filters.proximityMinutes.toString());
       params.append('limit', '20');
-      
-      const response = await fetch(`/api/listings?${params.toString()}`);
-      const data = await response.json();
+
+      const data = await api.get<Listing[]>(`/listings?${params.toString()}`);
       setListings(data);
     } catch (error) {
       console.error('Search error:', error);
@@ -85,6 +84,10 @@ export default function BrowsePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    handleSearch();
+  }, []);
 
   const clearFilters = () => {
     setFilters({
@@ -107,7 +110,7 @@ export default function BrowsePage() {
                 <Filter className="h-5 w-5" />
                 Filters
               </h3>
-              
+
               {/* Price Range */}
               <div>
                 <h4 className="font-medium mb-3">Price Range</h4>
@@ -257,16 +260,16 @@ export default function BrowsePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="bg-surface border border border-border rounded-lg overflow-hidden">
+                  <div key={listing._id} className="bg-surface border border border-border rounded-lg overflow-hidden">
                     <div className="relative h-56 w-full">
                       <img
-                        src={listing.cover_photo || '/placeholder-property.jpg'}
+                        src={listing.coverPhoto || '/placeholder-property.jpg'}
                         alt={listing.name}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-4 right-4">
                         <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                          ₱{listing.price_min.toLocaleString()} - ₱{listing.price_max.toLocaleString()}
+                          ₱{listing.priceMin.toLocaleString()} - ₱{listing.priceMax.toLocaleString()}
                         </Badge>
                       </div>
                     </div>
@@ -281,7 +284,7 @@ export default function BrowsePage() {
                         </div>
                         <div className="flex items-center">
                           <BedDouble className="h-4 w-4 mr-2" />
-                          <span>{listing.available_rooms} rooms available</span>
+                          <span>{listing.availableRooms} rooms available</span>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                           {listing.amenities.slice(0, 3).map((amenity, index) => (
@@ -291,8 +294,8 @@ export default function BrowsePage() {
                           ))}
                         </div>
                       </div>
-                      <Button size="sm" className="w-full mt-4">
-                        View Details
+                      <Button size="sm" className="w-full mt-4" asChild>
+                        <a href={`/listings/${listing._id}`}>View Details</a>
                       </Button>
                     </div>
                   </div>

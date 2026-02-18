@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import type { 
-  User, 
-  Listing, 
-  Room, 
-  Review, 
-  Message, 
-  Report, 
+import type {
+  User,
+  Listing,
+  Room,
+  Review,
+  Message,
+  Report,
   Ticket,
   SearchListingsQuery,
   NearbyListingsQuery,
@@ -17,7 +17,7 @@ import type {
   CreateReviewRequest,
   CreateMessageRequest,
   CreateReportRequest
-} from '../../types/src/index';
+} from '@makikibahay/types';
 
 export class ValidationError extends Error {
   constructor(message: string, public details?: any) {
@@ -229,7 +229,7 @@ export function generateMessageRoomId(listingId: string, userId: string, ownerId
 export function parseMessageRoomId(roomId: string): { listingId: string; userId: string; ownerId: string } | null {
   const match = roomId.match(/^listing_(\d+)_user_(\d+)_owner_(\d+)$/);
   if (!match) return null;
-  
+
   return {
     listingId: match[1],
     userId: match[2],
@@ -253,15 +253,15 @@ export function calculateDistance(lat1: number, lng1: number, lat2: number, lng2
 }
 
 export function isWithinWalkingDistance(
-  userLat: number, 
-  userLng: number, 
-  listingLat: number, 
+  userLat: number,
+  userLng: number,
+  listingLat: number,
   listingLng: number,
   proximityMinutes: 5 | 10 | 15
 ): boolean {
   const walkingSpeedMetersPerMinute = 80; // Average walking speed ~4.8 km/h = 80 m/min
   const maxDistance = proximityMinutes * walkingSpeedMetersPerMinute;
-  
+
   const distance = calculateDistance(userLat, userLng, listingLat, listingLng);
   return distance <= maxDistance;
 }
@@ -299,7 +299,7 @@ export function formatRelativeTime(date: Date): string {
   if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
   if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
   if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  
+
   return date.toLocaleDateString('en-PH');
 }
 

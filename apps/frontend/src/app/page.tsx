@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@makikibahay/ui';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@makikibahay/ui';
+import { Input } from '@makikibahay/ui';
 import { Search, MapPin, BedDouble, Award, LogIn, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { featuredListings } from '@/lib/mock-data';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@makikibahay/ui';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function HomePage() {

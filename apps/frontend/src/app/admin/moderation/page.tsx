@@ -1,22 +1,22 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
+import { Badge } from "@makikibahay/ui";
+import { Button } from "@makikibahay/ui";
 import { Check, Star, X, Search, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { listings } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@makikibahay/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@makikibahay/ui";
 import { Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@makikibahay/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
+import { Checkbox } from "@makikibahay/ui";
 
 const initialReviews = listings.flatMap(l => l.reviews.map(r => ({ ...r, listingName: l.name, listingId: l.id, status: 'pending' as 'pending' | 'approved' | 'rejected' })));
 

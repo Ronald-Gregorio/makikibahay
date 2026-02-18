@@ -1,10 +1,10 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
+import { Badge } from "@makikibahay/ui";
+import { Button } from "@makikibahay/ui";
 import { Edit, Trash2, Home, BedDouble, Save, X, Search, MoreHorizontal, UserX, UserCheck } from "lucide-react";
 import {
   AlertDialog,
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@makikibahay/ui";
 import {
   Dialog,
   DialogContent,
@@ -24,15 +24,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@makikibahay/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@makikibahay/ui";
 import { useState, useMemo, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@makikibahay/ui";
+import { Label } from "@makikibahay/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@makikibahay/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
 
 
 const mockUsersData = [

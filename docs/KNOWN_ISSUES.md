@@ -1,196 +1,260 @@
-# Makikibahay Known Issues
+# Makikibahay - Known Issues
 
-## Active Issues
+## Critical Issues (Must Fix Before Production)
 
-### ISSUE-001: Project Structure Refactoring Required
-**Severity**: Critical  
-**Status**: Open  
-**Reported**: 2026-01-26  
-**Assigned**: Sisyphus  
+### 1. Type System Inconsistency Between Frontend and Shared Packages
 
-**Description**: Current project is a single Next.js application that needs to be refactored into a Turborepo monorepo structure with separate frontend and backend applications.
+**Description**: The frontend TypeScript interfaces in `apps/frontend/src/lib/types.ts` use different property naming conventions and data structures compared to the shared Zod schemas in `packages/types/src/index.ts`.
 
-**Expected Behavior**: 
-- apps/frontend/ contains Next.js application
-- apps/backend/ contains Express.js API server  
-- packages/ contains shared TypeScript types, UI components, and utils
-- Proper package.json dependencies and build scripts
+**Examples of Inconsistencies**:
+- Frontend uses `id: number` while shared types use `_id: string`
+- Frontend uses `owner_id` (snake_case) while shared types use `ownerId` (camelCase)
+- Frontend has `lat/lng` properties while shared types use `location: { type: 'Point', coordinates: [lng, lat] }`
+- Frontend types lack several properties defined in shared schemas (amenities, coverPhoto, etc.)
 
-**Current Behavior**: 
-- All code is in root directory
-- No backend server implementation
-- No shared packages structure
+**Impact**: 
+- Runtime type errors when data flows between frontend and backend
+- Loss of type safety guarantees
+- Increased development overhead for type conversions
+- Potential data integrity issues
 
-**Reproduction Steps**:
-1. Examine current project structure
-2. Note single package.json in root
-3. No apps/ or packages/ directories
-
-**Proposed Solution**: 
-1. Create Turborepo configuration
-2. Migrate existing frontend code to apps/frontend/
-3. Create apps/backend/ structure
-4. Extract shared code to packages/
-
----
-
-### ISSUE-002: Missing Backend API Server
-**Severity**: Critical  
-**Status**: Open  
-**Reported**: 2026-01-26  
-**Assigned**: Sisyphus  
-
-**Description**: No backend API server exists. Need Express.js server with MongoDB integration and all specified API endpoints.
-
-**Expected Behavior**:
-- Express.js server listening on port 5000
-- MongoDB connection established
-- All API routes implemented per specifications
-- Socket.io integration for real-time messaging
-
-**Current Behavior**:
-- No backend server present
-- API calls will fail
-- No database connectivity
-
-**Reproduction Steps**:
-1. Try to make API call to any endpoint
-2. Observe connection refused error
+**Root Cause**: 
+- Frontend types were created before the shared Zod schema system
+- No unified data contract enforcement across the application
+- Gradual evolution of the data model without systematic updates
 
 **Proposed Solution**:
-1. Set up Express.js with TypeScript
-2. Configure MongoDB connection with Mongoose
-3. Implement all API routes per specification
-4. Add Socket.io for real-time features
+1. **Phase 1**: Create mapping utilities to convert between frontend and shared types
+2. **Phase 2**: Migrate frontend components to use shared types directly
+3. **Phase 3**: Deprecate frontend-specific types in favor of shared schemas
+4. **Phase 4**: Implement runtime validation using Zod schemas
+
+**Estimated Effort**: 2-3 days for complete migration
+**Priority**: HIGH - Blocks proper dashboard development
 
 ---
 
-### ISSUE-003: Database Models Not Implemented
-**Severity**: High  
-**Status**: Open  
-**Reported**: 2026-01-26  
-**Assigned**: Sisyphus  
+### 2. Mock Data Structure Inadequate for Dashboard Development
 
-**Description**: MongoDB database models, schemas, and indexes have not been created. Need to implement all 7 specified collections.
+**Description**: Current mock data in `apps/frontend/src/lib/mock-data.ts` only covers public listing browsing scenarios. It lacks comprehensive data structures needed for Owner Dashboard and Admin Dashboard functionality.
 
-**Expected Behavior**:
-- Users collection with preferences and favorites
-- Listings collection with geospatial indexing
-- Rooms collection with 3D model support
-- Reviews collection with proper relationships
-- Messages collection with Socket.io persistence
-- Reports collection with admin workflow
-- Tickets collection for report management
+**Missing Data Categories**:
+- **Owner Dashboard**:
+  - Tenant information and rental history
+  - Maintenance requests and work orders
+  - Payment records and financial summaries
+  - Property availability calendars
+  - Communication logs with tenants
 
-**Current Behavior**:
-- No database models exist
-- No MongoDB integration
-- All data operations will fail
+- **Admin Dashboard**:
+  - User reports and moderation tickets
+  - System analytics and metrics
+  - Audit logs and user activity tracking
+  - Revenue analytics across all properties
+  - Occupancy trend data
 
-**Reproduction Steps**:
-1. Try to save user data to database
-2. Observe model not found error
+**Impact**:
+- Cannot test dashboard UI/UX effectively
+- Limited ability to develop CRUD operations
+- No way to validate reporting and analytics features
+- Poor developer experience during dashboard implementation
 
 **Proposed Solution**:
-1. Create Mongoose schemas for all collections
-2. Implement proper indexes (2dsphere, text, compound)
-3. Add validation with Zod schemas
-4. Create database seeding scripts
+1. Expand mock data with comprehensive owner and admin datasets
+2. Create mock data generators for realistic scenarios
+3. Implement data mutation utilities for CRUD testing
+4. Add edge cases and error scenarios
+
+**Estimated Effort**: 1-2 days for comprehensive mock data
+**Priority**: HIGH - Required for immediate dashboard development
 
 ---
 
-### ISSUE-004: Color Scheme Mismatch
-**Severity**: Medium  
-**Status**: Open  
-**Reported**: 2026-01-26  
-**Assigned**: Sisyphus  
+## Medium Priority Issues
 
-**Description**: Current UI uses light theme colors, but specifications require dark theme with specific color palette.
+### 3. Environment Variable Documentation Gap
 
-**Expected Behavior**:
-- Background: #2d2d2d (45,45,45)
-- Surface: #32393d (50,57,61) 
-- Surface Hover: #373737 (55,55,55)
-- Border: #464646 (70,70,70)
-- Primary Text: #bdbdbd (189,189,189)
-- Accent: #a9714b (169,113,75)
+**Description**: While `.env.example` files provide placeholder values, they lack detailed explanations of each variable's purpose, expected format, and usage examples.
 
-**Current Behavior**:
-- Light theme with bright colors
-- Yellow/orange accent colors from blueprint.md
-- Not the specified dark theme
-
-**Reproduction Steps**:
-1. Visit any page in the application
-2. Observe light background and bright colors
-3. Compare to required dark theme specifications
+**Impact**:
+- Slower onboarding for new developers
+- Potential configuration errors
+- Difficulty in troubleshooting environment-related issues
 
 **Proposed Solution**:
-1. Update Tailwind config with custom color palette
-2. Replace all hardcoded colors with CSS variables
-3. Update all components to use dark theme colors
-4. Test contrast and accessibility
+1. Add comprehensive comments to `.env.example` files
+2. Create environment setup documentation
+3. Add validation scripts to check required variables
+
+**Estimated Effort**: 4 hours
+**Priority**: MEDIUM - Improves developer experience
 
 ---
 
-### ISSUE-005: Authentication System Incomplete
-**Severity**: High  
-**Status**: Open  
-**Reported**: 2026-01-26  
-**Assigned**: Sisyphus  
+### 4. Missing Error Handling in Mock Data Layer
 
-**Description**: Current authentication hooks are basic stubs. Need complete Google OAuth integration with session management and user roles.
+**Description**: The mock data system doesn't simulate error conditions, network failures, or edge cases that would occur in production.
 
-**Expected Behavior**:
-- Google OAuth sign-in flow
-- Session persistence with secure cookies
-- User roles: user, owner, admin
-- Profile data synchronization with Google
-- Proper error handling and logout
+**Missing Scenarios**:
+- Network timeout simulations
+- Database connection failures
+- Validation errors
+- Permission denied scenarios
+- Rate limiting
 
-**Current Behavior**:
-- Basic use-auth hook exists
-- No actual authentication logic
-- No session management
-- No role-based access control
-
-**Reproduction Steps**:
-1. Try to sign in with Google
-2. Observe no actual authentication happens
+**Impact**:
+- Frontend error handling remains untested
+- Poor user experience during actual errors
+- Difficult to debug production issues
 
 **Proposed Solution**:
-1. Implement NextAuth.js with Google provider
-2. Create user model with roles and preferences
-3. Add session middleware and API routes
-4. Implement role-based access controls
+1. Implement mock error injection system
+2. Add configurable failure scenarios
+3. Create error state UI testing utilities
+
+**Estimated Effort**: 1 day
+**Priority**: MEDIUM - Important for robust UI development
 
 ---
 
-## Resolved Issues
+## Low Priority Issues
 
-*No issues have been resolved yet.*
+### 5. Performance Optimization Opportunities
+
+**Description**: Mock data loading and state management could be optimized for better development experience.
+
+**Areas for Improvement**:
+- Large mock data sets slow down initial page load
+- No lazy loading for dashboard-specific data
+- Inefficient state updates during CRUD operations
+
+**Proposed Solution**:
+1. Implement code splitting for mock data
+2. Add lazy loading for dashboard components
+3. Optimize state management with memoization
+
+**Estimated Effort**: 6 hours
+**Priority**: LOW - Nice to have for better DX
 
 ---
 
-## Issue Tracking Guidelines
+### 6. Accessibility Testing Gaps
 
-### Issue Lifecycle:
-1. **Reported**: Issue identified and documented
-2. **Assigned**: Developer assigned to resolve
-3. **In Progress**: Work has begun on resolution
-4. **Testing**: Solution implemented and being tested
-5. **Resolved**: Issue fixed and verified
-6. **Closed**: Issue marked as complete after verification period
+**Description**: Mock data doesn't include scenarios for testing accessibility features and screen reader compatibility.
 
-### Severity Levels:
-- **Critical**: Blocks core functionality, must be fixed immediately
-- **High**: Major feature broken, significantly impacts user experience
-- **Medium**: Feature partially working, workaround may exist
-- **Low**: Minor issue, cosmetic or enhancement
+**Missing Elements**:
+- Alt text variations for images
+- Different states for interactive elements
+- Focus management scenarios
+- Color contrast testing data
 
-### Reporting Format:
-- Clear, concise description
-- Expected vs current behavior
-- Steps to reproduce
-- Proposed solution (if known)
-- Cross-reference with CHANGELOG.md entries
+**Proposed Solution**:
+1. Add accessibility-focused mock data
+2. Include assistive technology testing scenarios
+3. Create accessibility testing utilities
+
+**Estimated Effort**: 4 hours
+**Priority**: LOW - Important but not blocking
+
+---
+
+## Technical Debt
+
+### 7. Inconsistent File Naming Conventions
+
+**Description**: Mixed usage of kebab-case and camelCase in file names across the project.
+
+**Examples**:
+- `mock-data.ts` (kebab-case) vs `useAuth.tsx` (camelCase)
+- `user-preferences.ts` vs `dashboardLayout.tsx`
+
+**Impact**:
+- Confusing for developers
+- Inconsistent developer experience
+- Potential import/export confusion
+
+**Proposed Solution**:
+1. Establish clear naming convention guidelines
+2. Gradually rename files to match convention
+3. Update all import statements accordingly
+
+**Estimated Effort**: 3 hours
+**Priority**: LOW - Code quality improvement
+
+---
+
+## Known Limitations
+
+### 8. Geospatial Feature Limitations in Mock Data
+
+**Description**: Current mock data uses simple lat/lng coordinates instead of proper GeoJSON format required by the shared schemas.
+
+**Current Implementation**:
+```typescript
+// Frontend mock data
+lat: 15.4849,
+lng: 120.9619
+```
+
+**Required Format**:
+```typescript
+// Shared schema requirement
+location: {
+  type: 'Point',
+  coordinates: [120.9619, 15.4849] // [lng, lat]
+}
+```
+
+**Impact**:
+- Incompatibility with geospatial queries
+- Broken location-based features
+- Database migration complexity
+
+**Proposed Solution**:
+1. Update mock data to use GeoJSON format
+2. Create coordinate transformation utilities
+3. Update frontend components to handle new format
+
+**Estimated Effort**: 2 hours
+**Priority**: MEDIUM - Required for location features
+
+---
+
+## Resolution Timeline
+
+### Sprint 1 (Current)
+- [ ] Fix type system inconsistencies
+- [ ] Expand mock data for dashboards
+- [ ] Update environment documentation
+
+### Sprint 2 (Next)
+- [ ] Implement mock error scenarios
+- [ ] Optimize mock data performance
+- [ ] Fix geospatial data format
+
+### Future Sprints
+- [ ] Address accessibility testing gaps
+- [ ] Standardize file naming conventions
+- [ ] Comprehensive performance optimization
+
+---
+
+## Bug Reporting Guidelines
+
+When reporting new issues, please include:
+1. **Environment**: OS, Node version, browser
+2. **Reproduction Steps**: Clear, step-by-step instructions
+3. **Expected vs Actual**: What should happen vs what does happen
+4. **Screenshots**: If UI-related
+5. **Console Errors**: Any browser or terminal output
+6. **Code Samples**: Minimal reproduction if possible
+
+**Reporting Channels**:
+- GitHub Issues (preferred)
+- Team Slack channel
+- Project management board
+
+---
+
+*Last Updated: 2026-01-27*
+*Next Review Date: 2026-02-03*

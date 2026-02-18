@@ -5,8 +5,8 @@
     "apps/*",
     "packages/*"
   ],
-
   "scripts": {
+    "dev": "turbo run dev",
     "start": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",

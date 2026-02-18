@@ -26,7 +26,7 @@ export const UserPreferencesSchema = z.object({
   priceMax: z.number().min(0),
   amenities: z.array(z.string()),
   location: LocationSchema,
-  proximityMinutes: z.literal(10).default(10),
+  proximityMinutes: ProximityMinutesSchema.default(10),
 });
 
 export const WaypointSchema = z.object({
@@ -95,7 +95,9 @@ export const ReviewSchema = z.object({
 
 export const MessageSchema = z.object({
   _id: z.string().optional(),
-  userId: z.string(),
+  roomId: z.string(),
+  senderId: z.string(),
+  receiverId: z.string(),
   listingId: z.string(),
   content: z.string().min(1).max(1000),
   sentAt: z.date().optional(),
@@ -143,7 +145,7 @@ export type CreateRoomRequest = z.infer<typeof CreateRoomRequestSchema>;
 export const CreateReviewRequestSchema = ReviewSchema.omit({ _id: true, createdAt: true });
 export type CreateReviewRequest = z.infer<typeof CreateReviewRequestSchema>;
 
-export const CreateMessageRequestSchema = MessageSchema.omit({ _id: true, sentAt: true });
+export const CreateMessageRequestSchema = MessageSchema.omit({ _id: true, sentAt: true, isRead: true });
 export type CreateMessageRequest = z.infer<typeof CreateMessageRequestSchema>;
 
 export const CreateReportRequestSchema = ReportSchema.omit({ _id: true, status: true, createdAt: true, updatedAt: true });
@@ -167,7 +169,7 @@ export type SearchListingsQuery = z.infer<typeof SearchListingsQuerySchema>;
 export const NearbyListingsQuerySchema = z.object({
   lat: z.coerce.number(),
   lng: z.coerce.number(),
-  proximityMinutes: z.literal(10).default(10),
+  proximityMinutes: ProximityMinutesSchema.default(10),
   limit: z.coerce.number().min(1).max(100).default(10),
 });
 

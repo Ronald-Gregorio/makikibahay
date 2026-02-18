@@ -5,6 +5,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/database.js';
 
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import listingRoutes from './routes/listings.js';
+import messageRoutes from './routes/messages.js';
+// import surveyRoutes from './routes/survey.js';
+
 dotenv.config();
 
 const app = express();
@@ -25,6 +31,8 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+app.set('io', io);
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
@@ -67,17 +75,13 @@ io.on('connection', (socket) => {
   });
 });
 
-import authRoutes from './routes/auth.js';
-import userRoutes from './routes/users.js';
-import listingRoutes from './routes/listings.js';
-import messageRoutes from './routes/messages.js';
-import surveyRoutes from './routes/survey.js';
+import reviewRoutes from './routes/reviews.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/survey', surveyRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -85,7 +89,7 @@ app.get('/api/health', (req, res) => {
 
 const startServer = async () => {
   await connectDB();
-  
+
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

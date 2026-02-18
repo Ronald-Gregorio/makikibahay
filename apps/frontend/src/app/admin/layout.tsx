@@ -8,8 +8,8 @@ import { LayoutDashboard, Users, Home, Shield, BarChart2, FileText, PanelLeft, P
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@makikibahay/ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@makikibahay/ui";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },

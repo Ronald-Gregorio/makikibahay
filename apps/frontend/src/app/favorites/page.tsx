@@ -5,7 +5,7 @@ import { listings } from '@/lib/mock-data';
 import { PropertyCard } from '@/components/property-card';
 import { HeartCrack, LogIn } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@makikibahay/ui';
 
 export default function FavoritesPage() {
   const { user, favorites } = useAuth();

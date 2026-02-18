@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@makikibahay/ui";
 import { BarChart, LineChart, PieChart, AreaChart, Pie, Bar, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label, LabelList } from "recharts";
 import { TrendingUp, Users, DollarSign, CalendarDays, Percent, LineChart as LineChartIcon } from "lucide-react";
 

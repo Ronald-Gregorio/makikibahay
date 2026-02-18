@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { AppHeader } from '@/components/header';
 import { AppFooter } from '@/components/footer';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@makikibahay/ui"
 import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
@@ -29,6 +30,12 @@ export default function RootLayout({
           <AppFooter />
           <Toaster />
         </AuthProvider>
+        <Script
+          defer
+          src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL || "https://analytics.umami.is/script.js"}
+          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

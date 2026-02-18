@@ -2,10 +2,10 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
+import { Badge } from "@makikibahay/ui";
+import { Button } from "@makikibahay/ui";
 import { Edit, Trash2, BedDouble, CheckCircle, Pencil, Cuboid, Pin, File, Database, Search, MoreHorizontal, EyeOff, BookMarked } from "lucide-react";
 import Link from "next/link";
 import { listings as initialListingsData } from "@/lib/mock-data";
@@ -19,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@makikibahay/ui";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +29,16 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogClose
-} from "@/components/ui/dialog";
+} from "@makikibahay/ui";
 import Image from "next/image";
 import { Listing, Room } from "@/lib/types";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@makikibahay/ui";
+import { ScrollArea } from "@makikibahay/ui";
 import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
+import { Input } from "@makikibahay/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
+import { Checkbox } from "@makikibahay/ui";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ListingsManagementPage() {

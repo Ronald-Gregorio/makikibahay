@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@makikibahay/ui';
+import { Button } from '@makikibahay/ui';
 import { MapPin, BedDouble, Star, Heart } from 'lucide-react';
 import type { Listing } from '@/lib/types';
-import { Badge } from './ui/badge';
+import { Badge } from '@makikibahay/ui';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -34,8 +34,8 @@ export function PropertyCard({ listing }: PropertyCardProps) {
     }
     toggleFavorite(listing.id);
     toast({
-        title: isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
-        description: `${listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
+      title: isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
+      description: `${listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
     })
   };
 
@@ -57,7 +57,7 @@ export function PropertyCard({ listing }: PropertyCardProps) {
               className="hover:scale-105 transition-transform duration-300"
               data-ai-hint="apartment room"
             />
-             <Button
+            <Button
               size="icon"
               className={cn(
                 'absolute top-2 right-2 rounded-full h-8 w-8 bg-black/50 hover:bg-black/75',

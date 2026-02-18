@@ -3,17 +3,17 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
+import { Button } from '@makikibahay/ui';
 import { Inbox, Send, Star, Archive, Trash2, Mail, Edit, Reply, ReplyAll, Forward, ArchiveRestore, PanelLeft, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@makikibahay/ui';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@makikibahay/ui';
+import { Avatar, AvatarFallback } from '@makikibahay/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@makikibahay/ui';
+import { Input } from '@makikibahay/ui';
+import { Textarea } from '@makikibahay/ui';
 
 const initialMessages = [
   {
@@ -74,13 +74,26 @@ const initialMessages = [
   },
 ];
 
-type Message = typeof initialMessages[0];
+type Message = {
+  id: number;
+  from: string;
+  to: string;
+  email: string;
+  subject: string;
+  text: string;
+  isRead: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
+  isTrashed: boolean;
+  date: string;
+  type: 'received' | 'sent';
+};
 type MailboxType = 'inbox' | 'starred' | 'sent' | 'archive' | 'trash';
 type ComposeMode = 'new' | 'reply' | 'reply-all' | 'forward';
 interface ComposeState {
-    mode: ComposeMode;
-    message: Message | null;
-    recipient?: string;
+  mode: ComposeMode;
+  message: Message | null;
+  recipient?: string;
 }
 
 function InboxComponent() {
@@ -95,7 +108,7 @@ function InboxComponent() {
   useEffect(() => {
     const to = searchParams.get('to');
     if (to) {
-        handleCompose('new', null, to);
+      handleCompose('new', null, to);
     }
   }, [searchParams]);
 
@@ -112,18 +125,18 @@ function InboxComponent() {
             case 'unarchive': return { ...m, isArchived: false };
             case 'trash': return { ...m, isTrashed: true };
             case 'read': return { ...m, isRead: true };
-            case 'toggleStar': return {...m, isStarred: !m.isStarred }
+            case 'toggleStar': return { ...m, isStarred: !m.isStarred }
           }
         }
         return m;
       })
     );
 
-    if(action === 'archive' || action === 'trash' || action === 'unarchive') {
-        setSelectedMessage(null); // Deselect message after action
+    if (action === 'archive' || action === 'trash' || action === 'unarchive') {
+      setSelectedMessage(null); // Deselect message after action
     }
   };
-  
+
   const handleAddSentMessage = (to: string, subject: string, text: string) => {
     const newMessage: Message = {
       id: messages.length + 1,
@@ -170,31 +183,31 @@ function InboxComponent() {
   };
 
   const handleTrash = (id: number) => {
-      handleMessageAction(id, 'trash');
-      toast({ title: "Message moved to Trash." });
+    handleMessageAction(id, 'trash');
+    toast({ title: "Message moved to Trash." });
   }
 
   const handleArchive = (id: number) => {
-      handleMessageAction(id, 'archive');
-      toast({ title: "Message Archived." });
+    handleMessageAction(id, 'archive');
+    toast({ title: "Message Archived." });
   }
-  
+
   const handleUnarchive = (id: number) => {
-      handleMessageAction(id, 'unarchive');
-      toast({ title: "Message moved to Inbox." });
+    handleMessageAction(id, 'unarchive');
+    toast({ title: "Message moved to Inbox." });
   }
 
   const handleToggleStar = (id: number) => {
-      const message = messages.find(m => m.id === id);
-      if (message) {
-          handleMessageAction(id, 'toggleStar');
-          toast({ title: message.isStarred ? 'Unstarred' : 'Starred' });
-      }
+    const message = messages.find(m => m.id === id);
+    if (message) {
+      handleMessageAction(id, 'toggleStar');
+      toast({ title: message.isStarred ? 'Unstarred' : 'Starred' });
+    }
   }
 
   const handleCompose = (mode: ComposeMode, message: Message | null, recipient?: string) => {
-      setSelectedMessage(null);
-      setComposeState({ mode, message, recipient });
+    setSelectedMessage(null);
+    setComposeState({ mode, message, recipient });
   }
 
   const SidebarButton = ({ type, icon, label, count }: { type: MailboxType, icon: React.ReactNode, label: string, count?: number }) => {
@@ -213,7 +226,7 @@ function InboxComponent() {
         {!isSidebarCollapsed && count !== undefined && count > 0 && <Badge className="ml-auto">{count}</Badge>}
       </Button>
     );
-  
+
     if (isSidebarCollapsed) {
       return (
         <Tooltip>
@@ -226,46 +239,46 @@ function InboxComponent() {
         </Tooltip>
       );
     }
-  
+
     return buttonContent;
   };
 
   const getMessageRecipient = (message: Message) => {
-      if (message.type === 'sent') return `To: ${message.to}`;
-      return message.from;
+    if (message.type === 'sent') return `To: ${message.to}`;
+    return message.from;
   }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8 h-[calc(100vh-112px)] flex flex-col">
       <TooltipProvider delayDuration={0}>
         <div className={cn(
-            "grid gap-4 flex-grow h-full overflow-hidden transition-[grid-template-columns] duration-300",
-            "md:grid-cols-[auto_1fr]",
-            "lg:grid-cols-[auto_320px_1fr]",
-             isSidebarCollapsed ? "lg:grid-cols-[auto_320px_1fr]" : "lg:grid-cols-[260px_320px_1fr]"
+          "grid gap-4 flex-grow h-full overflow-hidden transition-[grid-template-columns] duration-300",
+          "md:grid-cols-[auto_1fr]",
+          "lg:grid-cols-[auto_320px_1fr]",
+          isSidebarCollapsed ? "lg:grid-cols-[auto_320px_1fr]" : "lg:grid-cols-[260px_320px_1fr]"
         )}>
           {/* Sidebar */}
           <aside className={cn(
             "hidden md:flex flex-col gap-2 border-r pr-4 transition-[width] duration-300",
             isSidebarCollapsed ? "w-[80px]" : "w-[260px]"
           )}>
-             <div className={cn("p-2 flex items-center", isSidebarCollapsed ? "justify-center" : "justify-between")}>
+            <div className={cn("p-2 flex items-center", isSidebarCollapsed ? "justify-center" : "justify-between")}>
               {!isSidebarCollapsed && (
                 <Button className="w-full" onClick={() => handleCompose('new', null)}>
                   <Edit className="mr-2 h-4 w-4" />
                   Compose
                 </Button>
               )}
-               <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => setIsSidebarCollapsed(prev => !prev)}>
-                            <PanelLeft className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                        <p>{isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}</p>
-                    </TooltipContent>
-                </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSidebarCollapsed(prev => !prev)}>
+                    <PanelLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <nav className={cn("p-2 space-y-1", isSidebarCollapsed && "px-0")}>
               <SidebarButton type="inbox" icon={<Inbox className="h-4 w-4" />} label="Inbox" count={unreadCount} />
@@ -282,7 +295,7 @@ function InboxComponent() {
             (selectedMessage || composeState) && "hidden lg:block"
           )}>
             <div className="p-2">
-                <h2 className="text-xl font-bold font-headline p-2 capitalize">{mailbox}</h2>
+              <h2 className="text-xl font-bold font-headline p-2 capitalize">{mailbox}</h2>
             </div>
             <div className="flex flex-col gap-1 p-2">
               {filteredMessages.length > 0 ? filteredMessages.map(message => (
@@ -317,42 +330,42 @@ function InboxComponent() {
                 </button>
               )) : (
                 <div className="text-center text-muted-foreground p-8">
-                    <p>No messages in {mailbox}.</p>
+                  <p>No messages in {mailbox}.</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Message View / Compose */}
-           <div className={cn("border rounded-lg flex flex-col",
+          <div className={cn("border rounded-lg flex flex-col",
             !(selectedMessage || composeState) && "hidden lg:flex"
-           )}>
-                {composeState ? (
-                    <ComposeView 
-                      composeState={composeState}
-                      onSend={(to, subject, body) => {
-                          handleAddSentMessage(to, subject, body);
-                          setComposeState(null);
-                      }}
-                      onClose={() => setComposeState(null)}
-                    />
-                ) : selectedMessage ? (
-                  <MessageView 
-                    mailbox={mailbox}
-                    message={selectedMessage}
-                    onTrash={handleTrash}
-                    onArchive={handleArchive}
-                    onUnarchive={handleUnarchive}
-                    onToggleStar={handleToggleStar}
-                    onCompose={handleCompose}
-                  />
-                ) : (
-                    <div className="p-8 text-center text-muted-foreground h-full flex flex-col items-center justify-center">
-                        <Mail className="h-10 w-10 mb-4" />
-                        <p>Select a message to read</p>
-                    </div>
-                )}
-           </div>
+          )}>
+            {composeState ? (
+              <ComposeView
+                composeState={composeState}
+                onSend={(to, subject, body) => {
+                  handleAddSentMessage(to, subject, body);
+                  setComposeState(null);
+                }}
+                onClose={() => setComposeState(null)}
+              />
+            ) : selectedMessage ? (
+              <MessageView
+                mailbox={mailbox}
+                message={selectedMessage}
+                onTrash={handleTrash}
+                onArchive={handleArchive}
+                onUnarchive={handleUnarchive}
+                onToggleStar={handleToggleStar}
+                onCompose={handleCompose}
+              />
+            ) : (
+              <div className="p-8 text-center text-muted-foreground h-full flex flex-col items-center justify-center">
+                <Mail className="h-10 w-10 mb-4" />
+                <p>Select a message to read</p>
+              </div>
+            )}
+          </div>
 
         </div>
       </TooltipProvider>
@@ -361,170 +374,170 @@ function InboxComponent() {
 }
 
 export default function InboxPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <InboxComponent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InboxComponent />
+    </Suspense>
+  )
 }
 
 function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onToggleStar, onCompose }: {
-    message: Message,
-    mailbox: MailboxType,
-    onTrash: (id: number) => void,
-    onArchive: (id: number) => void,
-    onUnarchive: (id: number) => void,
-    onToggleStar: (id: number) => void,
-    onCompose: (mode: ComposeMode, message: Message) => void;
+  message: Message,
+  mailbox: MailboxType,
+  onTrash: (id: number) => void,
+  onArchive: (id: number) => void,
+  onUnarchive: (id: number) => void,
+  onToggleStar: (id: number) => void,
+  onCompose: (mode: ComposeMode, message: Message) => void;
 }) {
-    const isSentMailbox = mailbox === 'sent';
-    return (
-        <div className="flex flex-col h-full">
-            <div className="flex items-center p-2 border-b">
-                <div className="flex items-center gap-1">
-                    {mailbox === 'archive' ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => onUnarchive(message.id)}><ArchiveRestore className="h-4 w-4" /></Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Unarchive</TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => onArchive(message.id)} disabled={isSentMailbox}><Archive className="h-4 w-4" /></Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Archive</TooltipContent>
-                        </Tooltip>
-                    )}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onTrash(message.id)}><Trash2 className="h-4 w-4" /></Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete</TooltipContent>
-                    </Tooltip>
-                </div>
-                <Separator orientation="vertical" className="mx-1 h-6" />
-                <div className="flex items-center gap-1 ml-auto">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => onCompose('reply', message)}><Reply className="h-4 w-4" /></Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Reply</TooltipContent>
-                    </Tooltip>
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => onCompose('reply-all', message)}><ReplyAll className="h-4 w-4" /></Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Reply All</TooltipContent>
-                    </Tooltip>
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => onCompose('forward', message)}><Forward className="h-4 w-4" /></Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Forward</TooltipContent>
-                    </Tooltip>
-                </div>
-            </div>
-            <div className="p-6 flex-1 overflow-y-auto">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                        <Avatar>
-                            <AvatarFallback>{message.type === 'sent' ? 'Me' : message.from.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="grid gap-1">
-                            <p className="font-semibold">{message.type === 'sent' ? 'Me' : message.from}</p>
-                            <p className="text-xs text-muted-foreground">To: {message.type === 'sent' ? message.to : 'me <user@example.com>'}</p>
-                        </div>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground">{message.date}</p>
-                         <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onToggleStar(message.id)}
-                            disabled={isSentMailbox}
-                        >
-                            <Star className={cn("h-4 w-4", message.isStarred && "fill-primary text-primary")} />
-                        </Button>
-                     </div>
-                </div>
-                <Separator className="my-4" />
-                <h1 className="text-2xl font-bold font-headline mb-4">{message.subject}</h1>
-                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                    {message.text}
-                </div>
-            </div>
+  const isSentMailbox = mailbox === 'sent';
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center p-2 border-b">
+        <div className="flex items-center gap-1">
+          {mailbox === 'archive' ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => onUnarchive(message.id)}><ArchiveRestore className="h-4 w-4" /></Button>
+              </TooltipTrigger>
+              <TooltipContent>Unarchive</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => onArchive(message.id)} disabled={isSentMailbox}><Archive className="h-4 w-4" /></Button>
+              </TooltipTrigger>
+              <TooltipContent>Archive</TooltipContent>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onTrash(message.id)}><Trash2 className="h-4 w-4" /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
         </div>
-    )
+        <Separator orientation="vertical" className="mx-1 h-6" />
+        <div className="flex items-center gap-1 ml-auto">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => onCompose('reply', message)}><Reply className="h-4 w-4" /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Reply</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => onCompose('reply-all', message)}><ReplyAll className="h-4 w-4" /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Reply All</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => onCompose('forward', message)}><Forward className="h-4 w-4" /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Forward</TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <div className="p-6 flex-1 overflow-y-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <Avatar>
+              <AvatarFallback>{message.type === 'sent' ? 'Me' : message.from.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="grid gap-1">
+              <p className="font-semibold">{message.type === 'sent' ? 'Me' : message.from}</p>
+              <p className="text-xs text-muted-foreground">To: {message.type === 'sent' ? message.to : 'me <user@example.com>'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">{message.date}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onToggleStar(message.id)}
+              disabled={isSentMailbox}
+            >
+              <Star className={cn("h-4 w-4", message.isStarred && "fill-primary text-primary")} />
+            </Button>
+          </div>
+        </div>
+        <Separator className="my-4" />
+        <h1 className="text-2xl font-bold font-headline mb-4">{message.subject}</h1>
+        <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+          {message.text}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function ComposeView({ composeState, onSend, onClose }: { composeState: ComposeState, onSend: (to: string, subject: string, body: string) => void, onClose: () => void; }) {
-    const { toast } = useToast();
-    const { mode, message, recipient } = composeState;
-    
-    let to = recipient || '';
-    let subject = '';
-    let body = '';
+  const { toast } = useToast();
+  const { mode, message, recipient } = composeState;
 
-    if (message) {
-        switch(mode) {
-            case 'reply':
-            case 'reply-all':
-                to = message.email;
-                subject = message.subject.startsWith('Re:') ? message.subject : `Re: ${message.subject}`;
-                body = `\n\n---- On ${message.date}, ${message.from} wrote: ----\n>${message.text.split('\n').join('\n>')}`;
-                break;
-            case 'forward':
-                subject = `Fwd: ${message.subject}`;
-                body = `\n\n---- Forwarded message ----\nFrom: ${message.from}\nDate: ${message.date}\nSubject: ${message.subject}\n\n${message.text}`;
-                break;
-        }
+  let to = recipient || '';
+  let subject = '';
+  let body = '';
+
+  if (message) {
+    switch (mode) {
+      case 'reply':
+      case 'reply-all':
+        to = message.email;
+        subject = message.subject.startsWith('Re:') ? message.subject : `Re: ${message.subject}`;
+        body = `\n\n---- On ${message.date}, ${message.from} wrote: ----\n>${message.text.split('\n').join('\n>')}`;
+        break;
+      case 'forward':
+        subject = `Fwd: ${message.subject}`;
+        body = `\n\n---- Forwarded message ----\nFrom: ${message.from}\nDate: ${message.date}\nSubject: ${message.subject}\n\n${message.text}`;
+        break;
     }
+  }
 
-    const [toState, setToState] = useState(to);
-    const [subjectState, setSubjectState] = useState(subject);
-    const [bodyState, setBodyState] = useState(body);
+  const [toState, setToState] = useState(to);
+  const [subjectState, setSubjectState] = useState(subject);
+  const [bodyState, setBodyState] = useState(body);
 
-    const handleSend = () => {
-        // In a real app, this would trigger an API call.
-        if (!toState) {
-            toast({ variant: 'destructive', title: "Cannot Send", description: "Recipient is missing." });
-            return;
-        }
-        toast({ title: "Message Sent!", description: "Your message has been sent successfully." });
-        onSend(toState, subjectState, bodyState);
+  const handleSend = () => {
+    // In a real app, this would trigger an API call.
+    if (!toState) {
+      toast({ variant: 'destructive', title: "Cannot Send", description: "Recipient is missing." });
+      return;
     }
-    
-    let title = 'New Message';
-    if(mode === 'reply' || mode === 'reply-all') title = 'Reply';
-    if(mode === 'forward') title = 'Forward';
+    toast({ title: "Message Sent!", description: "Your message has been sent successfully." });
+    onSend(toState, subjectState, bodyState);
+  }
 
-    return (
-        <div className="p-4 flex flex-col h-full">
-            <div className="flex items-center justify-between p-2">
-                 <CardTitle className="font-headline text-lg">{title}</CardTitle>
-                 <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
-            </div>
-            <CardContent className="space-y-4 flex-grow flex flex-col p-2 pt-4">
-                <Input placeholder="To" value={toState} onChange={(e) => setToState(e.target.value)} />
-                <Input placeholder="Subject" value={subjectState} onChange={(e) => setSubjectState(e.target.value)} />
-                <Textarea 
-                    placeholder="Compose your message..." 
-                    className="flex-grow" 
-                    value={bodyState}
-                    onChange={(e) => setBodyState(e.target.value)}
-                />
-            </CardContent>
-            <div className="p-2 flex justify-end">
-                <Button onClick={handleSend}>
-                    <Send className="mr-2 h-4 w-4" /> Send
-                </Button>
-            </div>
-        </div>
-    );
+  let title = 'New Message';
+  if (mode === 'reply' || mode === 'reply-all') title = 'Reply';
+  if (mode === 'forward') title = 'Forward';
+
+  return (
+    <div className="p-4 flex flex-col h-full">
+      <div className="flex items-center justify-between p-2">
+        <CardTitle className="font-headline text-lg">{title}</CardTitle>
+        <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+      </div>
+      <CardContent className="space-y-4 flex-grow flex flex-col p-2 pt-4">
+        <Input placeholder="To" value={toState} onChange={(e) => setToState(e.target.value)} />
+        <Input placeholder="Subject" value={subjectState} onChange={(e) => setSubjectState(e.target.value)} />
+        <Textarea
+          placeholder="Compose your message..."
+          className="flex-grow"
+          value={bodyState}
+          onChange={(e) => setBodyState(e.target.value)}
+        />
+      </CardContent>
+      <div className="p-2 flex justify-end">
+        <Button onClick={handleSend}>
+          <Send className="mr-2 h-4 w-4" /> Send
+        </Button>
+      </div>
+    </div>
+  );
 }
 
-    
 
-    
+
+

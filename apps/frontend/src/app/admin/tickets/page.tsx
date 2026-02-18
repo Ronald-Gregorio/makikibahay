@@ -1,15 +1,15 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
+import { Badge } from "@makikibahay/ui";
+import { Button } from "@makikibahay/ui";
 import { Eye, ShieldAlert, User, Home, ArrowRight, Check, X, MessageSquare, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@makikibahay/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@makikibahay/ui";
+import { Separator } from "@makikibahay/ui";
 
 
 const mockTickets = [

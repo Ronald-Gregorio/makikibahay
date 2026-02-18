@@ -2,17 +2,17 @@
 'use client';
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@makikibahay/ui";
 import { BarChart, LineChart, PieChart, Pie, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Users, Home, DollarSign, Activity, Download, Calendar as CalendarIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@makikibahay/ui";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@makikibahay/ui";
+import { Checkbox } from "@makikibahay/ui";
+import { Label } from "@makikibahay/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@makikibahay/ui";
+import { Calendar } from "@makikibahay/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { format, subMonths, subYears, startOfQuarter, endOfQuarter, subQuarters } from "date-fns";

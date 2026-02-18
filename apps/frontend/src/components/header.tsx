@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from './ui/button';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Button } from '@makikibahay/ui';
+import { Sheet, SheetContent, SheetTrigger } from '@makikibahay/ui';
 import { Menu, Home, LogOut, User, Heart, LayoutDashboard, Bell, Inbox, BarChart } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@makikibahay/ui';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@makikibahay/ui';
 
 export function AppHeader() {
   const { user, logout } = useAuth();
@@ -34,28 +34,28 @@ export function AppHeader() {
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             {user?.role === 'admin' ? (
-                <Link href="/admin/dashboard" className="transition-colors hover:text-primary">
-                    Dashboard
-                </Link>
+              <Link href="/admin/dashboard" className="transition-colors hover:text-primary">
+                Dashboard
+              </Link>
             ) : (
-                <Link href="/browse" className="transition-colors hover:text-primary">
+              <Link href="/browse" className="transition-colors hover:text-primary">
                 Browse
-                </Link>
+              </Link>
             )}
-             {user?.role === 'user' && (
-                <Link href="/favorites" className="transition-colors hover:text-primary">
-                    Favorites
-                </Link>
-             )}
-             {user?.role === 'owner' && (
-               <>
+            {user?.role === 'user' && (
+              <Link href="/favorites" className="transition-colors hover:text-primary">
+                Favorites
+              </Link>
+            )}
+            {user?.role === 'owner' && (
+              <>
                 <Link href="/owner/dashboard" className="transition-colors hover:text-primary">
-                    Dashboard
+                  Dashboard
                 </Link>
                 <Link href="/owner/metrics" className="transition-colors hover:text-primary">
-                    Metrics
+                  Metrics
                 </Link>
-               </>
+              </>
             )}
           </nav>
         </div>
@@ -71,40 +71,40 @@ export function AppHeader() {
               </SheetTrigger>
               <SheetContent side="left">
                 <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
-                   <Home className="h-6 w-6 text-primary" />
+                  <Home className="h-6 w-6 text-primary" />
                   <span className="font-bold">Makikibahay</span>
                 </Link>
                 <nav className="flex flex-col space-y-4">
                   <Link href="/browse">Browse</Link>
                   {user?.role !== 'owner' && <Link href="/survey">Take Survey</Link>}
-                   {user ? (
+                  {user ? (
                     <>
-                       {user.role !== 'user' && (
+                      {user.role !== 'user' && (
                         <Link href={getDashboardLink()} className="flex items-center gap-2">
-                           <LayoutDashboard className="h-4 w-4" />
-                           <span>Dashboard</span>
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Dashboard</span>
                         </Link>
-                       )}
-                       {user.role === 'owner' && (
-                         <Link href="/owner/metrics" className="flex items-center gap-2">
-                           <BarChart className="h-4 w-4" />
-                           <span>Metrics</span>
-                         </Link>
-                       )}
-                       <Link href="/inbox" className="flex items-center gap-2">
-                           <Inbox className="h-4 w-4" />
-                           <span>Inbox</span>
-                       </Link>
+                      )}
+                      {user.role === 'owner' && (
+                        <Link href="/owner/metrics" className="flex items-center gap-2">
+                          <BarChart className="h-4 w-4" />
+                          <span>Metrics</span>
+                        </Link>
+                      )}
+                      <Link href="/inbox" className="flex items-center gap-2">
+                        <Inbox className="h-4 w-4" />
+                        <span>Inbox</span>
+                      </Link>
                       <Link href="/profile" className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         <span>{user.name}</span>
                       </Link>
-                       {user.role === 'user' && (
+                      {user.role === 'user' && (
                         <Link href="/favorites" className="flex items-center gap-2">
-                            <Heart className="h-4 w-4" />
-                            <span>Favorites</span>
+                          <Heart className="h-4 w-4" />
+                          <span>Favorites</span>
                         </Link>
-                       )}
+                      )}
                       <button onClick={logout} className="flex items-center gap-2 text-left w-full">
                         <LogOut className="h-4 w-4" />
                         <span>Log Out</span>
@@ -121,46 +121,46 @@ export function AppHeader() {
             </Sheet>
           </div>
           <nav className="hidden md:flex items-center space-x-2">
-             {user ? (
+            {user ? (
               <>
                 {user.role !== 'admin' && (
-                   <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                         <Button variant="ghost" size="icon" className="relative">
-                            <Bell className="h-5 w-5"/>
-                            {hasNotifications && (
-                              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                            )}
-                             <span className="sr-only">Notifications</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5" />
+                        {hasNotifications && (
+                          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+                        )}
+                        <span className="sr-only">Notifications</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-80" align="end">
+                      <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="flex-col items-start gap-1" asChild>
+                        <Link href="/inbox">
+                          <p className="font-medium">New message from Sunny Day</p>
+                          <p className="text-xs text-muted-foreground">"Yes, the solo room is still available..."</p>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex-col items-start gap-1" asChild>
+                        <Link href="/inbox">
+                          <p className="font-medium">Slot confirmation</p>
+                          <p className="text-xs text-muted-foreground">Your slot at Maple Tree Dormitory is confirmed.</p>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/inbox" className="w-full justify-center">
+                          <Button variant="link" className="w-full">
+                            View all notifications
                           </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-80" align="end">
-                          <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                           <DropdownMenuItem className="flex-col items-start gap-1" asChild>
-                               <Link href="/inbox">
-                                <p className="font-medium">New message from Sunny Day</p>
-                                <p className="text-xs text-muted-foreground">"Yes, the solo room is still available..."</p>
-                               </Link>
-                           </DropdownMenuItem>
-                           <DropdownMenuItem className="flex-col items-start gap-1" asChild>
-                                <Link href="/inbox">
-                                    <p className="font-medium">Slot confirmation</p>
-                                    <p className="text-xs text-muted-foreground">Your slot at Maple Tree Dormitory is confirmed.</p>
-                                </Link>
-                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                           <DropdownMenuItem asChild>
-                               <Link href="/inbox" className="w-full justify-center">
-                                <Button variant="link" className="w-full">
-                                    View all notifications
-                                </Button>
-                               </Link>
-                           </DropdownMenuItem>
-                      </DropdownMenuContent>
-                   </DropdownMenu>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
-               
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -180,30 +180,30 @@ export function AppHeader() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                     {user.role === 'owner' && (
-                       <>
-                         <DropdownMenuItem asChild>
-                           <Link href={getDashboardLink()}>
-                             <LayoutDashboard className="mr-2 h-4 w-4" />
-                             <span>Dashboard</span>
-                           </Link>
-                         </DropdownMenuItem>
-                         <DropdownMenuItem asChild>
-                           <Link href="/owner/metrics">
-                             <BarChart className="mr-2 h-4 w-4" />
-                             <span>Metrics</span>
-                           </Link>
-                         </DropdownMenuItem>
-                       </>
-                     )}
-                      {user.role === 'admin' && (
-                       <DropdownMenuItem asChild>
-                         <Link href={getDashboardLink()}>
-                           <LayoutDashboard className="mr-2 h-4 w-4" />
-                           <span>Dashboard</span>
-                         </Link>
-                       </DropdownMenuItem>
-                     )}
+                    {user.role === 'owner' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href={getDashboardLink()}>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/owner/metrics">
+                            <BarChart className="mr-2 h-4 w-4" />
+                            <span>Metrics</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {user.role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link href={getDashboardLink()}>
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/inbox">
                         <Inbox className="mr-2 h-4 w-4" />
@@ -217,12 +217,12 @@ export function AppHeader() {
                       </Link>
                     </DropdownMenuItem>
                     {user.role === 'user' && (
-                        <DropdownMenuItem asChild>
-                            <Link href="/favorites">
-                                <Heart className="mr-2 h-4 w-4" />
-                                <span>Favorites</span>
-                            </Link>
-                        </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/favorites">
+                          <Heart className="mr-2 h-4 w-4" />
+                          <span>Favorites</span>
+                        </Link>
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={logout}>

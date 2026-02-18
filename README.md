@@ -1,5 +1,5 @@
-# Firebase Studio
+# Makikibahay
 
-This is a NextJS starter in Firebase Studio.
+Boarding house discovery and booking platform.
 
-To get started, take a look at src/app/page.tsx.
+See [Project Documentation](docs/PROJECT_DOCUMENTATION.md) for details.
