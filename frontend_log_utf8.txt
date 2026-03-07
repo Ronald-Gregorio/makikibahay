@@ -1,0 +1,578 @@
+﻿docker : #0 building 
+with "desktop-linux" 
+instance using docker 
+driver
+At line:1 char:1
++ docker build 
+--progress=plain -t 
+temp-frontend -f 
+apps/frontend/Docke 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (#0 buildin   
+ g wit...g docker     
+driver:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+#1 [internal] load 
+build definition from 
+Dockerfile
+#1 transferring 
+dockerfile: 1.91kB 
+0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load 
+metadata for docker.io
+/library/node:20-alpin
+e
+#2 ...
+
+#3 [auth] 
+library/node:pull 
+token for 
+registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load 
+metadata for docker.io
+/library/node:20-alpin
+e
+#2 DONE 1.5s
+
+#4 [internal] load 
+.dockerignore
+#4 transferring 
+context: 476B done
+#4 DONE 0.0s
+
+#5 [internal] load 
+build context
+#5 DONE 0.0s
+
+#6 [base 1/1] FROM doc
+ker.io/library/node:20
+-alpine@sha256:b88333c
+42c23fbd91596ebd7fd10d
+e239cedab9617de04142dd
+e7315e3bc0afa
+#6 resolve docker.io/l
+ibrary/node:20-alpine@
+sha256:b88333c42c23fbd
+91596ebd7fd10de239ceda
+b9617de04142dde7315e3b
+c0afa 0.1s done
+#6 DONE 0.1s
+
+#7 [runner 1/7] 
+WORKDIR /app
+#7 CACHED
+
+#8 [runner 2/7] RUN 
+addgroup --system 
+--gid 1001 nodejs
+#8 CACHED
+
+#9 [runner 3/7] RUN 
+adduser --system 
+--uid 1001 nextjs
+#9 CACHED
+
+#5 [internal] load 
+build context
+#5 transferring 
+context: 538.60kB 
+0.5s done
+#5 DONE 0.5s
+
+#10 [builder 1/6] RUN 
+apk add --no-cache 
+libc6-compat
+#10 CACHED
+
+#11 [installer  5/11] 
+COPY --from=builder 
+/app/out/json/ .
+#11 CACHED
+
+#12 [installer  6/11] 
+COPY --from=builder /a
+pp/out/package-lock.js
+on ./package-lock.json
+#12 CACHED
+
+#13 [installer  9/11] 
+COPY turbo.json 
+turbo.json
+#13 CACHED
+
+#14 [builder 5/6] 
+COPY . .
+#14 CACHED
+
+#15 [builder 4/6] RUN 
+npm install -g turbo
+#15 CACHED
+
+#16 [installer  4/11] 
+COPY .gitignore 
+.gitignore
+#16 CACHED
+
+#17 [builder 2/6] RUN 
+apk update
+#17 CACHED
+
+#18 [builder 6/6] RUN 
+turbo prune 
+@makikibahay/frontend 
+--docker
+#18 CACHED
+
+#19 [installer  7/11] 
+RUN npm install
+#19 CACHED
+
+#20 [installer  8/11] 
+COPY --from=builder 
+/app/out/full/ .
+#20 CACHED
+
+#21 [builder 3/6] 
+WORKDIR /app
+#21 CACHED
+
+#22 [installer 10/11] 
+COPY tsconfig.json 
+tsconfig.json
+#22 CACHED
+
+#23 [installer 11/11] 
+RUN npm run build --fi
+lter=@makikibahay/fron
+tend...
+#23 1.056 
+#23 1.056 > build
+#23 1.056 > turbo run 
+build
+#23 1.056 
+#23 1.228 
+#23 1.228 Attention:
+#23 1.228 Turborepo 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#23 1.228 This 
+information is used 
+to shape the 
+Turborepo roadmap and 
+prioritize features.
+#23 1.228 You can 
+learn more, including 
+how to opt-out if 
+you'd not like to 
+participate in this 
+anonymous program, by 
+visiting the 
+following URL:
+#23 1.228 https://turb
+orepo.dev/docs/telemet
+ry
+#23 1.228 
+#23 1.230 ΓÇó turbo 
+2.7.6
+#23 1.300 ΓÇó 
+Packages in scope: @ma
+kikibahay/frontend, 
+@makikibahay/types, 
+@makikibahay/ui
+#23 1.300 ΓÇó Running 
+build in 3 packages
+#23 1.300 ΓÇó Remote 
+caching disabled
+#23 1.378 @makikibahay
+/types:build: cache 
+miss, executing 
+aedef76186614ae9
+#23 1.684 @makikibahay
+/types:build: 
+#23 1.684 @makikibahay
+/types:build: > @makik
+ibahay/types@0.1.0 
+build
+#23 1.684 @makikibahay
+/types:build: > tsc
+#23 1.684 @makikibahay
+/types:build: 
+#23 5.180 @makikibahay
+/ui:build: cache 
+miss, executing 
+96fe7a57e88c5986
+#23 5.436 @makikibahay
+/ui:build: 
+#23 5.436 @makikibahay
+/ui:build: > 
+@makikibahay/ui@0.1.0 
+build
+#23 5.436 @makikibahay
+/ui:build: > tsc
+#23 5.436 @makikibahay
+/ui:build: 
+#23 13.82 @makikibahay
+/frontend:build: 
+cache miss, executing 
+b5549a3d243f4511
+#23 14.08 @makikibahay
+/frontend:build: 
+#23 14.08 @makikibahay
+/frontend:build: > @ma
+kikibahay/frontend@0.1
+.0 build
+#23 14.08 @makikibahay
+/frontend:build: > 
+next build
+#23 14.08 @makikibahay
+/frontend:build: 
+#23 15.27 @makikibahay
+/frontend:build: 
+Attention: Next.js 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#23 15.27 @makikibahay
+/frontend:build: This 
+information is used 
+to shape Next.js' 
+roadmap and 
+prioritize features.
+#23 15.27 @makikibahay
+/frontend:build: You 
+can learn more, 
+including how to 
+opt-out if you'd not 
+like to participate 
+in this anonymous 
+program, by visiting 
+the following URL:
+#23 15.27 @makikibahay
+/frontend:build: https
+://nextjs.org/telemetr
+y
+#23 15.27 @makikibahay
+/frontend:build: 
+#23 15.40 @makikibahay
+/frontend:build:    
+Γû▓ Next.js 14.0.0
+#23 15.40 @makikibahay
+/frontend:build: 
+#23 15.40 @makikibahay
+/frontend:build:    
+Creating an optimized 
+production build ...
+#23 15.52 @makikibahay
+/frontend:build:  ΓÜá 
+Custom webpack 
+configuration is 
+detected. When using 
+a custom webpack 
+configuration, the 
+Webpack build worker 
+is disabled by 
+default. To force 
+enable it, set the "ex
+perimental.webpackBuil
+dWorker" option to 
+"true". Read more: htt
+ps://nextjs.org/docs/m
+essages/webpack-build-
+worker-opt-out
+#23 48.31 @makikibahay
+/frontend:build:  Γ£ô 
+Compiled successfully
+#23 48.31 @makikibahay
+/frontend:build:    
+Linting and checking 
+validity of types ...
+#23 63.24 @makikibahay
+/frontend:build:    
+Collecting page data 
+...
+#23 66.96 @makikibahay
+/frontend:build:    
+Generating static 
+pages (0/25) ...
+#23 67.57 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (6/25) 
+#23 67.58 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (12/25) 
+#23 67.75 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (18/25) 
+#23 67.85 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:  Γ£ô 
+Generating static 
+pages (25/25) 
+#23 67.96 @makikibahay
+/frontend:build:    
+Finalizing page 
+optimization ...
+#23 67.96 @makikibahay
+/frontend:build:    
+Collecting build 
+traces ...
+#23 68.34 @makikibahay
+/frontend:build: 
+#23 68.35 @makikibahay
+/frontend:build: 
+Route (app)           
+                   
+Size     First Load JS
+#23 68.35 @makikibahay
+/frontend:build: Γöî 
+Γùï /                 
+                   
+2.52 kB         249 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /_not-found       
+                   
+879 B          89.2 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /about            
+                   
+306 B           230 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/dashboard  
+                   
+1.55 kB         243 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/listings   
+                   
+7.97 kB         250 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/metrics    
+                   
+10.3 kB         329 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/moderation 
+                   
+6.49 kB         243 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/tickets    
+                   
+4.6 kB          241 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/users      
+                   
+6.25 kB         236 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /api/auth/[...nexta
+uth]              0 B 
+               0 B
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /browse           
+                   
+4.93 kB         238 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /contact          
+                   
+4.25 kB         234 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /favorites        
+                   
+3.16 kB         250 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /inbox            
+                   
+7.79 kB         238 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /listings/[id]     
+                  
+5.96 kB         244 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /login            
+                   
+2.26 kB         243 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/dashboard  
+                   
+3.55 kB         250 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/listings/cr
+eate               
+3.26 kB         252 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /owner/listings/edi
+t/[id]            4.3 
+kB          258 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/metrics    
+                   
+8.44 kB         327 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /payment          
+                   
+306 B           230 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /privacy          
+                   
+306 B           230 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /profile          
+                   
+4.34 kB         246 kB
+#23 68.35 @makikibahay
+/frontend:build: Γö£ 
+Γùï /signup           
+                   
+2.26 kB         243 kB
+#23 68.35 @makikibahay
+/frontend:build: Γöö 
+Γùï /survey           
+                   
+2.98 kB         244 kB
+#23 68.35 @makikibahay
+/frontend:build: + 
+First Load JS shared 
+by all            
+88.3 kB
+#23 68.35 @makikibahay
+/frontend:build:   
+Γö£ chunks/1dd3208c-c4
+30078b6830a234.js  
+53.3 kB
+#23 68.35 @makikibahay
+/frontend:build:   
+Γö£ chunks/53-55cb4cb9
+d75d425d.js        
+32.5 kB
+#23 68.35 @makikibahay
+/frontend:build:   
+Γö£ chunks/main-app-05
+c20cc0aacd47dd.js  
+236 B
+#23 68.35 @makikibahay
+/frontend:build:   
+Γöö chunks/webpack-2f5
+a744bc6d8db79.js   
+2.28 kB
+#23 68.35 @makikibahay
+/frontend:build: 
+#23 68.35 @makikibahay
+/frontend:build: 
+#23 68.35 @makikibahay
+/frontend:build: Γùï  
+(Static)   
+prerendered as static 
+HTML
+#23 68.35 @makikibahay
+/frontend:build: ╬╗  
+(Dynamic)  
+server-rendered on 
+demand using Node.js
+#23 68.35 @makikibahay
+/frontend:build: 
+#23 68.51 
+#23 68.51  Tasks:    
+3 successful, 3 total
+#23 68.51 Cached:    
+0 cached, 3 total
+#23 68.51   Time:    
+1m7.261s 
+#23 68.51 
+#23 68.52  WARNING  
+no output files found 
+for task @makikibahay/
+ui#build. Please 
+check your `outputs` 
+key in `turbo.json`
+#23 DONE 70.5s
+
+#24 [runner 4/7] COPY 
+--from=installer /app/
+apps/frontend/next.con
+fig.js .
+#24 ERROR: failed to 
+commit sa142r5jul9as2z
+cm2d1mxw1e to oiuw8jhc
+whrndka8hutanbgrz 
+during finalize: 
+failed to stat active 
+key during commit: 
+snapshot sa142r5jul9as
+2zcm2d1mxw1e does not 
+exist: not found
+------
+ > [runner 4/7] COPY 
+--from=installer /app/
+apps/frontend/next.con
+fig.js .:
+------
+Dockerfile:47
+--------------------
+  45 |     USER nextjs
+  46 |     
+  47 | >>> COPY 
+--from=installer /app/
+apps/frontend/next.con
+fig.js .
+  48 |     COPY 
+--from=installer /app/
+apps/frontend/package.
+json .
+  49 |     
+--------------------
+ERROR: failed to 
+build: failed to 
+solve: failed to 
+commit sa142r5jul9as2z
+cm2d1mxw1e to oiuw8jhc
+whrndka8hutanbgrz 
+during finalize: 
+failed to stat active 
+key during commit: 
+snapshot sa142r5jul9as
+2zcm2d1mxw1e does not 
+exist: not found

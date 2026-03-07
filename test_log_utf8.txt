@@ -1,0 +1,927 @@
+﻿docker : #0 building 
+with "desktop-linux" 
+instance using docker 
+driver
+At line:1 char:1
++ docker build 
+--progress=plain 
+--no-cache -f 
+test.Dockerfile . > 
+test_ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (#0 buildin   
+ g wit...g docker     
+driver:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+#1 [internal] load 
+build definition from 
+test.Dockerfile
+#1 transferring 
+dockerfile: 808B done
+#1 DONE 0.0s
+
+#2 [auth] 
+library/node:pull 
+token for 
+registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load 
+metadata for docker.io
+/library/node:20-alpin
+e
+#3 DONE 1.8s
+
+#4 [internal] load 
+.dockerignore
+#4 transferring 
+context: 476B done
+#4 DONE 0.0s
+
+#5 [internal] load 
+build context
+#5 DONE 0.0s
+
+#6 [base 1/1] FROM doc
+ker.io/library/node:20
+-alpine@sha256:b88333c
+42c23fbd91596ebd7fd10d
+e239cedab9617de04142dd
+e7315e3bc0afa
+#6 resolve docker.io/l
+ibrary/node:20-alpine@
+sha256:b88333c42c23fbd
+91596ebd7fd10de239ceda
+b9617de04142dde7315e3b
+c0afa 0.1s done
+#6 CACHED
+
+#5 [internal] load 
+build context
+#5 transferring 
+context: 539.46kB 
+0.5s done
+#5 DONE 0.6s
+
+#7 [builder 1/5] RUN 
+apk add --no-cache 
+libc6-compat && apk 
+update
+#7 1.744 (1/3) 
+Installing 
+musl-obstack 
+(1.2.3-r2)
+#7 1.788 (2/3) 
+Installing 
+libucontext (1.3.3-r0)
+#7 1.828 (3/3) 
+Installing gcompat 
+(1.1.0-r4)
+#7 1.878 OK: 11.0 MiB 
+in 21 packages
+#7 2.807 v3.23.3-257-g
+27e4d271ff9 [https://d
+l-cdn.alpinelinux.org/
+alpine/v3.23/main]
+#7 2.807 v3.23.3-259-g
+83cd25f08b2 [https://d
+l-cdn.alpinelinux.org/
+alpine/v3.23/community
+]
+#7 2.807 OK: 27574 
+distinct packages 
+available
+#7 DONE 2.9s
+
+#8 [builder 2/5] 
+WORKDIR /app
+#8 DONE 0.1s
+
+#9 [builder 3/5] RUN 
+npm install -g turbo
+#9 ...
+
+#10 [installer  3/14] 
+COPY .gitignore 
+.gitignore
+#10 DONE 0.2s
+
+#9 [builder 3/5] RUN 
+npm install -g turbo
+#9 6.034 
+#9 6.034 added 2 
+packages in 6s
+#9 6.036 npm notice
+#9 6.036 npm notice 
+New major version of 
+npm available! 10.8.2 
+-> 11.11.0
+#9 6.036 npm notice 
+Changelog: https://git
+hub.com/npm/cli/releas
+es/tag/v11.11.0
+#9 6.036 npm notice 
+To update run: npm 
+install -g npm@11.11.0
+#9 6.036 npm notice
+#9 DONE 6.2s
+
+#11 [builder 4/5] 
+COPY . .
+#11 DONE 7.3s
+
+#12 [builder 5/5] RUN 
+turbo prune 
+@makikibahay/frontend 
+--docker
+#12 0.562  WARNING  
+No locally installed 
+`turbo` found in your 
+repository. Using 
+globally installed 
+version (2.8.14), 
+which can cause 
+unexpected behavior.
+#12 0.562 
+#12 0.562 Installing 
+the version in your 
+repository (^2.4.0) 
+before calling 
+`turbo` will result 
+in more predictable 
+behavior across 
+environments.
+#12 0.577 
+#12 0.577 Attention:
+#12 0.577 Turborepo 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#12 0.577 This 
+information is used 
+to shape the 
+Turborepo roadmap and 
+prioritize features.
+#12 0.577 You can 
+learn more, including 
+how to opt-out if 
+you'd not like to 
+participate in this 
+anonymous program, by 
+visiting the 
+following URL:
+#12 0.577 https://turb
+orepo.dev/docs/telemet
+ry
+#12 0.577 
+#12 0.577 ΓÇó turbo 
+2.8.14
+#12 0.617 Generating 
+pruned monorepo for 
+@makikibahay/frontend 
+in /app/out
+#12 0.654  - Added 
+@makikibahay/frontend
+#12 0.660  - Added 
+@makikibahay/types
+#12 0.672  - Added 
+@makikibahay/ui
+#12 DONE 0.8s
+
+#13 [installer  4/14] 
+COPY --from=builder 
+/app/out/json/ .
+#13 DONE 0.2s
+
+#14 [installer  5/14] 
+COPY --from=builder /a
+pp/out/package-lock.js
+on ./package-lock.json
+#14 DONE 0.2s
+
+#15 [installer  6/14] 
+RUN npm install
+#15 5.991 npm warn 
+deprecated 
+rimraf@3.0.2: Rimraf 
+versions prior to v4 
+are no longer 
+supported
+#15 8.750 npm warn 
+deprecated 
+inflight@1.0.6: This 
+module is not 
+supported, and leaks 
+memory. Do not use 
+it. Check out 
+lru-cache if you want 
+a good and tested way 
+to coalesce async 
+requests by a key 
+value, which is much 
+more comprehensive 
+and powerful.
+#15 8.926 npm warn 
+deprecated 
+three-mesh-bvh@0.7.8: 
+Deprecated due to 
+three.js version 
+incompatibility. 
+Please use v0.8.0, 
+instead.
+#15 9.185 npm warn 
+deprecated 
+glob@7.1.7: Glob 
+versions prior to v9 
+are no longer 
+supported
+#15 11.92 npm warn 
+deprecated @types/sock
+et.io-client@3.0.0: 
+This is a stub types 
+definition. 
+socket.io-client 
+provides its own type 
+definitions, so you 
+do not need this 
+installed.
+#15 14.00 npm warn 
+deprecated @humanwhoco
+des/object-schema@2.0.
+3: Use 
+@eslint/object-schema 
+instead
+#15 14.35 npm warn 
+deprecated @humanwhoco
+des/config-array@0.13.
+0: Use 
+@eslint/config-array 
+instead
+#15 20.47 npm warn 
+deprecated 
+eslint@8.57.1: This 
+version is no longer 
+supported. Please see 
+https://eslint.org/ver
+sion-support for 
+other options.
+#15 64.13 npm warn 
+deprecated 
+next@14.0.0: This 
+version has a 
+security 
+vulnerability. Please 
+upgrade to a patched 
+version. See https://n
+extjs.org/blog/securit
+y-update-2025-12-11 
+for more details.
+#15 64.81 
+#15 64.81 added 572 
+packages, and audited 
+576 packages in 1m
+#15 64.81 
+#15 64.81 148 
+packages are looking 
+for funding
+#15 64.81   run `npm 
+fund` for details
+#15 65.00 
+#15 65.00 8 
+vulnerabilities (3 
+moderate, 4 high, 1 
+critical)
+#15 65.00 
+#15 65.00 To address 
+issues that do not 
+require attention, 
+run:
+#15 65.00   npm audit 
+fix
+#15 65.00 
+#15 65.00 To address 
+all issues (including 
+breaking changes), 
+run:
+#15 65.00   npm audit 
+fix --force
+#15 65.00 
+#15 65.00 Run `npm 
+audit` for details.
+#15 65.01 npm notice
+#15 65.01 npm notice 
+New major version of 
+npm available! 10.8.2 
+-> 11.11.0
+#15 65.01 npm notice 
+Changelog: https://git
+hub.com/npm/cli/releas
+es/tag/v11.11.0
+#15 65.01 npm notice 
+To update run: npm 
+install -g npm@11.11.0
+#15 65.01 npm notice
+#15 DONE 68.5s
+
+#16 [installer  7/14] 
+COPY --from=builder 
+/app/out/full/ .
+#16 DONE 1.0s
+
+#17 [installer  8/14] 
+COPY turbo.json 
+turbo.json
+#17 DONE 0.2s
+
+#18 [installer  9/14] 
+COPY tsconfig.json 
+tsconfig.json
+#18 DONE 0.2s
+
+#19 [installer 10/14] 
+RUN npm run build --fi
+lter=@makikibahay/fron
+tend...
+#19 0.679 
+#19 0.679 > build
+#19 0.679 > turbo run 
+build
+#19 0.679 
+#19 0.761 
+#19 0.761 Attention:
+#19 0.761 Turborepo 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#19 0.761 This 
+information is used 
+to shape the 
+Turborepo roadmap and 
+prioritize features.
+#19 0.761 You can 
+learn more, including 
+how to opt-out if 
+you'd not like to 
+participate in this 
+anonymous program, by 
+visiting the 
+following URL:
+#19 0.761 https://turb
+orepo.dev/docs/telemet
+ry
+#19 0.761 
+#19 0.761 ΓÇó turbo 
+2.7.6
+#19 0.808 ΓÇó 
+Packages in scope: @ma
+kikibahay/frontend, 
+@makikibahay/types, 
+@makikibahay/ui
+#19 0.808 ΓÇó Running 
+build in 3 packages
+#19 0.808 ΓÇó Remote 
+caching disabled
+#19 0.833 @makikibahay
+/types:build: cache 
+miss, executing 
+aedef76186614ae9
+#19 1.099 @makikibahay
+/types:build: 
+#19 1.099 @makikibahay
+/types:build: > @makik
+ibahay/types@0.1.0 
+build
+#19 1.099 @makikibahay
+/types:build: > tsc
+#19 1.099 @makikibahay
+/types:build: 
+#19 4.307 @makikibahay
+/ui:build: cache 
+miss, executing 
+96fe7a57e88c5986
+#19 4.561 @makikibahay
+/ui:build: 
+#19 4.561 @makikibahay
+/ui:build: > 
+@makikibahay/ui@0.1.0 
+build
+#19 4.561 @makikibahay
+/ui:build: > tsc
+#19 4.561 @makikibahay
+/ui:build: 
+#19 12.41 @makikibahay
+/frontend:build: 
+cache miss, executing 
+ec1502b7a8345fb2
+#19 12.66 @makikibahay
+/frontend:build: 
+#19 12.66 @makikibahay
+/frontend:build: > @ma
+kikibahay/frontend@0.1
+.0 build
+#19 12.66 @makikibahay
+/frontend:build: > 
+next build
+#19 12.66 @makikibahay
+/frontend:build: 
+#19 13.46 @makikibahay
+/frontend:build: 
+Attention: Next.js 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#19 13.46 @makikibahay
+/frontend:build: This 
+information is used 
+to shape Next.js' 
+roadmap and 
+prioritize features.
+#19 13.46 @makikibahay
+/frontend:build: You 
+can learn more, 
+including how to 
+opt-out if you'd not 
+like to participate 
+in this anonymous 
+program, by visiting 
+the following URL:
+#19 13.46 @makikibahay
+/frontend:build: https
+://nextjs.org/telemetr
+y
+#19 13.46 @makikibahay
+/frontend:build: 
+#19 13.60 @makikibahay
+/frontend:build:    
+Γû▓ Next.js 14.0.0
+#19 13.60 @makikibahay
+/frontend:build: 
+#19 13.60 @makikibahay
+/frontend:build:    
+Creating an optimized 
+production build ...
+#19 13.70 @makikibahay
+/frontend:build:  ΓÜá 
+Custom webpack 
+configuration is 
+detected. When using 
+a custom webpack 
+configuration, the 
+Webpack build worker 
+is disabled by 
+default. To force 
+enable it, set the "ex
+perimental.webpackBuil
+dWorker" option to 
+"true". Read more: htt
+ps://nextjs.org/docs/m
+essages/webpack-build-
+worker-opt-out
+#19 44.01 @makikibahay
+/frontend:build:  Γ£ô 
+Compiled successfully
+#19 44.01 @makikibahay
+/frontend:build:    
+Linting and checking 
+validity of types ...
+#19 57.23 @makikibahay
+/frontend:build:    
+Collecting page data 
+...
+#19 60.85 @makikibahay
+/frontend:build:    
+Generating static 
+pages (0/25) ...
+#19 61.42 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (6/25) 
+#19 61.45 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (12/25) 
+#19 61.60 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:    Generating 
+static pages (18/25) 
+#19 61.73 @makikibahay
+/frontend:build: 
+@makikibahay/frontend:
+build:  Γ£ô 
+Generating static 
+pages (25/25) 
+#19 61.85 @makikibahay
+/frontend:build:    
+Finalizing page 
+optimization ...
+#19 61.85 @makikibahay
+/frontend:build:    
+Collecting build 
+traces ...
+#19 62.21 @makikibahay
+/frontend:build: 
+#19 62.21 @makikibahay
+/frontend:build: 
+Route (app)           
+                   
+Size     First Load JS
+#19 62.21 @makikibahay
+/frontend:build: Γöî 
+Γùï /                 
+                   
+2.52 kB         249 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /_not-found       
+                   
+879 B          89.2 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /about            
+                   
+306 B           230 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/dashboard  
+                   
+1.55 kB         243 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/listings   
+                   
+7.97 kB         250 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/metrics    
+                   
+10.3 kB         329 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/moderation 
+                   
+6.49 kB         243 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/tickets    
+                   
+4.6 kB          241 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /admin/users      
+                   
+6.25 kB         236 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /api/auth/[...nexta
+uth]              0 B 
+               0 B
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /browse           
+                   
+4.96 kB         238 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /contact          
+                   
+4.25 kB         234 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /favorites        
+                   
+3.16 kB         250 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /inbox            
+                   
+7.79 kB         238 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /listings/[id]     
+                  
+5.99 kB         244 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /login            
+                   
+2.26 kB         243 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/dashboard  
+                   
+3.55 kB         250 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/listings/cr
+eate               
+3.26 kB         252 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+╬╗ /owner/listings/edi
+t/[id]            4.3 
+kB          258 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /owner/metrics    
+                   
+8.44 kB         327 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /payment          
+                   
+306 B           230 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /privacy          
+                   
+306 B           230 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /profile          
+                   
+4.34 kB         246 kB
+#19 62.21 @makikibahay
+/frontend:build: Γö£ 
+Γùï /signup           
+                   
+2.26 kB         243 kB
+#19 62.21 @makikibahay
+/frontend:build: Γöö 
+Γùï /survey           
+                   
+2.98 kB         244 kB
+#19 62.21 @makikibahay
+/frontend:build: + 
+First Load JS shared 
+by all            
+88.3 kB
+#19 62.21 @makikibahay
+/frontend:build:   
+Γö£ chunks/1dd3208c-c4
+30078b6830a234.js  
+53.3 kB
+#19 62.21 @makikibahay
+/frontend:build:   
+Γö£ chunks/53-55cb4cb9
+d75d425d.js        
+32.5 kB
+#19 62.21 @makikibahay
+/frontend:build:   
+Γö£ chunks/main-app-05
+c20cc0aacd47dd.js  
+236 B
+#19 62.21 @makikibahay
+/frontend:build:   
+Γöö chunks/webpack-2f5
+a744bc6d8db79.js   
+2.28 kB
+#19 62.21 @makikibahay
+/frontend:build: 
+#19 62.21 @makikibahay
+/frontend:build: 
+#19 62.21 @makikibahay
+/frontend:build: Γùï  
+(Static)   
+prerendered as static 
+HTML
+#19 62.21 @makikibahay
+/frontend:build: ╬╗  
+(Dynamic)  
+server-rendered on 
+demand using Node.js
+#19 62.21 @makikibahay
+/frontend:build: 
+#19 62.40 
+#19 62.40  Tasks:    
+3 successful, 3 total
+#19 62.40 Cached:    
+0 cached, 3 total
+#19 62.40   Time:    
+1m1.623s 
+#19 62.40 
+#19 62.40  WARNING  
+no output files found 
+for task @makikibahay/
+ui#build. Please 
+check your `outputs` 
+key in `turbo.json`
+#19 DONE 63.7s
+
+#20 [installer 11/14] 
+RUN echo "=== 
+DIAGNOSIS ==="
+#20 0.410 === 
+DIAGNOSIS ===
+#20 DONE 0.4s
+
+#21 [installer 12/14] 
+RUN ls -la /app/apps/f
+rontend/.next
+#21 0.437 total 2020
+#21 0.437 drwxr-xr-x  
+  7 root     root     
+     4096 Mar  7 
+19:18 .
+#21 0.437 drwxr-xr-x  
+  1 root     root     
+     4096 Mar  7 
+19:18 ..
+#21 0.437 -rw-r--r--  
+  1 root     root     
+       21 Mar  7 
+19:18 BUILD_ID
+#21 0.437 -rw-r--r--  
+  1 root     root     
+    13042 Mar  7 
+19:18 app-build-manife
+st.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+      897 Mar  7 
+19:18 app-path-routes-
+manifest.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+      967 Mar  7 
+19:18 
+build-manifest.json
+#21 0.437 drwxr-xr-x  
+  4 root     root     
+     4096 Mar  7 
+19:18 cache
+#21 0.437 -rw-r--r--  
+  1 root     root     
+       94 Mar  7 
+19:18 
+export-marker.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+      638 Mar  7 
+19:18 
+images-manifest.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     2719 Mar  7 
+19:18 next-minimal-ser
+ver.js.nft.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     3005 Mar  7 
+19:18 next-server.js.n
+ft.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+       20 Mar  7 
+19:17 package.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     6506 Mar  7 
+19:18 
+prerender-manifest.js
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     5696 Mar  7 
+19:18 prerender-manife
+st.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+        2 Mar  7 
+19:18 react-loadable-m
+anifest.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     5737 Mar  7 
+19:18 required-server-
+files.json
+#21 0.437 -rw-r--r--  
+  1 root     root     
+     3435 Mar  7 
+19:17 
+routes-manifest.json
+#21 0.437 drwxr-xr-x  
+  5 root     root     
+     4096 Mar  7 
+19:18 server
+#21 0.437 drwxr-xr-x  
+  3 root     root     
+     4096 Mar  7 
+19:18 standalone
+#21 0.437 drwxr-xr-x  
+  6 root     root     
+     4096 Mar  7 
+19:18 static
+#21 0.437 -rw-r--r--  
+  1 root     root     
+  1951633 Mar  7 
+19:18 trace
+#21 0.437 drwxr-xr-x  
+  3 root     root     
+     4096 Mar  7 
+19:18 types
+#21 DONE 0.5s
+
+#22 [installer 13/14] 
+RUN echo "=== 
+STANDALONE ==="
+#22 0.425 === 
+STANDALONE ===
+#22 DONE 0.5s
+
+#23 [installer 14/14] 
+RUN ls -la /app/apps/f
+rontend/.next/standalo
+ne || true
+#23 0.433 total 24
+#23 0.433 drwxr-xr-x  
+  3 root     root     
+     4096 Mar  7 
+19:18 .
+#23 0.433 drwxr-xr-x  
+  7 root     root     
+     4096 Mar  7 
+19:18 ..
+#23 0.433 drwxr-xr-x  
+  3 root     root     
+     4096 Mar  7 
+19:18 .next
+#23 0.433 -rwxr-xr-x  
+  1 root     root     
+     2355 Mar  7 
+19:18 package.json
+#23 0.433 -rw-r--r--  
+  1 root     root     
+     6043 Mar  7 
+19:18 server.js
+#23 DONE 0.5s
+
+#24 exporting to image
+#24 exporting layers
+#24 exporting layers 
+42.3s done
+#24 exporting 
+manifest sha256:9477a3
+1330a387602cd46d2e5672
+155a559640952175bc2aca
+736b06d1c0c2cc 0.0s 
+done
+#24 exporting config s
+ha256:7058d7d066ca9a62
+b9a4cc7bb161466a97d4c7
+aae5e201791679ae483de3
+3a5a 0.0s done
+#24 exporting 
+attestation manifest s
+ha256:0cbf8805e64fcde5
+38ce0b600980dad07b3b21
+68489131c18eb6d0744c4f
+21d1
+#24 exporting 
+attestation manifest s
+ha256:0cbf8805e64fcde5
+38ce0b600980dad07b3b21
+68489131c18eb6d0744c4f
+21d1 0.1s done
+#24 exporting 
+manifest list sha256:b
+94b22898410af1c23cab44
+d056f9f5f27169875ef3e2
+fee1acadf3df9bd06aa 
+0.0s done
+#24 naming to moby-dan
+gling@sha256:b94b22898
+410af1c23cab44d056f9f5
+f27169875ef3e2fee1acad
+f3df9bd06aa
+#24 naming to moby-dan
+gling@sha256:b94b22898
+410af1c23cab44d056f9f5
+f27169875ef3e2fee1acad
+f3df9bd06aa 0.0s done
+#24 unpacking to moby-
+dangling@sha256:b94b22
+898410af1c23cab44d056f
+9f5f27169875ef3e2fee1a
+cadf3df9bd06aa
+#24 unpacking to moby-
+dangling@sha256:b94b22
+898410af1c23cab44d056f
+9f5f27169875ef3e2fee1a
+cadf3df9bd06aa 44.9s 
+done
+#24 DONE 87.5s

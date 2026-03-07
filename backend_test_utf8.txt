@@ -1,0 +1,514 @@
+﻿docker : #0 building 
+with "desktop-linux" 
+instance using docker 
+driver
+At line:1 char:1
++ docker build 
+--progress=plain 
+--no-cache -t 
+temp-backend -f 
+apps/back ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (#0 buildin   
+ g wit...g docker     
+driver:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+#1 [internal] load 
+build definition from 
+Dockerfile
+#1 transferring 
+dockerfile: 1.68kB 
+done
+#1 DONE 0.0s
+
+#2 [internal] load 
+metadata for docker.io
+/library/node:20-alpin
+e
+#2 DONE 0.9s
+
+#3 [internal] load 
+.dockerignore
+#3 transferring 
+context: 476B done
+#3 DONE 0.0s
+
+#4 [internal] load 
+build context
+#4 DONE 0.0s
+
+#5 [base 1/1] FROM doc
+ker.io/library/node:20
+-alpine@sha256:b88333c
+42c23fbd91596ebd7fd10d
+e239cedab9617de04142dd
+e7315e3bc0afa
+#5 resolve docker.io/l
+ibrary/node:20-alpine@
+sha256:b88333c42c23fbd
+91596ebd7fd10de239ceda
+b9617de04142dde7315e3b
+c0afa 0.1s done
+#5 DONE 0.1s
+
+#5 [base 1/1] FROM doc
+ker.io/library/node:20
+-alpine@sha256:b88333c
+42c23fbd91596ebd7fd10d
+e239cedab9617de04142dd
+e7315e3bc0afa
+#5 CACHED
+
+#6 [runner 1/7] 
+WORKDIR /app
+#6 CACHED
+
+#4 [internal] load 
+build context
+#4 transferring 
+context: 538.72kB 
+0.5s done
+#4 DONE 0.5s
+
+#7 [runner 2/7] RUN 
+addgroup --system 
+--gid 1001 nodejs
+#7 DONE 0.6s
+
+#8 [builder 1/6] RUN 
+apk add --no-cache 
+libc6-compat
+#8 ...
+
+#9 [runner 3/7] RUN 
+adduser --system 
+--uid 1001 expressjs
+#9 DONE 0.5s
+
+#8 [builder 1/6] RUN 
+apk add --no-cache 
+libc6-compat
+#8 1.712 (1/3) 
+Installing 
+musl-obstack 
+(1.2.3-r2)
+#8 1.754 (2/3) 
+Installing 
+libucontext (1.3.3-r0)
+#8 1.794 (3/3) 
+Installing gcompat 
+(1.1.0-r4)
+#8 1.841 OK: 11.0 MiB 
+in 21 packages
+#8 DONE 1.9s
+
+#10 [builder 2/6] RUN 
+apk update
+#10 1.267 v3.23.3-257-
+g27e4d271ff9 [https://
+dl-cdn.alpinelinux.org
+/alpine/v3.23/main]
+#10 1.267 v3.23.3-259-
+g83cd25f08b2 [https://
+dl-cdn.alpinelinux.org
+/alpine/v3.23/communit
+y]
+#10 1.267 OK: 27574 
+distinct packages 
+available
+#10 DONE 1.4s
+
+#11 [builder 3/6] 
+WORKDIR /app
+#11 DONE 0.1s
+
+#12 [installer  4/11] 
+COPY .gitignore 
+.gitignore
+#12 DONE 0.2s
+
+#13 [builder 4/6] RUN 
+npm install -g turbo
+#13 5.454 
+#13 5.454 added 2 
+packages in 5s
+#13 5.457 npm notice
+#13 5.457 npm notice 
+New major version of 
+npm available! 10.8.2 
+-> 11.11.0
+#13 5.457 npm notice 
+Changelog: https://git
+hub.com/npm/cli/releas
+es/tag/v11.11.0
+#13 5.457 npm notice 
+To update run: npm 
+install -g npm@11.11.0
+#13 5.457 npm notice
+#13 DONE 5.7s
+
+#14 [builder 5/6] 
+COPY . .
+#14 DONE 8.9s
+
+#15 [builder 6/6] RUN 
+turbo prune 
+@makikibahay/backend 
+--docker
+#15 0.546  WARNING  
+No locally installed 
+`turbo` found in your 
+repository. Using 
+globally installed 
+version (2.8.14), 
+which can cause 
+unexpected behavior.
+#15 0.546 
+#15 0.546 Installing 
+the version in your 
+repository (^2.4.0) 
+before calling 
+`turbo` will result 
+in more predictable 
+behavior across 
+environments.
+#15 0.561 
+#15 0.561 Attention:
+#15 0.561 Turborepo 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#15 0.561 This 
+information is used 
+to shape the 
+Turborepo roadmap and 
+prioritize features.
+#15 0.561 You can 
+learn more, including 
+how to opt-out if 
+you'd not like to 
+participate in this 
+anonymous program, by 
+visiting the 
+following URL:
+#15 0.561 https://turb
+orepo.dev/docs/telemet
+ry
+#15 0.561 
+#15 0.561 ΓÇó turbo 
+2.8.14
+#15 0.601 Generating 
+pruned monorepo for 
+@makikibahay/backend 
+in /app/out
+#15 0.613  - Added 
+@makikibahay/backend
+#15 0.618  - Added 
+@makikibahay/types
+#15 DONE 0.7s
+
+#16 [installer  5/11] 
+COPY --from=builder 
+/app/out/json/ .
+#16 DONE 0.3s
+
+#17 [installer  6/11] 
+COPY --from=builder /a
+pp/out/package-lock.js
+on ./package-lock.json
+#17 DONE 0.4s
+
+#18 [installer  7/11] 
+RUN npm install
+#18 4.390 npm warn 
+deprecated 
+rimraf@3.0.2: Rimraf 
+versions prior to v4 
+are no longer 
+supported
+#18 5.025 npm warn 
+deprecated 
+multer@1.4.4: Multer 
+1.x is affected by 
+CVE-2022-24434. This 
+is fixed in 
+v1.4.4-lts.1 which 
+drops support for 
+versions of Node.js 
+before 6. Please 
+upgrade to at least 
+Node.js 6 and version 
+1.4.4-lts.1 of 
+Multer. If you need 
+support for older 
+versions of Node.js, 
+we are open to 
+accepting patches 
+that would fix the 
+CVE on the main 1.x 
+release line, whilst 
+maintaining 
+compatibility with 
+Node.js 0.10.
+#18 5.659 npm warn 
+deprecated 
+inflight@1.0.6: This 
+module is not 
+supported, and leaks 
+memory. Do not use 
+it. Check out 
+lru-cache if you want 
+a good and tested way 
+to coalesce async 
+requests by a key 
+value, which is much 
+more comprehensive 
+and powerful.
+#18 5.953 npm warn 
+deprecated 
+glob@7.1.7: Glob 
+versions prior to v9 
+are no longer 
+supported
+#18 7.945 npm warn 
+deprecated @humanwhoco
+des/object-schema@2.0.
+3: Use 
+@eslint/object-schema 
+instead
+#18 7.989 npm warn 
+deprecated @humanwhoco
+des/config-array@0.13.
+0: Use 
+@eslint/config-array 
+instead
+#18 9.480 npm warn 
+deprecated 
+eslint@8.57.1: This 
+version is no longer 
+supported. Please see 
+https://eslint.org/ver
+sion-support for 
+other options.
+#18 12.41 
+#18 12.41 added 318 
+packages, and audited 
+321 packages in 12s
+#18 12.41 
+#18 12.41 54 packages 
+are looking for 
+funding
+#18 12.41   run `npm 
+fund` for details
+#18 12.42 
+#18 12.42 7 
+vulnerabilities (1 
+low, 1 moderate, 5 
+high)
+#18 12.42 
+#18 12.42 To address 
+issues that do not 
+require attention, 
+run:
+#18 12.42   npm audit 
+fix
+#18 12.42 
+#18 12.42 To address 
+all issues (including 
+breaking changes), 
+run:
+#18 12.42   npm audit 
+fix --force
+#18 12.42 
+#18 12.42 Run `npm 
+audit` for details.
+#18 12.42 npm notice
+#18 12.42 npm notice 
+New major version of 
+npm available! 10.8.2 
+-> 11.11.0
+#18 12.42 npm notice 
+Changelog: https://git
+hub.com/npm/cli/releas
+es/tag/v11.11.0
+#18 12.42 npm notice 
+To update run: npm 
+install -g npm@11.11.0
+#18 12.42 npm notice
+#18 DONE 14.8s
+
+#19 [installer  8/11] 
+COPY --from=builder 
+/app/out/full/ .
+#19 DONE 0.3s
+
+#20 [installer  9/11] 
+COPY turbo.json 
+turbo.json
+#20 DONE 0.2s
+
+#21 [installer 10/11] 
+COPY tsconfig.json 
+tsconfig.json
+#21 DONE 0.1s
+
+#22 [installer 11/11] 
+RUN npm run build --fi
+lter=@makikibahay/back
+end...
+#22 0.640 
+#22 0.640 > build
+#22 0.640 > turbo run 
+build
+#22 0.640 
+#22 0.723 
+#22 0.723 Attention:
+#22 0.723 Turborepo 
+now collects 
+completely anonymous 
+telemetry regarding 
+usage.
+#22 0.723 This 
+information is used 
+to shape the 
+Turborepo roadmap and 
+prioritize features.
+#22 0.723 You can 
+learn more, including 
+how to opt-out if 
+you'd not like to 
+participate in this 
+anonymous program, by 
+visiting the 
+following URL:
+#22 0.723 https://turb
+orepo.dev/docs/telemet
+ry
+#22 0.723 
+#22 0.724 ΓÇó turbo 
+2.7.6
+#22 0.756 ΓÇó 
+Packages in scope: 
+@makikibahay/backend, 
+@makikibahay/types
+#22 0.756 ΓÇó Running 
+build in 2 packages
+#22 0.756 ΓÇó Remote 
+caching disabled
+#22 0.768 @makikibahay
+/types:build: cache 
+miss, executing 
+aedef76186614ae9
+#22 1.035 @makikibahay
+/types:build: 
+#22 1.035 @makikibahay
+/types:build: > @makik
+ibahay/types@0.1.0 
+build
+#22 1.035 @makikibahay
+/types:build: > tsc
+#22 1.035 @makikibahay
+/types:build: 
+#22 4.400 @makikibahay
+/backend:build: cache 
+miss, executing 
+97be1959b4cae56b
+#22 4.679 @makikibahay
+/backend:build: 
+#22 4.679 @makikibahay
+/backend:build: > @mak
+ikibahay/backend@0.1.0
+ build
+#22 4.679 @makikibahay
+/backend:build: > tsc
+#22 4.679 @makikibahay
+/backend:build: 
+#22 10.54 
+#22 10.54  Tasks:    
+2 successful, 2 total
+#22 10.54 Cached:    
+0 cached, 2 total
+#22 10.54   Time:    
+9.808s 
+#22 10.54 
+#22 DONE 11.1s
+
+#23 [runner 4/7] COPY 
+--from=installer /app/
+apps/backend/package.j
+son ./apps/backend/pac
+kage.json
+#23 DONE 0.2s
+
+#24 [runner 5/7] COPY 
+--from=installer /app/
+apps/backend/dist 
+./apps/backend/dist
+#24 DONE 0.2s
+
+#25 [runner 6/7] COPY 
+--from=installer 
+/app/node_modules 
+./node_modules
+#25 DONE 3.6s
+
+#26 [runner 7/7] COPY 
+--from=installer /app/
+apps/backend/node_modu
+le[s] ./apps/backend/n
+ode_modules
+#26 DONE 0.2s
+
+#27 exporting to image
+#27 exporting layers
+#27 exporting layers 
+7.1s done
+#27 exporting 
+manifest sha256:02309e
+142c186e4d2d518a604062
+b8967eabc3dc2761c9616d
+87b22cebebf24b 0.0s 
+done
+#27 exporting config s
+ha256:2fe2b432c572531b
+e2a9ffe3d5e00f78765636
+9ffc70152c1d093d1cae27
+251b 0.1s done
+#27 exporting 
+attestation manifest s
+ha256:5178ef7f6a368a9f
+a267cfc3c939e18d01e48d
+f4637dd64823f1c85cbec5
+321e 0.1s done
+#27 exporting 
+manifest list sha256:c
+03b0eb97bd69563e1f0fd1
+7c7574007a5da0294d23bc
+fd524ddb7f1f6aaadc4
+#27 exporting 
+manifest list sha256:c
+03b0eb97bd69563e1f0fd1
+7c7574007a5da0294d23bc
+fd524ddb7f1f6aaadc4 
+0.1s done
+#27 naming to docker.i
+o/library/temp-backend
+:latest done
+#27 unpacking to docke
+r.io/library/temp-back
+end:latest
+#27 unpacking to docke
+r.io/library/temp-back
+end:latest 6.3s done
+#27 DONE 13.7s

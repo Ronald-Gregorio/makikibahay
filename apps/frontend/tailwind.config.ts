@@ -1,4 +1,4 @@
-import type {Config} from 'tailwindcss';
+import type { Config } from 'tailwindcss';
 
 export default {
   darkMode: ['class'],
@@ -6,6 +6,7 @@ export default {
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    '../../packages/ui/src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -22,7 +23,7 @@ export default {
         border: '#464646', // rgb(70,70,70)
         'primary-text': '#bdbdbd', // rgb(189,189,189)
         accent: '#a9714b', // rgb(169,113,75)
-        
+
         // Aliases for existing shadcn components
         foreground: '#bdbdbd',
         card: '#32393d',

@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
 const nextConfig = {
+  output: 'standalone',
   transpilePackages: ['@makikibahay/types', '@makikibahay/ui', '@makikibahay/utils'],
   reactStrictMode: true,
   images: {
@@ -22,6 +24,7 @@ const nextConfig = {
     return config;
   },
   experimental: {
+    outputFileTracingRoot: path.join(__dirname, '../../'),
     serverComponentsExternalPackages: ['@makikibahay/ui']
   },
   async rewrites() {
