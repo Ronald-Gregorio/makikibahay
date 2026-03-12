@@ -1,9 +1,9 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
-import { Badge } from '@makikibahay/ui';
+import { useAuth } from '@/hooks/use-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
+import { Badge } from '@/components/ui/index';
 import { MapPin, BedDouble, Wifi, Car } from 'lucide-react';
 import type { Listing } from '@makikibahay/types';
 
@@ -12,8 +12,8 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing }: ListingCardProps) {
-  const { data: session } = useSession();
-  
+  const { user } = useAuth();
+
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="p-0">
@@ -53,7 +53,7 @@ export function ListingCard({ listing }: ListingCardProps) {
             ))}
           </div>
         </div>
-        {session && (
+        {user && (
           <div className="pt-4 flex gap-2">
             <Button size="sm" className="w-full">
               View Details

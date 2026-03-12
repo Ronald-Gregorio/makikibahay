@@ -2,60 +2,68 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
-import { Badge } from "@makikibahay/ui";
-import { Button } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/index";
+import { Badge } from "@/components/ui/index";
+import { Button } from "@/components/ui/index";
 import { Edit, Trash2, BedDouble, CheckCircle, Pencil, Cuboid, Pin, File, Database, Search, MoreHorizontal, EyeOff, BookMarked } from "lucide-react";
 import Link from "next/link";
-import { listings as initialListingsData } from "@/lib/mock-data";
+import { listingService } from "@/services/api/listings";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@makikibahay/ui";
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/index";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose
-} from "@makikibahay/ui";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+    DialogClose
+} from "@/components/ui/index";
 import Image from "next/image";
 import { Listing, Room } from "@/lib/types";
-import { Separator } from "@makikibahay/ui";
-import { ScrollArea } from "@makikibahay/ui";
+import { Separator } from "@/components/ui/index";
+import { ScrollArea } from "@/components/ui/index";
 import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
-import { Input } from "@makikibahay/ui";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
-import { Checkbox } from "@makikibahay/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/index";
+import { Input } from "@/components/ui/index";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/index";
+import { Checkbox } from "@/components/ui/index";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ListingsManagementPage() {
-    const [listings, setListings] = useState<Listing[]>(initialListingsData);
-    const [filteredListings, setFilteredListings] = useState<Listing[]>(initialListingsData);
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
     const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
-    
+    const [loading, setLoading] = useState(true);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const { toast } = useToast();
 
-     useEffect(() => {
+    useEffect(() => {
+        listingService.getAll()
+            .then(data => setListings(data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         let result = listings;
-        
+
         // Filter by search query (name or address)
         if (searchQuery) {
-            result = result.filter(listing => 
+            result = result.filter(listing =>
                 listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 listing.address.toLowerCase().includes(searchQuery.toLowerCase())
             );
@@ -65,7 +73,7 @@ export default function ListingsManagementPage() {
         if (statusFilter !== 'all') {
             // For now, all listings are 'Active'. This is a placeholder.
             if (statusFilter === 'Active') {
-                result = result.filter(listing => true); 
+                result = result.filter(listing => true);
             } else {
                 result = [];
             }
@@ -93,13 +101,13 @@ export default function ListingsManagementPage() {
 
     const handleBulkUnpublish = () => {
         // Mock implementation
-        toast({ title: "Bulk Action", description: `${selectedListingIds.length} listings have been unpublished.`});
+        toast({ title: "Bulk Action", description: `${selectedListingIds.length} listings have been unpublished.` });
         setSelectedListingIds([]);
     }
 
     const handleBulkDelete = () => {
         setListings(prev => prev.filter(l => !selectedListingIds.includes(l.id.toString())));
-        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedListingIds.length} listings have been deleted.`});
+        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedListingIds.length} listings have been deleted.` });
         setSelectedListingIds([]);
     }
 
@@ -113,20 +121,20 @@ export default function ListingsManagementPage() {
             </header>
 
             <Card className="mb-6">
-                 <CardHeader>
+                <CardHeader>
                     <CardTitle>Filters & Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row items-center gap-4">
-                     <div className="relative w-full flex-grow">
+                    <div className="relative w-full flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search by name or address..." 
+                        <Input
+                            placeholder="Search by name or address..."
                             className="pl-10"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                     <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Filter by status..." />
                         </SelectTrigger>
@@ -152,7 +160,7 @@ export default function ListingsManagementPage() {
                                     <EyeOff className="mr-2 h-4 w-4" />
                                     Unpublish Selected
                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => {}}>
+                                <DropdownMenuItem onClick={() => { }}>
                                     <BookMarked className="mr-2 h-4 w-4" />
                                     Feature Selected
                                 </DropdownMenuItem>
@@ -173,15 +181,15 @@ export default function ListingsManagementPage() {
                     <CardDescription>{filteredListings.length} of {listings.length} listings shown.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <Table>
+                    <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[50px]">
-                                     <Checkbox 
+                                    <Checkbox
                                         checked={selectedListingIds.length > 0 && selectedListingIds.length === filteredListings.length}
                                         onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                         aria-label="Select all"
-                                     />
+                                    />
                                 </TableHead>
                                 <TableHead>Listing</TableHead>
                                 <TableHead>Owner</TableHead>
@@ -190,16 +198,21 @@ export default function ListingsManagementPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                            {loading && (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center py-4">Loading...</TableCell>
+                                </TableRow>
+                            )}
                             {filteredListings.map(listing => (
-                                <ListingRow 
-                                    key={listing.id} 
-                                    listing={listing} 
+                                <ListingRow
+                                    key={listing.id}
+                                    listing={listing}
                                     isSelected={selectedListingIds.includes(listing.id.toString())}
                                     onSelectRow={handleSelectRow}
                                 />
                             ))}
                         </TableBody>
-                   </Table>
+                    </Table>
                 </CardContent>
             </Card>
         </>
@@ -227,21 +240,21 @@ function ThreeDModelView({ room }: { room: Room }) {
                     <CardDescription>Information about the 3D asset.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
-                     <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                         <Pin className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="font-semibold">Checkpoints</p>
                             <p className="text-muted-foreground">5 (mock data)</p>
                         </div>
                     </div>
-                     <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                         <File className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="font-semibold">File Type</p>
                             <p className="text-muted-foreground">.glb (mock data)</p>
                         </div>
                     </div>
-                     <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                         <Database className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="font-semibold">File Size</p>
@@ -259,7 +272,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
     const [selectedRoomId, setSelectedRoomId] = useState<string | undefined>(
         roomsWith3d[0]?.room_id.toString()
     );
-    
+
     const selectedRoom = roomsWith3d.find(room => room.room_id.toString() === selectedRoomId);
 
     return (
@@ -294,7 +307,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                         </Link>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -323,16 +336,16 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                             <h4 className="font-semibold mb-2">Photos</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                                 {listing.photos.map((photo) => (
-                                <div key={photo.photo_id} className="aspect-square relative">
-                                    <Image
-                                        src={photo.url}
-                                        alt={`${listing.name} photo`}
-                                        fill
-                                        objectFit="cover"
-                                        className="rounded-md"
-                                        data-ai-hint="apartment interior"
-                                    />
-                                </div>
+                                    <div key={photo.photo_id} className="aspect-square relative">
+                                        <Image
+                                            src={photo.url}
+                                            alt={`${listing.name} photo`}
+                                            fill
+                                            objectFit="cover"
+                                            className="rounded-md"
+                                            data-ai-hint="apartment interior"
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -353,7 +366,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                                 <TableBody>
                                     {listing.rooms.map(room => (
                                         <TableRow key={room.room_id}>
-                                            <TableCell className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-muted-foreground"/>{room.type}</TableCell>
+                                            <TableCell className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-muted-foreground" />{room.type}</TableCell>
                                             <TableCell className="font-semibold">₱{room.price.toLocaleString()}</TableCell>
                                             <TableCell>{room.inclusions.join(', ')}</TableCell>
                                             <TableCell>
@@ -368,7 +381,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                         </div>
 
                         <Separator />
-                        
+
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold">3D Models</h4>
@@ -395,17 +408,17 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                                 </div>
                             )}
                         </div>
-                        
+
                         <Separator />
 
                         <div>
                             <h4 className="font-semibold mb-2">House Rules</h4>
-                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {listing.rules.map((rule, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                    <span>{rule}</span>
-                                </div>
+                                    <div key={index} className="flex items-center gap-2">
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        <span>{rule}</span>
+                                    </div>
                                 ))}
                             </div>
                         </div>

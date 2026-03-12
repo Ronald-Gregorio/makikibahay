@@ -5,21 +5,26 @@ import { useRouter, useParams, notFound } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Button } from '@makikibahay/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@makikibahay/ui';
-import { Label } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
-import { Textarea } from '@makikibahay/ui';
-import { Checkbox } from '@makikibahay/ui';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/index';
+import { Label } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
+import { Textarea } from '@/components/ui/index';
+import { Checkbox } from '@/components/ui/index';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/index';
 import { PlusCircle, Trash2, Upload, EyeOff, Eye, Cuboid } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { listings } from '@/lib/mock-data';
+import { listingService } from '@/services/api/listings';
 import Image from 'next/image';
-import type { ListingPhoto } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Separator } from '@makikibahay/ui';
+import { Separator } from '@/components/ui/index';
+import dynamic from 'next/dynamic';
+
+const LocationPickerMap = dynamic(() => import('@/components/LocationPickerMap'), {
+  ssr: false,
+  loading: () => <div className="h-[400px] w-full bg-slate-100 animate-pulse rounded-lg" />
+});
 
 const roomSchema = z.object({
   type: z.string().min(1, 'Room type is required'),
@@ -32,6 +37,10 @@ const roomSchema = z.object({
 const listingFormSchema = z.object({
   name: z.string().min(3, 'Listing name must be at least 3 characters.'),
   address: z.string().min(10, 'Please enter a full address.'),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number()
+  }).optional(),
   rules: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one rule.",
   }),
@@ -49,10 +58,18 @@ function EditListingContent() {
   const { toast } = useToast();
 
   const listingId = parseInt(params.id as string, 10);
-  const existingListing = listings.find(l => l.id === listingId);
+  const [existingListing, setExistingListing] = useState<any>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
 
-  // State to manage photos
-  const [photos, setPhotos] = useState<ListingPhoto[]>(existingListing?.photos || []);
+  useEffect(() => {
+    listingService.getById(listingId)
+      .then(data => {
+        setExistingListing(data);
+        setPhotos((data as any).photos || []);
+      })
+      .catch(console.error);
+  }, [listingId]);
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -70,15 +87,19 @@ function EditListingContent() {
         name: existingListing.name,
         address: existingListing.address,
         rules: existingListing.rules,
-        rooms: existingListing.rooms.map(r => ({
+        location: existingListing.location?.coordinates ? {
+          lat: existingListing.location.coordinates[1],
+          lng: existingListing.location.coordinates[0]
+        } : { lat: 15.4865, lng: 120.9734 },
+        rooms: existingListing.rooms.map((r: any) => ({
           type: r.type,
           price: r.price,
           inclusions: r.inclusions.join(', '),
-          is_available: r.is_available,
-          model_3d_url: r.model_3d_url,
+          is_available: r.isAvailable ?? r.is_available,
+          model_3d_url: r.model3dUrl ?? r.model_3d_url,
         })),
       });
-      setPhotos(existingListing.photos);
+      setPhotos(existingListing.photos || []);
     }
   }, [existingListing, form]);
 
@@ -101,50 +122,71 @@ function EditListingContent() {
     )
   }
 
-  function onSubmit(data: ListingFormValues) {
-    // In a real app, this would be an API call to update the listing
-    const listingIndex = listings.findIndex(l => l.id === listingId);
-    if (listingIndex !== -1) {
-      const updatedListing = {
-        ...listings[listingIndex],
+  async function onSubmit(data: ListingFormValues) {
+    try {
+      const payload: any = {
         name: data.name,
         address: data.address,
         rules: data.rules,
-        photos: photos, // Use the state for photos
-        total_rooms: data.rooms.length,
-        available_rooms: data.rooms.filter(r => r.is_available).length,
-        price_min: Math.min(...data.rooms.map(r => r.price)),
-        price_max: Math.max(...data.rooms.map(r => r.price)),
-        updated_at: new Date().toISOString(),
+        photos: photos,
         rooms: data.rooms.map((room) => ({
-          // Keep existing room IDs if possible, or generate new ones
-          ...listings[listingIndex].rooms.find(r => r.type === room.type)!,
           type: room.type,
           price: room.price,
-          inclusions: room.inclusions.split(',').map(s => s.trim()),
-          is_available: room.is_available,
-          model_3d_url: room.model_3d_url,
+          inclusions: room.inclusions.split(',').map((s: string) => s.trim()),
+          isAvailable: room.is_available,
+          model3dUrl: room.model_3d_url,
         })),
       };
-      listings[listingIndex] = updatedListing;
+
+      if (data.location) {
+        payload.location = {
+          type: 'Point',
+          coordinates: [data.location.lng, data.location.lat]
+        };
+      }
+
+      await listingService.update(listingId, payload);
+
+      toast({
+        title: 'Listing Updated!',
+        description: `${data.name} has been successfully updated.`,
+      });
+      router.push(user?.role === 'admin' ? '/admin/listings' : '/owner/dashboard');
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update listing.',
+      });
     }
-
-    toast({
-      title: 'Listing Updated!',
-      description: `${data.name} has been successfully updated.`,
-    });
-    router.push(user?.role === 'admin' ? '/admin/listings' : '/owner/dashboard');
   }
 
-  const handleDeletePhoto = (photoId: number) => {
-    setPhotos(photos.filter(p => p.photo_id !== photoId));
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setIsPhotoUploading(true);
+      const files = Array.from(e.target.files);
+      const fileReaders = files.map(file => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = error => reject(error);
+        });
+      });
+
+      Promise.all(fileReaders).then(base64Images => {
+        setPhotos([...photos, ...base64Images]);
+        setIsPhotoUploading(false);
+      }).catch(err => {
+        setIsPhotoUploading(false);
+        toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not process images.' });
+      });
+    }
+  };
+
+  const handleDeletePhoto = (indexToRemove: number) => {
+    setPhotos(photos.filter((_, i) => i !== indexToRemove));
     toast({ title: 'Photo removed', description: 'The photo will be deleted upon saving.' });
-  }
-
-  const toggleHidePhoto = (photoId: number) => {
-    setPhotos(photos.map(p => p.photo_id === photoId ? { ...p, is_hidden: !p.is_hidden } : p));
-    const photo = photos.find(p => p.photo_id === photoId);
-    toast({ title: photo?.is_hidden ? 'Photo un-hidden' : 'Photo hidden', description: `The photo's visibility will be updated upon saving.` });
   }
 
   return (
@@ -269,33 +311,33 @@ function EditListingContent() {
               <div className="space-y-6">
                 <h3 className="font-semibold text-lg">Photos</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {photos.map(photo => (
-                    <Card key={photo.photo_id} className="group relative aspect-square overflow-hidden">
+                  {photos.map((photoUrl, idx) => (
+                    <Card key={idx} className="group relative aspect-square overflow-hidden bg-muted">
                       <Image
-                        src={photo.url}
+                        src={photoUrl}
                         alt="Listing photo"
                         fill
-                        className={cn("object-cover transition-transform group-hover:scale-105", photo.is_hidden && "opacity-50")}
+                        className={cn("object-cover transition-transform group-hover:scale-105")}
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => toggleHidePhoto(photo.photo_id)}>
-                          {photo.is_hidden ? <Eye className="h-5 w-5 text-white" /> : <EyeOff className="h-5 w-5 text-white" />}
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeletePhoto(photo.photo_id)}>
+                        <Button type="button" variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeletePhoto(idx)}>
                           <Trash2 className="h-5 w-5 text-white" />
                         </Button>
                       </div>
-                      {photo.is_hidden && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <EyeOff className="h-8 w-8 text-white" />
-                        </div>
-                      )}
                     </Card>
                   ))}
-                  <button type="button" className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-muted-foreground/30 rounded-lg text-center hover:bg-muted/50 transition-colors">
+                  <div className="relative flex flex-col items-center justify-center aspect-square border-2 border-dashed border-muted-foreground/30 rounded-lg text-center hover:bg-muted/50 transition-colors cursor-pointer overflow-hidden">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      title="Drag and drop or click to upload"
+                    />
                     <Upload className="h-8 w-8 text-muted-foreground" />
-                    <span className="mt-2 text-sm text-muted-foreground">Upload Photo</span>
-                  </button>
+                    <span className="mt-2 text-sm text-muted-foreground">{isPhotoUploading ? "Processing..." : "Upload Photo"}</span>
+                  </div>
                 </div>
               </div>
 

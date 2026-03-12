@@ -4,6 +4,7 @@ import { UserRole, AccommodationType } from '@makikibahay/types';
 export interface IUser extends Document {
     email: string;
     name: string;
+    password?: string;
     role: UserRole;
     avatar?: string;
     preferences?: {
@@ -26,6 +27,7 @@ export interface IUser extends Document {
 const UserSchema: Schema = new Schema({
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
+    password: { type: String },
     role: { type: String, enum: ['user', 'owner', 'admin'], default: 'user' },
     avatar: { type: String },
     preferences: {
@@ -35,8 +37,8 @@ const UserSchema: Schema = new Schema({
         priceMax: { type: Number },
         amenities: [{ type: String }],
         location: {
-            type: { type: String, enum: ['Point'], default: 'Point' },
-            coordinates: { type: [Number], default: [0, 0] }
+            type: { type: String, enum: ['Point'] },
+            coordinates: { type: [Number] }
         },
         proximityMinutes: { type: Number, enum: [5, 10, 15], default: 10 }
     },

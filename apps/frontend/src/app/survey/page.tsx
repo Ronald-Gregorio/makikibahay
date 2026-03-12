@@ -3,18 +3,24 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@makikibahay/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@makikibahay/ui';
-import { Progress } from '@makikibahay/ui';
-import { Label } from '@makikibahay/ui';
-import { RadioGroup, RadioGroupItem } from '@makikibahay/ui';
-import { Checkbox } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/index';
+import { Progress } from '@/components/ui/index';
+import { Label } from '@/components/ui/index';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/index';
+import { Checkbox } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
 import { MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import type { SurveyData } from '@/lib/types';
+import dynamic from 'next/dynamic';
+
+const Map = dynamic(() => import('@/components/Map'), {
+  ssr: false,
+  loading: () => <div className="aspect-video w-full bg-slate-100 animate-pulse rounded-lg" />
+});
 
 
 const totalSteps = 6;
@@ -35,7 +41,7 @@ export default function SurveyPage() {
   const router = useRouter();
   const { user, saveSurveyData } = useAuth();
   const { toast } = useToast();
-  
+
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<'student' | 'worker'>('student');
   const [accommodationTypes, setAccommodationTypes] = useState<string[]>([]);
@@ -48,7 +54,7 @@ export default function SurveyPage() {
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
-  
+
   const handleAccommodationTypeChange = (checked: boolean, type: string) => {
     if (checked) {
       setAccommodationTypes((prev) => [...prev, type]);
@@ -56,7 +62,7 @@ export default function SurveyPage() {
       setAccommodationTypes((prev) => prev.filter((t) => t !== type));
     }
   };
-  
+
   const handleAmenityChange = (checked: boolean, amenityLabel: string) => {
     if (checked) {
       setAmenities((prev) => [...prev, amenityLabel]);
@@ -67,29 +73,29 @@ export default function SurveyPage() {
 
   const handleSubmit = () => {
     if (!user) {
-        toast({
-            variant: 'destructive',
-            title: 'Please Log In',
-            description: 'You must be logged in to save your preferences and see recommendations.'
-        });
-        router.push('/login');
-        return;
+      toast({
+        variant: 'destructive',
+        title: 'Please Log In',
+        description: 'You must be logged in to save your preferences and see recommendations.'
+      });
+      router.push('/login');
+      return;
     }
 
     const surveyData: SurveyData = {
-        userType,
-        accommodationType: accommodationTypes,
-        priceRange,
-        amenities,
-        location,
-        walkingDistance
+      userType,
+      accommodationType: accommodationTypes,
+      priceRange,
+      amenities,
+      location,
+      walkingDistance
     };
 
     saveSurveyData(surveyData);
 
     toast({
-        title: 'Preferences Saved!',
-        description: 'We are now finding the best matches for you.'
+      title: 'Preferences Saved!',
+      description: 'We are now finding the best matches for you.'
     });
 
     router.push('/browse');
@@ -124,13 +130,13 @@ export default function SurveyPage() {
               <h3 className="font-semibold text-lg">What type of accommodation are you looking for?</h3>
               <div className="grid grid-cols-2 gap-4">
                 {accommodationTypeOptions.map((type) => {
-                    const typeId = type.toLowerCase().replace(/ /g, '_');
-                    return (
-                        <div key={typeId} className="flex items-center space-x-2">
-                            <Checkbox id={typeId} onCheckedChange={(checked) => handleAccommodationTypeChange(!!checked, type)} checked={accommodationTypes.includes(type)} />
-                            <Label htmlFor={typeId} className="font-normal">{type}</Label>
-                        </div>
-                    )
+                  const typeId = type.toLowerCase().replace(/ /g, '_');
+                  return (
+                    <div key={typeId} className="flex items-center space-x-2">
+                      <Checkbox id={typeId} onCheckedChange={(checked) => handleAccommodationTypeChange(!!checked, type)} checked={accommodationTypes.includes(type)} />
+                      <Label htmlFor={typeId} className="font-normal">{type}</Label>
+                    </div>
+                  )
                 })}
               </div>
             </div>
@@ -151,8 +157,8 @@ export default function SurveyPage() {
                   />
                 </div>
                 <div className="flex-1 space-y-2">
-                   <Label htmlFor="max-price">Max Price</Label>
-                   <Input
+                  <Label htmlFor="max-price">Max Price</Label>
+                  <Input
                     id="max-price"
                     type="number"
                     placeholder="e.g., 8000"
@@ -182,30 +188,30 @@ export default function SurveyPage() {
               <h3 className="font-semibold text-lg">Where is your "home base"?</h3>
               <p className="text-muted-foreground">Pin a location on the map (like your school or workplace) to find nearby places.</p>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
                 <Input placeholder="Search for a location..." className="pl-10" value={location} onChange={(e) => setLocation(e.target.value)} />
               </div>
-              <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Interactive Map Placeholder</p>
+              <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden relative z-0">
+                <Map center={[15.4865, 120.9734]} zoom={13} />
               </div>
             </div>
           )}
-           {step === 6 && (
+          {step === 6 && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <h3 className="font-semibold text-lg">How far are you willing to walk?</h3>
-               <RadioGroup value={walkingDistance} onValueChange={(v: '5' | '10' | '15') => setWalkingDistance(v)} className="space-y-2">
-                 <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="5" id="5min" />
-                    <Label htmlFor="5min">5 minutes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="10" id="10min" />
-                    <Label htmlFor="10min">10 minutes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="15" id="15min" />
-                    <Label htmlFor="15min">15 minutes</Label>
-                  </div>
+              <RadioGroup value={walkingDistance} onValueChange={(v: '5' | '10' | '15') => setWalkingDistance(v)} className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="5" id="5min" />
+                  <Label htmlFor="5min">5 minutes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="10" id="10min" />
+                  <Label htmlFor="10min">10 minutes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="15" id="15min" />
+                  <Label htmlFor="15min">15 minutes</Label>
+                </div>
               </RadioGroup>
             </div>
           )}
@@ -215,17 +221,17 @@ export default function SurveyPage() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="flex items-center gap-4">
-             <Link href="/browse" passHref>
-                <Button variant="link" className="text-white">Skip & Browse</Button>
+            <Link href="/browse" passHref>
+              <Button variant="link" className="text-white">Skip & Browse</Button>
             </Link>
             {step < totalSteps ? (
               <Button onClick={nextStep} className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-                <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Find Recommendations
-                </Button>
+              <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                Find Recommendations
+              </Button>
             )}
           </div>
         </CardFooter>

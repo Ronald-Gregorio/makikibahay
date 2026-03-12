@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
-import { Button } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
+import { Button } from "@/components/ui/index";
 import { User, Home, Shield, BarChart2, FileText, Ticket } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";

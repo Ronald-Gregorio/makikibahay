@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@makikibahay/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Badge } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
+import { Badge } from '@/components/ui/index';
 import { GraduationCap, Briefcase, Home, Wifi, Car, Heart, MapPin } from 'lucide-react';
 import type { UserPreferences } from '@makikibahay/types';
 

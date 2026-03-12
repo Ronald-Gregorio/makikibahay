@@ -1,15 +1,29 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import { listings } from '@/lib/mock-data';
 import { PropertyCard } from '@/components/property-card';
 import { HeartCrack, LogIn } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { useEffect, useState } from 'react';
+import { userService } from '@/services/api/users';
+import type { Listing } from '@/lib/types';
 
 export default function FavoritesPage() {
-  const { user, favorites } = useAuth();
-  const favoriteListings = listings.filter((listing) => favorites.includes(listing.id));
+  const { user } = useAuth();
+  const [favoriteListings, setFavoriteListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      userService.getFavorites()
+        .then(data => setFavoriteListings(data))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -18,10 +32,10 @@ export default function FavoritesPage() {
         <h1 className="text-3xl font-bold font-headline mt-4">Please Log In</h1>
         <p className="text-muted-foreground mt-2">You need to be logged in to view your favorites.</p>
         <Button asChild className="mt-6">
-            <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4"/>
-                Log In
-            </Link>
+          <Link href="/login">
+            <LogIn className="mr-2 h-4 w-4" />
+            Log In
+          </Link>
         </Button>
       </div>
     );

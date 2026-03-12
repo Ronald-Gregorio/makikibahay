@@ -1,25 +1,27 @@
 'use client';
 
-import { useSession, signIn, signOut } from 'next-auth/react';
-import { Button } from '@makikibahay/ui';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/index';
 import { LogIn, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AuthButtons() {
-  const { data: session, status } = useSession();
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
 
-  if (status === 'loading') {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (session) {
+  if (user) {
     return (
       <div className="flex items-center gap-4">
         <span className="text-sm text-muted-foreground">
-          Welcome, {session.user?.name}
+          Welcome, {user?.name}
         </span>
         <Button
           variant="outline"
-          onClick={() => signOut()}
+          onClick={() => logout()}
           className="text-sm"
         >
           Sign Out
@@ -31,13 +33,13 @@ export default function AuthButtons() {
   return (
     <div className="flex gap-4">
       <Button
-        onClick={() => signIn('google', {}, { prompt: 'select_account' })}
+        onClick={() => router.push('/login')}
         className="bg-accent hover:bg-accent/90 text-accent-foreground"
       >
         <LogIn className="mr-2 h-4 w-4" />
-        Sign In with Google
+        Log In
       </Button>
-      <Button variant="outline" className="text-sm">
+      <Button onClick={() => router.push('/signup')} variant="outline" className="text-sm">
         <UserPlus className="mr-2 h-4 w-4" />
         Sign Up
       </Button>

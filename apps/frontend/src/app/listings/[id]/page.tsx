@@ -3,23 +3,24 @@
 import { useState, Suspense, useEffect } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@makikibahay/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Badge } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
-import { Separator } from '@makikibahay/ui';
-import { Avatar, AvatarFallback, AvatarImage } from '@makikibahay/ui';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/index';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
+import { Badge } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
+import { Separator } from '@/components/ui/index';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/index';
 import { MapPin, BedDouble, Cuboid, CheckCircle, Star, MessageSquare, Phone, ExternalLink, Send, ShieldAlert } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@makikibahay/ui';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@makikibahay/ui';
-import { useSession } from 'next-auth/react';
-import { Textarea } from '@makikibahay/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/index';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/index';
+import { Textarea } from '@/components/ui/index';
+import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '@makikibahay/ui';
-import { Label } from '@makikibahay/ui';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@makikibahay/ui';
+import { Input } from '@/components/ui/index';
+import { Label } from '@/components/ui/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/index';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
+import { listingService } from '@/services/api/listings';
 
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
@@ -50,7 +51,7 @@ interface Review {
   createdAt: string;
 }
 
-interface Listing {
+interface LocalListing {
   _id: string;
   name: string;
   address: string;
@@ -96,8 +97,7 @@ function ReportDialog({ reportedEntityName, reportedEntityType }: { reportedEnti
 }
 
 function ReviewForm({ listingId, onReviewSubmit }: { listingId: string, onReviewSubmit: (newReview: Review) => void }) {
-  const { data: session } = useSession();
-  const user = session?.user;
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -119,7 +119,7 @@ function ReviewForm({ listingId, onReviewSubmit }: { listingId: string, onReview
 
       const reviewWithUser = {
         ...newReview,
-        userId: { _id: user.id, name: user.name || 'User', avatar: user.image || '' }
+        userId: { _id: user.id, name: user.name || 'User', avatar: '' }
       };
 
       onReviewSubmit(reviewWithUser);
@@ -165,19 +165,17 @@ function ListingDetailContent() {
   const params = useParams();
   const router = useRouter();
   const listingId = params.id as string;
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const loadingAuth = status === 'loading';
+  const { user, loading: loadingAuth } = useAuth();
   const { toast } = useToast();
 
-  const [listing, setListing] = useState<Listing | null>(null);
+  const [listing, setListing] = useState<LocalListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const data = await api.get<Listing>(`/listings/${listingId}`);
+        const data = await listingService.getById(listingId) as unknown as LocalListing;
         setListing(data);
       } catch (error) {
         console.error("Error fetching listing:", error);

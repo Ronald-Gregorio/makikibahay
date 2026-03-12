@@ -1,0 +1,5 @@
+﻿   Γû▓ Next.js 14.0.0
+   - Local:        http://localhost:3002
+   - Network:      http://0.0.0.0:3002
+
+ Γ£ô Ready in 143ms

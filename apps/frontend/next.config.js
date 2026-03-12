@@ -2,7 +2,7 @@
 const path = require('path');
 const nextConfig = {
   output: 'standalone',
-  transpilePackages: ['@makikibahay/types', '@makikibahay/ui', '@makikibahay/utils'],
+  transpilePackages: ['@makikibahay/types', '@makikibahay/utils'],
   reactStrictMode: true,
   images: {
     remotePatterns: [
@@ -25,13 +25,13 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingRoot: path.join(__dirname, '../../'),
-    serverComponentsExternalPackages: ['@makikibahay/ui']
   },
   async rewrites() {
+    const apiDestination = process.env.INTERNAL_API_URL || 'http://localhost:5000';
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination: `${apiDestination}/api/:path*`,
       },
     ];
   },

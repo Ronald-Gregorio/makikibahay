@@ -1,17 +1,27 @@
-import { getSession } from 'next-auth/react';
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-    const session = await getSession();
-
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers,
     } as Record<string, string>;
 
-    if (session?.backendToken) {
-        headers['Authorization'] = `Bearer ${session.backendToken}`;
+    let backendToken: string | undefined;
+
+    if (!backendToken && typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('makikibahay-user');
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                backendToken = parsedUser.token;
+            } catch (e) {
+                // Ignore parse error
+            }
+        }
+    }
+
+    if (backendToken) {
+        headers['Authorization'] = `Bearer ${backendToken}`;
     }
 
     const response = await fetch(`${API_URL}/api${url}`, {

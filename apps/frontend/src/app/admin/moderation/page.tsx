@@ -1,41 +1,50 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
-import { Badge } from "@makikibahay/ui";
-import { Button } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/index";
+import { Badge } from "@/components/ui/index";
+import { Button } from "@/components/ui/index";
 import { Check, Star, X, Search, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { listings } from "@/lib/mock-data";
+import { dashboardService } from "@/services/api/dashboard";
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@makikibahay/ui";
-import { Avatar, AvatarFallback, AvatarImage } from "@makikibahay/ui";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/index";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/index";
 import { Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@makikibahay/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
-import { Checkbox } from "@makikibahay/ui";
+import { Input } from "@/components/ui/index";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/index";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/index";
+import { Checkbox } from "@/components/ui/index";
 
-const initialReviews = listings.flatMap(l => l.reviews.map(r => ({ ...r, listingName: l.name, listingId: l.id, status: 'pending' as 'pending' | 'approved' | 'rejected' })));
-
-type ReviewWithListing = (typeof initialReviews)[0];
+type ReviewWithListing = Review & { listingName: string; listingId: string; status: 'pending' | 'approved' | 'rejected' };
 
 export default function ContentModerationPage() {
-    const [reviews, setReviews] = useState<ReviewWithListing[]>(initialReviews);
+    const [reviews, setReviews] = useState<ReviewWithListing[]>([]);
     const [filteredReviews, setFilteredReviews] = useState<ReviewWithListing[]>([]);
     const [selectedReviewIds, setSelectedReviewIds] = useState<number[]>([]);
-    
+    const [loading, setLoading] = useState(true);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [ratingFilter, setRatingFilter] = useState('all');
     const { toast } = useToast();
 
     useEffect(() => {
+        dashboardService.getAdminReviews()
+            .then(data => {
+                // Ensure they have the UI status flag 
+                setReviews(data.map(r => ({ ...r, status: 'pending' })));
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         let result = reviews;
 
         if (searchQuery) {
-            result = result.filter(review => 
+            result = result.filter(review =>
                 review.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 review.user.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
@@ -44,7 +53,7 @@ export default function ContentModerationPage() {
         if (ratingFilter !== 'all') {
             result = result.filter(review => review.rating.toString() === ratingFilter);
         }
-        
+
         // In this mock, we only show 'pending' reviews by default
         setFilteredReviews(result.filter(r => r.status === 'pending'));
 
@@ -61,14 +70,14 @@ export default function ContentModerationPage() {
 
     const handleBulkModerate = (action: 'approved' | 'rejected') => {
         setReviews(prev => prev.map(r => selectedReviewIds.includes(r.review_id) ? { ...r, status: action } : r));
-        toast({ title: "Bulk Action", description: `${selectedReviewIds.length} reviews have been ${action}.`});
+        toast({ title: "Bulk Action", description: `${selectedReviewIds.length} reviews have been ${action}.` });
         setSelectedReviewIds([]);
     }
-    
+
     const handleBulkDelete = () => {
         // This is a soft delete for the view, in a real app it would be a DB call
         setReviews(prev => prev.filter(r => !selectedReviewIds.includes(r.review_id)));
-        toast({ variant: 'destructive', title: "Bulk Delete", description: `${selectedReviewIds.length} reviews have been deleted.`});
+        toast({ variant: 'destructive', title: "Bulk Delete", description: `${selectedReviewIds.length} reviews have been deleted.` });
         setSelectedReviewIds([]);
     }
 
@@ -96,22 +105,22 @@ export default function ContentModerationPage() {
                     Review user-submitted content.
                 </p>
             </header>
-            
-             <Card className="mb-6">
-                 <CardHeader>
+
+            <Card className="mb-6">
+                <CardHeader>
                     <CardTitle>Filters & Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row items-center gap-4">
-                     <div className="relative w-full flex-grow">
+                    <div className="relative w-full flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search by user or comment..." 
+                        <Input
+                            placeholder="Search by user or comment..."
                             className="pl-10"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                     <Select value={ratingFilter} onValueChange={setRatingFilter}>
+                    <Select value={ratingFilter} onValueChange={setRatingFilter}>
                         <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Filter by rating..." />
                         </SelectTrigger>
@@ -139,7 +148,7 @@ export default function ContentModerationPage() {
                                     <Check className="mr-2 h-4 w-4 text-green-500" />
                                     Approve Selected
                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => handleBulkModerate('rejected')}>
+                                <DropdownMenuItem onClick={() => handleBulkModerate('rejected')}>
                                     <X className="mr-2 h-4 w-4 text-destructive" />
                                     Reject Selected
                                 </DropdownMenuItem>
@@ -160,15 +169,15 @@ export default function ContentModerationPage() {
                     <CardDescription>{filteredReviews.length} reviews to moderate.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <Table>
+                    <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[50px]">
-                                     <Checkbox 
+                                    <Checkbox
                                         checked={selectedReviewIds.length > 0 && filteredReviews.length > 0 && selectedReviewIds.length === filteredReviews.length}
                                         onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                         aria-label="Select all"
-                                     />
+                                    />
                                 </TableHead>
                                 <TableHead>Author</TableHead>
                                 <TableHead>Listing</TableHead>
@@ -178,17 +187,22 @@ export default function ContentModerationPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                            {loading && (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-4">Loading...</TableCell>
+                                </TableRow>
+                            )}
                             {filteredReviews.map(review => (
-                                <ReviewRow 
-                                    key={review.review_id} 
-                                    review={review} 
-                                    onModerate={handleModerate} 
+                                <ReviewRow
+                                    key={review.review_id}
+                                    review={review}
+                                    onModerate={handleModerate}
                                     isSelected={selectedReviewIds.includes(review.review_id)}
                                     onSelectRow={handleSelectRow}
                                 />
                             ))}
                         </TableBody>
-                   </Table>
+                    </Table>
                 </CardContent>
             </Card>
         </>
@@ -196,11 +210,11 @@ export default function ContentModerationPage() {
 }
 
 function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: ReviewWithListing, onModerate: (reviewId: number, action: 'approved' | 'rejected') => void, isSelected: boolean, onSelectRow: (reviewId: number, checked: boolean) => void }) {
-     return (
+    return (
         <Dialog>
             <TableRow data-state={isSelected ? "selected" : undefined}>
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                     <Checkbox
+                    <Checkbox
                         checked={isSelected}
                         onCheckedChange={(checked) => onSelectRow(review.review_id, !!checked)}
                         aria-label={`Select review by ${review.user.name}`}
@@ -212,7 +226,7 @@ function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: Re
                 <TableCell>
                     <Link href={`/listings/${review.listingId}`} className="hover:underline" onClick={(e) => e.stopPropagation()}>{review.listingName}</Link>
                 </TableCell>
-                 <DialogTrigger asChild>
+                <DialogTrigger asChild>
                     <TableCell className="cursor-pointer">
                         <p className="truncate max-w-xs">{review.comment}</p>
                     </TableCell>
@@ -226,7 +240,7 @@ function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: Re
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600" onClick={() => onModerate(review.review_id, 'approved')}><Check className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onModerate(review.review_id, 'rejected')}><X className="h-4 w-4"/></Button>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onModerate(review.review_id, 'rejected')}><X className="h-4 w-4" /></Button>
                     </div>
                 </TableCell>
             </TableRow>
@@ -235,7 +249,7 @@ function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: Re
                     <DialogTitle>Review Details</DialogTitle>
                     <DialogDescription>Review submitted on {new Date(review.created_at).toLocaleDateString()}</DialogDescription>
                 </DialogHeader>
-                 <div className="space-y-4 py-4">
+                <div className="space-y-4 py-4">
                     <div className="flex items-start gap-4">
                         <Avatar>
                             <AvatarImage src={review.user.avatar} alt={review.user.name} data-ai-hint="person" />
@@ -245,16 +259,16 @@ function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: Re
                             <p className="font-semibold">{review.user.name}</p>
                             <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listingId}`} className="underline hover:text-primary">{review.listingName}</Link></p>
                         </div>
-                         <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`h-5 w-5 ${i < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground/30'}`}/>
+                                <Star key={i} className={`h-5 w-5 ${i < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground/30'}`} />
                             ))}
                         </div>
                     </div>
-                     <Card className="bg-muted/50 p-4">
+                    <Card className="bg-muted/50 p-4">
                         <p className="text-foreground">{review.comment}</p>
-                     </Card>
-                 </div>
+                    </Card>
+                </div>
                 <DialogFooter>
                     <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => onModerate(review.review_id, 'rejected')}>
                         <X className="mr-2 h-4 w-4" />
@@ -267,5 +281,5 @@ function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: Re
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-     )
+    )
 }

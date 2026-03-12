@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
 import { AlertTriangle } from "lucide-react";
 
 export default function PaymentPage() {

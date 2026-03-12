@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
 import { MapPin, BedDouble, Star, Heart } from 'lucide-react';
 import type { Listing } from '@/lib/types';
-import { Badge } from '@makikibahay/ui';
+import { Badge } from '@/components/ui/index';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';

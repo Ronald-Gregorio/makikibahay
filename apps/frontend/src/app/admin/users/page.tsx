@@ -1,65 +1,70 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
-import { Badge } from "@makikibahay/ui";
-import { Button } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/index";
+import { Badge } from "@/components/ui/index";
+import { Button } from "@/components/ui/index";
 import { Edit, Trash2, Home, BedDouble, Save, X, Search, MoreHorizontal, UserX, UserCheck } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@makikibahay/ui";
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/index";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@makikibahay/ui";
-import { Avatar, AvatarFallback, AvatarImage } from "@makikibahay/ui";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/index";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/index";
 import { useState, useMemo, useEffect } from "react";
-import { Input } from "@makikibahay/ui";
-import { Label } from "@makikibahay/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
+import { Input } from "@/components/ui/index";
+import { Label } from "@/components/ui/index";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/index";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@makikibahay/ui";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@makikibahay/ui";
+import { Checkbox } from "@/components/ui/index";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/index";
 
 
-const mockUsersData = [
-    { id: '1', name: 'Jane Doe', email: 'jane.doe@example.com', role: 'user', status: 'Active', listingsCount: 0, rentedCount: 2, joined: '2024-03-15' },
-    { id: '103', name: 'Pat Professional', email: 'owner@example.com', role: 'owner', status: 'Active', listingsCount: 1, rentedCount: 0, joined: '2024-01-10' },
-    { id: '201', name: 'John Smith', email: 'john.smith@example.com', role: 'user', status: 'Suspended', listingsCount: 0, rentedCount: 1, joined: '2024-05-01' },
-    { id: '101', name: 'Sunny Day', email: 'sunny.day@example.com', role: 'owner', status: 'Active', listingsCount: 1, rentedCount: 0, joined: '2023-10-01' },
-];
+import { dashboardService } from "@/services/api/dashboard";
 
-type User = typeof mockUsersData[0];
+type User = { id: string; name: string; email: string; role: string; status: string; listingsCount: number; rentedCount: number; joined: string; };
 
 export default function UserManagementPage() {
-    const [users, setUsers] = useState<User[]>(mockUsersData);
-    const [filteredUsers, setFilteredUsers] = useState<User[]>(mockUsersData);
+    const [users, setUsers] = useState<User[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-    
+    const [loading, setLoading] = useState(true);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const { toast } = useToast();
 
     useEffect(() => {
+        dashboardService.getAdminUsers()
+            .then((data) => {
+                setUsers(data);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         let result = users;
-        
+
         // Filter by search query (name or email)
         if (searchQuery) {
-            result = result.filter(user => 
+            result = result.filter(user =>
                 user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.email.toLowerCase().includes(searchQuery.toLowerCase())
             );
@@ -99,23 +104,23 @@ export default function UserManagementPage() {
             setSelectedUserIds(prev => prev.filter(id => id !== userId));
         }
     };
-    
+
     const handleBulkSuspend = () => {
         setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Suspended' } : u));
         setSelectedUserIds([]);
-        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been suspended.`});
+        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been suspended.` });
     }
 
     const handleBulkActivate = () => {
         setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Active' } : u));
         setSelectedUserIds([]);
-        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been activated.`});
+        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been activated.` });
     }
 
     const handleBulkDelete = () => {
         setUsers(prev => prev.filter(u => !selectedUserIds.includes(u.id)));
         setSelectedUserIds([]);
-        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedUserIds.length} users have been deleted.`});
+        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedUserIds.length} users have been deleted.` });
     }
 
     return (
@@ -128,14 +133,14 @@ export default function UserManagementPage() {
             </header>
 
             <Card className="mb-6">
-                 <CardHeader>
+                <CardHeader>
                     <CardTitle>Filters & Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row items-center gap-4">
-                     <div className="relative w-full flex-grow">
+                    <div className="relative w-full flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search by name or email..." 
+                        <Input
+                            placeholder="Search by name or email..."
                             className="pl-10"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -151,7 +156,7 @@ export default function UserManagementPage() {
                             <SelectItem value="owner">Owner</SelectItem>
                         </SelectContent>
                     </Select>
-                     <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Filter by status..." />
                         </SelectTrigger>
@@ -194,18 +199,20 @@ export default function UserManagementPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>All Users</CardTitle>
-                    <CardDescription>{filteredUsers.length} of {users.length} users shown.</CardDescription>
+                    <CardDescription>
+                        {loading ? 'Loading...' : `${filteredUsers.length} of ${users.length} users shown.`}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <Table>
+                    <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[50px]">
-                                     <Checkbox 
+                                    <Checkbox
                                         checked={selectedUserIds.length > 0 && selectedUserIds.length === filteredUsers.length}
                                         onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                         aria-label="Select all"
-                                     />
+                                    />
                                 </TableHead>
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
@@ -216,16 +223,16 @@ export default function UserManagementPage() {
                         </TableHeader>
                         <TableBody>
                             {filteredUsers.map(user => (
-                                <UserRow 
-                                    key={user.id} 
-                                    user={user} 
-                                    onUpdateUser={handleUpdateUser} 
+                                <UserRow
+                                    key={user.id}
+                                    user={user}
+                                    onUpdateUser={handleUpdateUser}
                                     isSelected={selectedUserIds.includes(user.id)}
                                     onSelectRow={handleSelectRow}
                                 />
                             ))}
                         </TableBody>
-                   </Table>
+                    </Table>
                 </CardContent>
             </Card>
         </>
@@ -255,7 +262,7 @@ function UserRow({ user, onUpdateUser, isSelected, onSelectRow }: { user: User, 
     const handleSelectChange = (name: 'role' | 'status') => (value: string) => {
         setEditedUser({ ...editedUser, [name]: value });
     };
-    
+
     const isOwner = user.role === 'owner';
 
     return (
@@ -290,16 +297,16 @@ function UserRow({ user, onUpdateUser, isSelected, onSelectRow }: { user: User, 
                 </TableCell>
                 <TableCell>
                     {isOwner ? (
-                        <span className="flex items-center gap-1"><Home className="h-4 w-4"/> {user.listingsCount}</span>
+                        <span className="flex items-center gap-1"><Home className="h-4 w-4" /> {user.listingsCount}</span>
                     ) : (
-                        <span className="flex items-center gap-1"><BedDouble className="h-4 w-4"/> {user.rentedCount}</span>
+                        <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" /> {user.rentedCount}</span>
                     )}
                 </TableCell>
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -320,46 +327,46 @@ function UserRow({ user, onUpdateUser, isSelected, onSelectRow }: { user: User, 
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <div className="flex items-start justify-between">
-                         <div>
+                        <div>
                             <DialogTitle className="text-2xl">{user.name}</DialogTitle>
                             <DialogDescription>{user.email}</DialogDescription>
-                         </div>
+                        </div>
                         {!isEditing ? (
                             <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}><Edit className="h-5 w-5" /></Button>
                         ) : (
-                             <div className="flex gap-2">
-                                <Button size="icon" onClick={handleSave}><Save className="h-5 w-5"/></Button>
-                                <Button variant="outline" size="icon" onClick={handleCancel}><X className="h-5 w-5"/></Button>
-                             </div>
+                            <div className="flex gap-2">
+                                <Button size="icon" onClick={handleSave}><Save className="h-5 w-5" /></Button>
+                                <Button variant="outline" size="icon" onClick={handleCancel}><X className="h-5 w-5" /></Button>
+                            </div>
                         )}
                     </div>
                 </DialogHeader>
                 {isEditing ? (
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                           <Label htmlFor="name">Full Name</Label>
-                           <Input id="name" name="name" value={editedUser.name} onChange={handleInputChange} />
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input id="name" name="name" value={editedUser.name} onChange={handleInputChange} />
                         </div>
-                         <div className="space-y-2">
-                           <Label htmlFor="role">Role</Label>
-                           <Select name="role" value={editedUser.role} onValueChange={handleSelectChange('role')}>
-                               <SelectTrigger><SelectValue/></SelectTrigger>
-                               <SelectContent>
-                                   <SelectItem value="user">User</SelectItem>
-                                   <SelectItem value="owner">Owner</SelectItem>
-                                   <SelectItem value="admin">Admin</SelectItem>
-                               </SelectContent>
-                           </Select>
+                        <div className="space-y-2">
+                            <Label htmlFor="role">Role</Label>
+                            <Select name="role" value={editedUser.role} onValueChange={handleSelectChange('role')}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="user">User</SelectItem>
+                                    <SelectItem value="owner">Owner</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                         <div className="space-y-2">
-                           <Label htmlFor="status">Status</Label>
-                           <Select name="status" value={editedUser.status} onValueChange={handleSelectChange('status')}>
-                               <SelectTrigger><SelectValue/></SelectTrigger>
-                               <SelectContent>
-                                   <SelectItem value="Active">Active</SelectItem>
-                                   <SelectItem value="Suspended">Suspended</SelectItem>
-                               </SelectContent>
-                           </Select>
+                        <div className="space-y-2">
+                            <Label htmlFor="status">Status</Label>
+                            <Select name="status" value={editedUser.status} onValueChange={handleSelectChange('status')}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Active">Active</SelectItem>
+                                    <SelectItem value="Suspended">Suspended</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 ) : (
@@ -399,7 +406,7 @@ function UserRow({ user, onUpdateUser, isSelected, onSelectRow }: { user: User, 
 }
 
 
-    
-    
 
-    
+
+
+

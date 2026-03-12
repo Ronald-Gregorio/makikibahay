@@ -3,7 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 import { AppHeader } from '@/components/header';
 import { AppFooter } from '@/components/footer';
-import { Toaster } from "@makikibahay/ui"
+import { Toaster } from "@/components/ui/index"
 import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {

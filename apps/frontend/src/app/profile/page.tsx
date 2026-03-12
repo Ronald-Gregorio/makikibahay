@@ -4,21 +4,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Avatar, AvatarFallback, AvatarImage } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
-import { Label } from '@makikibahay/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
+import { Label } from '@/components/ui/index';
 import { useToast } from '@/hooks/use-toast';
 import { User, Edit, Pencil, UserCheck, Wallet, SlidersHorizontal, MapPin, Footprints, Star, MessageSquare } from 'lucide-react';
-import { Badge } from '@makikibahay/ui';
-import { Separator } from '@makikibahay/ui';
-import { listings } from '@/lib/mock-data';
+import { Badge } from '@/components/ui/index';
+import { Separator } from '@/components/ui/index';
 import Link from 'next/link';
-import { RadioGroup, RadioGroupItem } from '@makikibahay/ui';
-import { Checkbox } from '@makikibahay/ui';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/index';
+import { Checkbox } from '@/components/ui/index';
 import type { SurveyData } from '@/lib/types';
-
+import { userService } from '@/services/api/users';
 
 const accommodationTypesOptions = ['Up and Down', 'Solo Room', 'Studio Type', 'Bed Spacer'];
 const amenitiesOptions = [
@@ -27,9 +26,10 @@ const amenitiesOptions = [
 
 
 export default function ProfilePage() {
-  const { user, updateUser, surveyData, getMyReviews, saveSurveyData } = useAuth();
+  const { user, updateUser, surveyData, saveSurveyData } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [myReviews, setMyReviews] = useState<any[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
@@ -45,6 +45,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setName(user.name);
+      userService.getMyReviews()
+        .then(data => setMyReviews(data))
+        .catch(console.error);
     }
     if (surveyData) {
       setUserType(surveyData.userType);
@@ -55,8 +58,6 @@ export default function ProfilePage() {
       setAccommodationTypes(surveyData.accommodationType);
     }
   }, [user, surveyData, isEditing]);
-
-  const myReviews = user ? getMyReviews(parseInt(user.id, 10)) : [];
 
   if (!user) {
     // Redirect to login if not authenticated
@@ -274,12 +275,11 @@ export default function ProfilePage() {
             {myReviews.length > 0 ? (
               <div className="space-y-4">
                 {myReviews.map(review => {
-                  const listing = listings.find(l => l.id === review.listing_id);
                   return (
-                    <Card key={review.review_id} className="p-4">
+                    <Card key={review.review_id || review._id} className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${listing?.id}`} className="font-semibold underline hover:text-primary">{listing?.name || 'Unknown Listing'}</Link></p>
+                          <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listing_id || '#'}`} className="font-semibold underline hover:text-primary">{'this property'}</Link></p>
                           <p className="mt-2 text-foreground">{review.comment}</p>
                         </div>
                         <div className="flex items-center gap-1">

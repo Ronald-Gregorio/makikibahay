@@ -1,0 +1,400 @@
+﻿diff --git a/apps/frontend/src/app/owner/listings/create/page.tsx b/apps/frontend/src/app/owner/listings/create/page.tsx
+index 5e47c63..0339b28 100644
+--- a/apps/frontend/src/app/owner/listings/create/page.tsx
++++ b/apps/frontend/src/app/owner/listings/create/page.tsx
+@@ -13,10 +13,17 @@ import { Input } from '@makikibahay/ui';
+ import { Textarea } from '@makikibahay/ui';
+ import { Checkbox } from '@makikibahay/ui';
+ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@makikibahay/ui';
+-import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Upload } from 'lucide-react';
++import { ArrowRight, ArrowLeft, Plus, Trash2, Upload, X } from 'lucide-react';
+ import { useAuth } from '@/hooks/use-auth';
+ import { useToast } from '@/hooks/use-toast';
+-import { listings } from '@/lib/mock-data';
++import { listingService } from '@/services/api/listings';
++import dynamic from 'next/dynamic';
++import Image from 'next/image';
++
++const LocationPickerMap = dynamic(() => import('@/components/LocationPickerMap'), {
++  ssr: false,
++  loading: () => <div className="h-[400px] w-full bg-slate-100 animate-pulse rounded-lg" />
++});
+ 
+ const roomSchema = z.object({
+   type: z.string().min(1, 'Room type is required'),
+@@ -29,10 +36,15 @@ const roomSchema = z.object({
+ const listingFormSchema = z.object({
+   name: z.string().min(3, 'Listing name must be at least 3 characters.'),
+   address: z.string().min(10, 'Please enter a full address.'),
++  location: z.object({
++    lat: z.number(),
++    lng: z.number()
++  }).optional(),
+   rules: z.array(z.string()).refine((value) => value.some((item) => item), {
+     message: "You have to select at least one rule.",
+   }),
+   rooms: z.array(roomSchema).min(1, 'Please add at least one room type.'),
++  photos: z.array(z.string()).optional(),
+ });
+ 
+ type ListingFormValues = z.infer<typeof listingFormSchema>;
+@@ -51,11 +63,15 @@ export default function CreateListingPage() {
+     defaultValues: {
+       name: '',
+       address: '',
++      location: { lat: 15.4865, lng: 120.9734 }, // Default to Cabanatuan City roughly
+       rules: [],
+       rooms: [{ type: '', price: 0, inclusions: '', is_available: true, model_3d_url: '' }],
++      photos: [],
+     },
+   });
+ 
++  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
++
+   const { fields, append, remove } = useFieldArray({
+     control: form.control,
+     name: 'rooms',
+@@ -68,7 +84,8 @@ export default function CreateListingPage() {
+     if (step === 1) fieldsToValidate = ['name', 'address'];
+     if (step === 2) fieldsToValidate = ['rooms'];
+     if (step === 3) fieldsToValidate = ['rules'];
+-    
++    if (step === 4) fieldsToValidate = ['photos']; // Validate photos on step 4
++
+     const isValid = await form.trigger(fieldsToValidate);
+     if (isValid) {
+       setStep((prev) => Math.min(prev + 1, totalSteps));
+@@ -77,49 +94,79 @@ export default function CreateListingPage() {
+ 
+   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+ 
+-  function onSubmit(data: ListingFormValues) {
++  async function onSubmit(data: ListingFormValues) {
+     if (!user) {
+       toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to create a listing.' });
+       return;
+     }
+ 
+-    const newListing = {
+-      id: listings.length + 1,
+-      owner_id: parseInt(user.id, 10),
+-      owner_name: user.name,
+-      owner_phone: '09123456789', // Placeholder
+-      name: data.name,
+-      address: data.address,
+-      lat: 15.48, // Placeholder
+-      lng: 120.96, // Placeholder
+-      total_rooms: data.rooms.length,
+-      available_rooms: data.rooms.filter(r => r.is_available).length,
+-      rules: data.rules,
+-      price_min: Math.min(...data.rooms.map(r => r.price)),
+-      price_max: Math.max(...data.rooms.map(r => r.price)),
+-      created_at: new Date().toISOString(),
+-      updated_at: new Date().toISOString(),
+-      photos: [{ photo_id: Math.random(), listing_id: listings.length + 1, url: 'https://placehold.co/600x400.png', is_cover: true }],
+-      rooms: data.rooms.map((room, index) => ({
+-        room_id: Math.random(),
+-        listing_id: listings.length + 1,
+-        type: room.type,
+-        size_sqm: 15, // Placeholder
+-        price: room.price,
+-        inclusions: room.inclusions.split(',').map(s => s.trim()),
+-        is_available: room.is_available,
+-        model_3d_url: room.model_3d_url,
+-      })),
+-      reviews: [],
+-    };
++    try {
++      const payload: any = {
++        name: data.name,
++        address: data.address,
++        rules: data.rules,
++        photos: data.photos || [],
++        rooms: data.rooms.map((room) => ({
++          type: room.type,
++          price: room.price,
++          inclusions: room.inclusions.split(',').map((s: string) => s.trim()),
++          isAvailable: room.is_available,
++          model3dUrl: room.model_3d_url,
++        })),
++        ownerId: user.id, // Fallback if backend needs it explicitly
++      };
+ 
+-    listings.push(newListing);
++      if (data.location) {
++        payload.location = {
++          type: 'Point',
++          coordinates: [data.location.lng, data.location.lat]
++        };
++      }
+ 
+-    toast({
+-      title: 'Listing Created!',
+-      description: `${data.name} has been successfully added to your properties.`,
+-    });
+-    router.push('/owner/dashboard');
++      await listingService.create(payload);
++
++      toast({
++        title: 'Listing Created!',
++        description: `${data.name} has been successfully added to your properties.`,
++      });
++      router.push('/owner/dashboard');
++    } catch (error) {
++      toast({
++        variant: 'destructive',
++        title: 'Error',
++        description: 'Failed to create listing. Please try again.',
++      });
++    }
++  }
++
++  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
++    if (e.target.files) {
++      setIsPhotoUploading(true);
++      const files = Array.from(e.target.files);
++      const fileReaders = files.map(file => {
++        return new Promise<string>((resolve, reject) => {
++          const reader = new FileReader();
++          reader.readAsDataURL(file);
++          reader.onload = () => resolve(reader.result as string);
++          reader.onerror = error => reject(error);
++        });
++      });
++
++      Promise.all(fileReaders).then(base64Images => {
++        const currentPhotos = form.getValues('photos') || [];
++        form.setValue('photos', [...currentPhotos, ...base64Images], { shouldValidate: true });
++        setIsPhotoUploading(false);
++      }).catch(err => {
++        console.error("Failed to read files", err);
++        setIsPhotoUploading(false);
++        toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not process images.' });
++      });
++    }
++  };
++
++  const removePhoto = (indexToRemove: number) => {
++    const currentPhotos = form.getValues('photos') || [];
++    form.setValue('photos', currentPhotos.filter((_, i) => i !== indexToRemove), { shouldValidate: true });
+   }
+ 
+   return (
+@@ -162,6 +209,25 @@ export default function CreateListingPage() {
+                       </FormItem>
+                     )}
+                   />
++                  <FormField
++                    control={form.control}
++                    name="location"
++                    render={({ field }) => (
++                      <FormItem>
++                        <FormLabel>Pin Location on Map</FormLabel>
++                        <FormControl>
++                          <div className="relative">
++                            <LocationPickerMap
++                              initialCenter={[field.value?.lat || 15.4865, field.value?.lng || 120.9734]}
++                              onLocationSelect={(lat, lng) => field.onChange({ lat, lng })}
++                            />
++                            <p className="text-xs text-muted-foreground mt-2">Drag the marker or click on the map to set the exact location of your property.</p>
++                          </div>
++                        </FormControl>
++                        <FormMessage />
++                      </FormItem>
++                    )}
++                  />
+                 </div>
+               )}
+               {step === 2 && (
+@@ -212,18 +278,18 @@ export default function CreateListingPage() {
+                       </div>
+                       <div className="flex items-center justify-between mt-4">
+                         <FormField
+-                            control={form.control}
+-                            name={`rooms.${index}.is_available`}
+-                            render={({ field }) => (
+-                                <FormItem className="flex items-center space-x-2 space-y-0">
+-                                    <FormControl>
+-                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+-                                    </FormControl>
+-                                    <FormLabel className="font-normal">
+-                                        Mark as Available
+-                                    </FormLabel>
+-                                </FormItem>
+-                            )}
++                          control={form.control}
++                          name={`rooms.${index}.is_available`}
++                          render={({ field }) => (
++                            <FormItem className="flex items-center space-x-2 space-y-0">
++                              <FormControl>
++                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
++                              </FormControl>
++                              <FormLabel className="font-normal">
++                                Mark as Available
++                              </FormLabel>
++                            </FormItem>
++                          )}
+                         />
+                         <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                           <Trash2 className="h-4 w-4" />
+@@ -232,68 +298,110 @@ export default function CreateListingPage() {
+                     </Card>
+                   ))}
+                   <Button type="button" variant="outline" onClick={() => append({ type: '', price: 0, inclusions: '', is_available: true, model_3d_url: '' })}>
+-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Another Room
++                    <Plus className="mr-2 h-4 w-4" /> Add Another Room
+                   </Button>
+                 </div>
+               )}
+               {step === 3 && (
+                 <div className="space-y-6 animate-in fade-in duration-500">
+-                    <h3 className="font-semibold text-lg">Step 3: House Rules</h3>
+-                    <FormField
+-                        control={form.control}
+-                        name="rules"
+-                        render={() => (
+-                            <FormItem>
+-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+-                                {rulesOptions.map((item) => (
+-                                    <FormField
++                  <h3 className="font-semibold text-lg">Step 3: House Rules</h3>
++                  <FormField
++                    control={form.control}
++                    name="rules"
++                    render={() => (
++                      <FormItem>
++                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
++                          {rulesOptions.map((item) => (
++                            <FormField
++                              key={item}
++                              control={form.control}
++                              name="rules"
++                              render={({ field }) => {
++                                return (
++                                  <FormItem
+                                     key={item}
+-                                    control={form.control}
+-                                    name="rules"
+-                                    render={({ field }) => {
+-                                        return (
+-                                        <FormItem
+-                                            key={item}
+-                                            className="flex flex-row items-start space-x-3 space-y-0"
+-                                        >
+-                                            <FormControl>
+-                                            <Checkbox
+-                                                checked={field.value?.includes(item)}
+-                                                onCheckedChange={(checked) => {
+-                                                return checked
+-                                                    ? field.onChange([...field.value, item])
+-                                                    : field.onChange(
+-                                                        field.value?.filter(
+-                                                        (value) => value !== item
+-                                                        )
+-                                                    )
+-                                                }}
+-                                            />
+-                                            </FormControl>
+-                                            <FormLabel className="font-normal">
+-                                            {item}
+-                                            </FormLabel>
+-                                        </FormItem>
+-                                        )
+-                                    }}
+-                                    />
+-                                ))}
+-                                </div>
+-                                <FormMessage />
+-                            </FormItem>
+-                        )}
+-                    />
++                                    className="flex flex-row items-start space-x-3 space-y-0"
++                                  >
++                                    <FormControl>
++                                      <Checkbox
++                                        checked={field.value?.includes(item)}
++                                        onCheckedChange={(checked) => {
++                                          return checked
++                                            ? field.onChange([...field.value, item])
++                                            : field.onChange(
++                                              field.value?.filter(
++                                                (value) => value !== item
++                                              )
++                                            )
++                                        }}
++                                      />
++                                    </FormControl>
++                                    <FormLabel className="font-normal">
++                                      {item}
++                                    </FormLabel>
++                                  </FormItem>
++                                )
++                              }}
++                            />
++                          ))}
++                        </div>
++                        <FormMessage />
++                      </FormItem>
++                    )}
++                  />
+                 </div>
+               )}
++              {/* Photos Section */}
+               {step === 4 && (
+                 <div className="space-y-6 animate-in fade-in duration-500">
+                   <h3 className="font-semibold text-lg">Step 4: Upload Photos</h3>
+-                  <div className="p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg text-center">
+-                    <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+-                    <p className="mt-4 text-muted-foreground">Drag and drop photos here, or click to browse.</p>
+-                    <Button type="button" variant="outline" className="mt-4">Browse Files</Button>
+-                    <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB</p>
++                  <div className="p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg text-center relative overflow-hidden">
++                    <input
++                      type="file"
++                      multiple
++                      accept="image/*"
++                      onChange={handlePhotoUpload}
++                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
++                      title="Drag and drop or click to upload"
++                    />
++                    <Upload className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
++                    <p className="text-sm font-medium">Click or drag images here</p>
++                    <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 5MB (Will be encoded)</p>
+                   </div>
++
++                  {/* Photo Preview Gallery */}
++                  <FormField
++                    control={form.control}
++                    name="photos"
++                    render={({ field }) => (
++                      <FormItem>
++                        <div className="space-y-4 pt-6 border-t">
++                          <h3 className="text-lg font-medium">Photos</h3>
++                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
++                            <div>
++                              <FormLabel>Preview</FormLabel>
++                              <div className="mt-2 grid grid-cols-3 gap-2">
++                                {(field.value || []).map((photoStr, idx) => (
++                                  <div key={idx} className="relative aspect-square rounded overflow-hidden border">
++                                    {/* eslint-disable-next-line @next/next/no-img-element */}
++                                    <img src={photoStr} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
++                                    <button type="button" onClick={() => removePhoto(idx)} className="absolute top-1 right-1 bg-black/50 hover:bg-black text-white rounded-full p-1 z-20">
++                                      <X className="h-3 w-3" />
++                                    </button>
++                                  </div>
++                                ))}
++                                {(field.value || []).length === 0 && (
++                                  <div className="col-span-3 h-24 flex items-center justify-center border border-dashed rounded text-muted-foreground text-sm">
++                                    No images uploaded yet
++                                  </div>
++                                )}
++                              </div>
++                            </div>
++                          </div>
++                        </div>
++                      </FormItem>
++                    )}
++                  />
+                 </div>
+               )}
+             </CardContent>

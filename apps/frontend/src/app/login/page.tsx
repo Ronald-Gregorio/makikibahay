@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@makikibahay/ui';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
-import { Label } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
+import { Label } from '@/components/ui/index';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@makikibahay/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/index';
 
 function GoogleIcon() {
     return (

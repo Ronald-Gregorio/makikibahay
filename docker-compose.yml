@@ -25,6 +25,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3002
+      - INTERNAL_API_URL=http://backend:5000
     env_file:
       - ./apps/frontend/.env
     depends_on:

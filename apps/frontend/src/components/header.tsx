@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@makikibahay/ui';
-import { Sheet, SheetContent, SheetTrigger } from '@makikibahay/ui';
+import { Button } from '@/components/ui/index';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/index';
 import { Menu, Home, LogOut, User, Heart, LayoutDashboard, Bell, Inbox, BarChart } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@makikibahay/ui';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@makikibahay/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/index';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/index';
 
 export function AppHeader() {
   const { user, logout } = useAuth();
@@ -40,6 +40,11 @@ export function AppHeader() {
             ) : (
               <Link href="/browse" className="transition-colors hover:text-primary">
                 Browse
+              </Link>
+            )}
+            {user?.role !== 'owner' && (
+              <Link href="/survey" className="transition-colors hover:text-primary">
+                Take Survey
               </Link>
             )}
             {user?.role === 'user' && (

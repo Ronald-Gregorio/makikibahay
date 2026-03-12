@@ -2,10 +2,10 @@
 import api from '@/lib/api';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
+import { useAuth } from '@/hooks/use-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
 import { Send, User, MessageSquare } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import type { Message } from '@makikibahay/types';
@@ -31,7 +31,7 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -53,7 +53,7 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
     });
 
     // Join room for this listing
-    const roomId = `listing_${listingId}_user_${session?.user?.id}_owner_${ownerId}`;
+    const roomId = `listing_${listingId}_user_${user?.id}_owner_${ownerId}`;
     socketInstance.emit('joinRoom', { roomId });
 
     // Listen for incoming messages
@@ -67,7 +67,7 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
 
     // Listen for typing indicators
     socketInstance.on('typing', ({ userId, isTyping }: { userId: string, isTyping: boolean }) => {
-      if (userId !== session?.user?.id) {
+      if (userId !== user?.id) {
         setIsTyping(isTyping);
       }
     });
@@ -89,11 +89,11 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
       socketInstance.off('typing');
       socketInstance.off('messageRead');
     };
-  }, [isOpen, listingId, ownerId, session?.user?.id]);
+  }, [isOpen, listingId, ownerId, user?.id]);
 
   useEffect(() => {
     if (socket && isOpen) {
-      const roomId = `listing_${listingId}_user_${session?.user?.id}_owner_${ownerId}`;
+      const roomId = `listing_${listingId}_user_${user?.id}_owner_${ownerId}`;
       // Load message history when opening chat
       api.get<ChatMessage[]>(`/messages/${roomId}`)
         .then(data => {
@@ -101,19 +101,19 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
         })
         .catch(error => console.error('Error loading messages:', error));
     }
-  }, [socket, isOpen, listingId, ownerId, session?.user?.id]);
+  }, [socket, isOpen, listingId, ownerId, user?.id]);
 
   const handleSendMessage = async () => {
     if (!messageText.trim()) return;
 
-    const roomId = `listing_${listingId}_user_${session?.user?.id}_owner_${ownerId}`;
+    const roomId = `listing_${listingId}_user_${user?.id}_owner_${ownerId}`;
 
     try {
       // Optimistic update - add message immediately
       const optimisticMessage: ChatMessage = {
         _id: Date.now().toString(),
         roomId,
-        senderId: session?.user?.id || '',
+        senderId: user?.id || '',
         receiverId: ownerId,
         listingId,
         content: messageText,
@@ -138,7 +138,7 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
 
   const handleTyping = (isTyping: boolean) => {
     if (socket && isConnected) {
-      const roomId = `listing_${listingId}_user_${session?.user?.id}_owner_${ownerId}`;
+      const roomId = `listing_${listingId}_user_${user?.id}_owner_${ownerId}`;
       socket.emit('typing', { roomId, isTyping });
     }
   };
@@ -173,13 +173,13 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
         {messages.map((message, index) => (
           <div
             key={message._id || index}
-            className={`mb-4 p-3 rounded-lg ${message.senderId === session?.user?.id
+            className={`mb-4 p-3 rounded-lg ${message.senderId === user?.id
               ? 'bg-accent/20 ml-auto'
               : 'bg-muted ml-auto'
               }`}
           >
             <div className="flex items-center gap-3 mb-2">
-              {message.senderId !== session?.user?.id && (
+              {message.senderId !== user?.id && (
                 <img
                   src={message.sender?.avatar || '/placeholder-avatar.jpg'}
                   alt={message.senderId}
@@ -188,7 +188,7 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
               )}
               <div>
                 <div className="font-semibold text-sm">
-                  {message.senderId === session?.user?.id ? 'You' : message.senderId}
+                  {message.senderId === user?.id ? 'You' : message.senderId}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {message.sentAt ? new Date(message.sentAt).toLocaleString() : ''}

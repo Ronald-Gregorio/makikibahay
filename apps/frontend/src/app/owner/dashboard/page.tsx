@@ -1,41 +1,42 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@makikibahay/ui";
-import { Button } from "@makikibahay/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
+import { Button } from "@/components/ui/index";
 import { PlusCircle, Edit, Trash2, Mail, BarChart, ShieldAlert } from "lucide-react";
-import { listings as initialListings } from "@/lib/mock-data";
 import { useAuth } from "@/hooks/use-auth";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@makikibahay/ui";
-import { Badge } from "@makikibahay/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/index";
+import { Badge } from "@/components/ui/index";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@makikibahay/ui";
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/index";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@makikibahay/ui";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/index";
 import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@/lib/types";
-import { Label } from "@makikibahay/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@makikibahay/ui";
-import { Textarea } from "@makikibahay/ui";
+import { Label } from "@/components/ui/index";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/index";
+import { Textarea } from "@/components/ui/index";
+import { dashboardService } from "@/services/api/dashboard";
+import { listingService } from "@/services/api/listings";
 
 function ReportDialog({ reportedEntityName, reportedEntityType }: { reportedEntityName: string, reportedEntityType: 'user' }) {
     const { toast } = useToast();
@@ -75,7 +76,7 @@ function ReportDialog({ reportedEntityName, reportedEntityType }: { reportedEnti
                     <Textarea id="report-description" placeholder="Please provide a detailed description of the issue." />
                 </div>
             </div>
-             <DialogDescription className="text-xs text-amber-500">
+            <DialogDescription className="text-xs text-amber-500">
                 Are you sure to report this person, make sure that the report description is correct, this report will be under review, check notification to get updates on the report status.
             </DialogDescription>
             <Button onClick={handleSubmitReport}>Submit Report</Button>
@@ -87,31 +88,40 @@ export default function OwnerDashboardPage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
-    const [listings, setListings] = useState<Listing[]>(initialListings);
+    const [myListings, setMyListings] = useState<Listing[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user || user.role !== 'owner') {
             router.push('/login');
+            return;
         }
+
+        dashboardService.getOwnerListings()
+            .then(data => setMyListings(data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, [user, router]);
-    
-    if (!user || user.role !== 'owner') {
+
+    if (!user || user.role !== 'owner' || loading) {
         return <div className="container mx-auto px-4 md:px-6 py-12 text-center">Loading or redirecting...</div>;
     }
 
-    // Filter listings to show only those owned by the current user
-    const myListings = listings.filter(listing => listing.owner_id === parseInt(user.id, 10));
-
-    const handleDeleteListing = (listingId: number) => {
-        // This is a mock implementation. In a real app, this would be an API call.
-        const updatedListings = listings.filter(l => l.id !== listingId);
-        setListings(updatedListings);
-        // This won't persist across reloads as mock-data is static.
-        // To make it "feel" more real for this demo, we could update a local state.
-        toast({
-            title: "Listing Deleted",
-            description: "The property has been removed from your listings.",
-        });
+    const handleDeleteListing = async (listingId: number | string) => {
+        try {
+            await listingService.delete(listingId);
+            setMyListings(myListings.filter((l: any) => (l.id || l._id) !== listingId));
+            toast({
+                title: "Listing Deleted",
+                description: "The property has been removed from your listings.",
+            });
+        } catch (e) {
+            toast({
+                variant: 'destructive',
+                title: "Error",
+                description: "Failed to delete the listing.",
+            });
+        }
     };
 
     return (
@@ -140,7 +150,7 @@ export default function OwnerDashboardPage() {
                                 <CardDescription>A list of your current properties.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                            <Table>
+                                <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Listing</TableHead>
@@ -150,52 +160,60 @@ export default function OwnerDashboardPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {myListings.map(listing => (
-                                            <TableRow key={listing.id}>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-4">
-                                                        <Image src={listing.photos[0].url} alt={listing.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="apartment room" />
-                                                        <div>
-                                                            <Link href={`/listings/${listing.id}`} className="font-semibold hover:underline">{listing.name}</Link>
-                                                            <p className="text-sm text-muted-foreground">{listing.address}</p>
+                                        {myListings.map(listing => {
+                                            const lId = (listing as any)._id || listing.id;
+                                            const photoSrc = (typeof listing.photos?.[0] === 'string' ? listing.photos[0] : (listing.photos?.[0] as any)?.url) || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa';
+                                            return (
+                                                <TableRow key={lId}>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-4">
+                                                            {photoSrc.startsWith('http') || photoSrc.startsWith('data:') || photoSrc.startsWith('/') ? (
+                                                                <Image src={photoSrc} alt={listing.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="apartment room" />
+                                                            ) : (
+                                                                <div className="w-16 h-16 bg-muted rounded-md" />
+                                                            )}
+                                                            <div>
+                                                                <Link href={`/listings/${lId}`} className="font-semibold hover:underline">{listing.name}</Link>
+                                                                <p className="text-sm text-muted-foreground">{listing.address}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge>Active</Badge>
-                                                </TableCell>
-                                                <TableCell>{listing.available_rooms} / {listing.total_rooms}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Link href={`/owner/listings/edit/${listing.id}`} passHref>
-                                                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                                                        </Link>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This action cannot be undone. This will permanently delete your
-                                                                        listing and remove its data from our servers.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDeleteListing(listing.id)}>
-                                                                        Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge>Active</Badge>
+                                                    </TableCell>
+                                                    <TableCell>{(listing as any).availableRooms ?? listing.available_rooms} / {(listing as any).totalRooms ?? listing.total_rooms}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Link href={`/owner/listings/edit/${lId}`} passHref>
+                                                                <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                                                            </Link>
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This action cannot be undone. This will permanently delete your
+                                                                            listing and remove its data from our servers.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                        <AlertDialogAction onClick={() => handleDeleteListing(lId)}>
+                                                                            Delete
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
-                            </Table>
+                                </Table>
                             </CardContent>
                         </Card>
                     </div>
@@ -215,7 +233,7 @@ export default function OwnerDashboardPage() {
                                         <p className="font-medium">Inquiry from Jane Doe</p>
                                         <p className="text-sm text-muted-foreground">re: Sunshine Residences</p>
                                     </div>
-                                     <DialogTrigger asChild>
+                                    <DialogTrigger asChild>
                                         <Button variant="ghost" size="icon">
                                             <ShieldAlert className="h-4 w-4" />
                                         </Button>

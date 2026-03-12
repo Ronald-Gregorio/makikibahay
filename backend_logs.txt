@@ -1,0 +1,3 @@
+﻿Connected to MongoDB successfully
+Server running on port 5000
+Environment: production

@@ -3,17 +3,17 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@makikibahay/ui';
-import { Button } from '@makikibahay/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
+import { Button } from '@/components/ui/index';
 import { Inbox, Send, Star, Archive, Trash2, Mail, Edit, Reply, ReplyAll, Forward, ArchiveRestore, PanelLeft, X } from 'lucide-react';
-import { Badge } from '@makikibahay/ui';
+import { Badge } from '@/components/ui/index';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Separator } from '@makikibahay/ui';
-import { Avatar, AvatarFallback } from '@makikibahay/ui';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@makikibahay/ui';
-import { Input } from '@makikibahay/ui';
-import { Textarea } from '@makikibahay/ui';
+import { Separator } from '@/components/ui/index';
+import { Avatar, AvatarFallback } from '@/components/ui/index';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/index';
+import { Input } from '@/components/ui/index';
+import { Textarea } from '@/components/ui/index';
 
 const initialMessages = [
   {
