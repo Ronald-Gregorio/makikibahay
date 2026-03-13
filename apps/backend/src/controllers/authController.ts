@@ -56,10 +56,13 @@ export const googleAuth = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     const { name, email, password, role } = req.body;
+    console.log('Register attempt:', { name, email, role });
     try {
         let user = await User.findOne({ email });
+        console.log('User check result:', user ? `Found user with ID: ${user._id}` : 'No user found');
+
         if (user) {
-            res.status(400).json({ message: 'User already exists' });
+            res.status(400).json({ message: 'User already exists with this email' });
             return;
         }
 
@@ -89,9 +92,23 @@ export const register = async (req: Request, res: Response) => {
             role: user.role,
             token,
         });
-    } catch (error) {
-        console.error('Register Error:', error);
-        res.status(500).json({ message: 'Server error during registration' });
+    } catch (error: any) {
+        console.error('Register Error Details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code, // MongoDB error codes (e.g., 11000 for duplicate)
+            name: error.name
+        });
+
+        if (error.code === 11000) {
+            res.status(400).json({ message: 'Email or username already exists' });
+            return;
+        }
+
+        res.status(500).json({
+            message: 'Server error during registration',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

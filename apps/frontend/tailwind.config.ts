@@ -11,35 +11,43 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"PT Sans"', 'sans-serif'],
-        headline: ['"PT Sans"', 'sans-serif'],
+        body: ['Roboto', 'sans-serif'],
+        headline: ['Roboto', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
-        // Makikibahay dark theme colors
-        background: '#2d2d2d', // rgb(45,45,45)
-        surface: '#32393d', // rgb(50,57,61)
-        'surface-hover': '#373737', // rgb(55,55,55)
-        border: '#464646', // rgb(70,70,70)
-        'primary-text': '#bdbdbd', // rgb(189,189,189)
-        accent: '#a9714b', // rgb(169,113,75)
-
-        // Aliases for existing shadcn components
-        foreground: '#bdbdbd',
-        card: '#32393d',
-        'card-foreground': '#bdbdbd',
-        popover: '#373737',
-        'popover-foreground': '#bdbdbd',
-        primary: '#a9714b',
-        'primary-foreground': '#2d2d2d',
-        secondary: '#464646',
-        'secondary-foreground': '#bdbdbd',
-        muted: '#32393d',
-        'muted-foreground': '#757575',
-        destructive: '#ef4444',
-        'destructive-foreground': '#2d2d2d',
-        input: '#373737',
-        ring: '#a9714b',
+        // Apartments-clone light theme
+        background: '#ffffff',
+        foreground: '#333333',
+        card: '#ffffff',
+        'card-foreground': '#333333',
+        popover: '#ffffff',
+        'popover-foreground': '#333333',
+        primary: '#218d3d',
+        'primary-foreground': '#ffffff',
+        secondary: '#f4f4f4',
+        'secondary-foreground': '#666666',
+        muted: '#f4f4f4',
+        'muted-foreground': '#666666',
+        accent: '#218d3d',
+        'accent-foreground': '#ffffff',
+        destructive: '#ff385c',
+        'destructive-foreground': '#ffffff',
+        border: '#dddddd',
+        input: '#dddddd',
+        ring: '#218d3d',
+        // Extended design tokens
+        'primary-green': '#218d3d',
+        'primary-green-hover': '#1e7a3b',
+        'dark-green': '#11421f',
+        'text-dark': '#333333',
+        'text-light': '#ffffff',
+        'gray-light': '#f4f4f4',
+        'gray-border': '#dddddd',
+        'gray-text': '#666666',
+        'blue-primary': '#0077ff',
+        'orange-primary': '#ff8800',
+        'red-alert': '#ff385c',
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -25,13 +25,15 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<'user' | 'owner'>('user');
+  const [errors, setErrors] = useState<{ email?: string; general?: string }>({});
   const { signup } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSignup = async () => {
-    const success = await signup(name, email, password, role);
-    if (success) {
+    setErrors({});
+    const result = await signup(name, email, password, role);
+    if (result.success) {
       toast({ title: 'Signup Successful', description: 'Your account has been created.' });
       if (role === 'owner') {
         router.push('/owner/dashboard');
@@ -39,12 +41,17 @@ export default function SignupPage() {
         router.push('/');
       }
     } else {
-      toast({ variant: 'destructive', title: 'Signup Failed', description: 'This email is already in use.' });
+      const isEmailError = result.message?.toLowerCase().includes('email') || result.message?.toLowerCase().includes('user already exists');
+      if (isEmailError) {
+        setErrors({ email: result.message });
+      } else {
+        setErrors({ general: result.message });
+      }
+      toast({ variant: 'destructive', title: 'Signup Failed', description: result.message || 'Please check your inputs.' });
     }
   };
 
   const handleGoogleSignIn = () => {
-    // Placeholder for Firebase Google Sign-in logic
     alert('Google Sign-In is not configured yet.');
   }
 
@@ -64,15 +71,37 @@ export default function SignupPage() {
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${currentRole}-name`}>Full Name</Label>
-        <Input id={`${currentRole}-name`} type="text" placeholder="Juan Dela Cruz" required value={name} onChange={(e) => setName(e.target.value)} />
+        <Input
+          id={`${currentRole}-name`}
+          type="text"
+          placeholder="Juan Dela Cruz"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${currentRole}-email`}>Email</Label>
-        <Input id={`${currentRole}-email`} type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input
+          id={`${currentRole}-email`}
+          type="email"
+          placeholder="m@example.com"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={errors.email ? 'border-red-500' : ''}
+        />
+        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${currentRole}-password`}>Password</Label>
-        <Input id={`${currentRole}-password`} type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Input
+          id={`${currentRole}-password`}
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </div>
     </CardContent>
   );
@@ -97,7 +126,7 @@ export default function SignupPage() {
           </TabsContent>
         </Tabs>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleSignup}>Create Account</Button>
+          <Button className="w-full bg-[#218d3d] hover:bg-[#218d3d]/90 text-white" onClick={handleSignup}>Create Account</Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" className="underline hover:text-primary">

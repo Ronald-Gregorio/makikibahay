@@ -1,22 +1,23 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const isFormData = options.body instanceof FormData;
+
+    // For FormData, let the browser set the Content-Type automatically with the boundary string
     const headers = {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...options.headers,
     } as Record<string, string>;
 
     let backendToken: string | undefined;
-
+    // ... rest of the auth token logic stays same
     if (!backendToken && typeof window !== 'undefined') {
         const storedUser = localStorage.getItem('makikibahay-user');
         if (storedUser) {
             try {
                 const parsedUser = JSON.parse(storedUser);
                 backendToken = parsedUser.token;
-            } catch (e) {
-                // Ignore parse error
-            }
+            } catch (e) { }
         }
     }
 
@@ -30,19 +31,15 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     });
 
     if (!response.ok) {
-        // Attempt to read error message
         let errorMessage = response.statusText;
         try {
             const errorData = await response.json();
             if (errorData.message) errorMessage = errorData.message;
-        } catch (e) {
-            // Ignore JSON parse error
-        }
+        } catch (e) { }
         throw new Error(`API call failed: ${errorMessage}`);
     }
 
     if (response.status === 204) return null;
-
     return response.json();
 };
 
@@ -51,6 +48,7 @@ export const api = {
     post: <T>(url: string, body: any) => fetchWithAuth(url, { method: 'POST', body: JSON.stringify(body) }) as Promise<T>,
     put: <T>(url: string, body: any) => fetchWithAuth(url, { method: 'PUT', body: JSON.stringify(body) }) as Promise<T>,
     delete: <T>(url: string) => fetchWithAuth(url, { method: 'DELETE' }) as Promise<T>,
+    postForm: <T>(url: string, formData: FormData) => fetchWithAuth(url, { method: 'POST', body: formData }) as Promise<T>,
 };
 
 export default api;

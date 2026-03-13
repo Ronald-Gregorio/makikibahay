@@ -16,7 +16,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, pass: string, role: 'user' | 'owner') => Promise<boolean>;
   adminLogin: (email: string, pass: string) => Promise<boolean>;
-  signup: (name: string, email: string, pass: string, role: 'user' | 'owner') => Promise<boolean>;
+  signup: (name: string, email: string, pass: string, role: 'user' | 'owner') => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateUser?: (updates: Partial<User>) => void;
   loading: boolean;
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return false;
   };
 
-  const signup = async (name: string, email: string, pass: string, role: 'user' | 'owner'): Promise<boolean> => {
+  const signup = async (name: string, email: string, pass: string, role: 'user' | 'owner'): Promise<{ success: boolean; message?: string }> => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiUrl}/api/auth/register`, {
@@ -142,19 +142,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ name, email, password: pass, role })
       });
 
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         const newUser: User = { id: data._id, name: data.name, email: data.email, role: data.role };
         setUser(newUser);
         localStorage.setItem('makikibahay-user', JSON.stringify({ ...newUser, token: data.token }));
         setSurveyData(null);
         setFavorites([]);
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (err) {
+      return { success: false, message: data.message || 'Signup failed' };
+    } catch (err: any) {
       console.error('Signup request failed', err);
-      return false;
+      return { success: false, message: err.message || 'Network error during signup' };
     }
   };
 

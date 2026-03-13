@@ -90,26 +90,34 @@ export default function CreateListingPage() {
 
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setIsPhotoUploading(true);
       const files = Array.from(e.target.files);
-      const fileReaders = files.map(file => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = error => reject(error);
-        });
-      });
 
-      Promise.all(fileReaders).then(base64Images => {
-        setPhotos([...photos, ...base64Images]);
+      try {
+        const uploadPromises = files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('image', file);
+
+          // Use the new postForm method in our api client
+          const response = await api.postForm<{ url: string }>('/upload', formData);
+          return response.url;
+        });
+
+        const uploadedUrls = await Promise.all(uploadPromises);
+        setPhotos(prev => [...prev, ...uploadedUrls]);
+        toast({ title: 'Upload Successful', description: `${files.length} photo(s) uploaded.` });
+      } catch (err: any) {
+        console.error('Upload Error:', err);
+        toast({
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: err.message || 'Could not upload images to server.'
+        });
+      } finally {
         setIsPhotoUploading(false);
-      }).catch(err => {
-        setIsPhotoUploading(false);
-        toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not process images.' });
-      });
+      }
     }
   };
 
