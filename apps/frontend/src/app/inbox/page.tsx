@@ -14,68 +14,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/index';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/index';
 import { Input } from '@/components/ui/index';
 import { Textarea } from '@/components/ui/index';
+import Link from 'next/link';
 
-const initialMessages = [
-  {
-    id: 1,
-    from: 'Sunny Day',
-    to: 'me',
-    email: 'sunny.day@example.com',
-    subject: 'Re: Inquiry for Sunshine Residences',
-    text: 'Yes, the solo room is still available. Would you like to schedule a visit this weekend? I am available on Saturday from 9 AM to 5 PM.\n\nBest,\nSunny',
-    isRead: false,
-    isStarred: true,
-    isArchived: false,
-    isTrashed: false,
-    date: '3:45 PM',
-    type: 'received' as const,
-  },
-  {
-    id: 2,
-    from: 'Maria Maple',
-    to: 'me',
-    email: 'maria.maple@example.com',
-    subject: 'Bed spacer slot confirmation',
-    text: 'Your slot at Maple Tree Dormitory is confirmed. Please settle the reservation fee within 3 banking days to secure your spot. You can send it via GCash to 09123456789. Thank you!',
-    isRead: false,
-    isStarred: false,
-    isArchived: false,
-    isTrashed: false,
-    date: '11:20 AM',
-    type: 'received' as const,
-  },
-  {
-    id: 3,
-    from: 'Makikibahay Team',
-    to: 'me',
-    email: 'team@makikibahay.com',
-    subject: 'Welcome to Makikibahay!',
-    text: 'We are excited to have you on board. Start by browsing our listings or, if you are an owner, create your first listing today! Let us know if you have any questions.',
-    isRead: true,
-    isStarred: false,
-    isArchived: true,
-    isTrashed: false,
-    date: 'Yesterday',
-    type: 'received' as const,
-  },
-  {
-    id: 4,
-    from: 'Pat Professional',
-    to: 'me',
-    email: 'pat.pro@example.com',
-    subject: 'Viewing Schedule for The Professional\'s Pad',
-    text: 'The unit is available for viewing this Saturday at 2 PM. Let me know if this works for you. The address is 789 Gen. Tinio St, Cabanatuan City.',
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    isTrashed: false,
-    date: 'May 28',
-    type: 'received' as const,
-  },
-];
+import { messageService } from '@/services/api/messages';
+import { useAuth } from '@/hooks/use-auth';
 
 type Message = {
-  id: number;
+  id: string;
   from: string;
   to: string;
   email: string;
@@ -87,23 +32,51 @@ type Message = {
   isTrashed: boolean;
   date: string;
   type: 'received' | 'sent';
+  roomId: string; // Added
+  listingId: any; // Added
+  senderId: any;
+  receiverId: any;
 };
+
 type MailboxType = 'inbox' | 'starred' | 'sent' | 'archive' | 'trash';
 type ComposeMode = 'new' | 'reply' | 'reply-all' | 'forward';
+
 interface ComposeState {
   mode: ComposeMode;
-  message: Message | null;
+  message: any | null;
   recipient?: string;
 }
 
 function InboxComponent() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
+  const [thread, setThread] = useState<any[]>([]);
   const [composeState, setComposeState] = useState<ComposeState | null>(null);
   const [mailbox, setMailbox] = useState<MailboxType>('inbox');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        setLoading(true);
+        const data = await messageService.getConversations();
+        setMessages(data);
+      } catch (err) {
+        console.error('Failed to fetch conversations:', err);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load conversations.' });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchConversations();
+    }
+  }, [user, toast]);
 
   useEffect(() => {
     const to = searchParams.get('to');
@@ -112,13 +85,14 @@ function InboxComponent() {
     }
   }, [searchParams]);
 
-  const unreadCount = messages.filter(m => !m.isRead && !m.isArchived && !m.isTrashed && m.type === 'received').length;
-  const sentCount = messages.filter(m => m.type === 'sent' && !m.isTrashed).length;
+  const unreadCount = messages.filter(m => !m.isRead && m.receiverId?._id === user?.id).length;
+  const sentCount = messages.filter(m => m.senderId?._id === user?.id).length;
 
-  const handleMessageAction = (id: number, action: 'star' | 'archive' | 'trash' | 'read' | 'toggleStar' | 'unarchive') => {
+  const handleMessageAction = async (id: string, action: 'star' | 'archive' | 'trash' | 'read' | 'toggleStar' | 'unarchive') => {
+    // Optimistic update
     setMessages(prev =>
       prev.map(m => {
-        if (m.id === id) {
+        if (m._id === id) {
           switch (action) {
             case 'star': return { ...m, isStarred: !m.isStarred };
             case 'archive': return { ...m, isArchived: true };
@@ -132,73 +106,107 @@ function InboxComponent() {
       })
     );
 
-    if (action === 'archive' || action === 'trash' || action === 'unarchive') {
-      setSelectedMessage(null); // Deselect message after action
+    try {
+        const message = messages.find(m => m._id === id);
+        if (!message) return;
+
+        let statusUpdate: any = {};
+        switch (action) {
+            case 'star': 
+            case 'toggleStar':
+                statusUpdate.isStarred = !message.isStarred;
+                break;
+            case 'archive':
+                statusUpdate.isArchived = true;
+                break;
+            case 'unarchive':
+                statusUpdate.isArchived = false;
+                break;
+            case 'trash':
+                statusUpdate.isTrashed = true;
+                break;
+            case 'read':
+                statusUpdate.isRead = true;
+                break;
+        }
+
+        await messageService.updateStatus(id, statusUpdate);
+    } catch (err) {
+        console.error('Failed to update message status:', err);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to update message status on server.' });
+        // Revert (could fetch again)
+        const data = await messageService.getConversations();
+        setMessages(data);
     }
   };
 
-  const handleAddSentMessage = (to: string, subject: string, text: string) => {
-    const newMessage: Message = {
-      id: messages.length + 1,
-      from: 'me',
-      to: to,
-      email: to,
-      subject: subject,
-      text: text,
-      isRead: true,
-      isStarred: false,
-      isArchived: false,
-      isTrashed: false,
-      date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: 'sent',
-    };
-    setMessages(prev => [newMessage, ...prev]);
+  const handleAddSentMessage = async (to: string, subject: string, text: string) => {
+      if (!composeState?.recipient && !selectedMessage) return;
+      
+      try {
+          // Use current message's listingId if replying
+          const listingId = selectedMessage?.listingId?._id || selectedMessage?.listingId || searchParams.get('listingId');
+          const receiverId = to;
+          
+          await messageService.sendMessage(text, receiverId, listingId, selectedMessage?.roomId);
+          
+          // Refresh conversations
+          const data = await messageService.getConversations();
+          setMessages(data);
+      } catch (err) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Failed to send message.' });
+      }
   };
 
   const getFilteredMessages = () => {
+    // Current backend doesn't support archived/trashed flags in DB yet, 
+    // but we'll filter locally for now if those fields exist in the normalized response.
     switch (mailbox) {
       case 'inbox':
-        return messages.filter(m => m.type === 'received' && !m.isArchived && !m.isTrashed);
+        return messages.filter(m => m.receiverId?._id === user?.id && !m.isArchived && !m.isTrashed);
       case 'starred':
         return messages.filter(m => m.isStarred && !m.isTrashed);
       case 'sent':
-        return messages.filter(m => m.type === 'sent' && !m.isTrashed);
+        return messages.filter(m => m.senderId?._id === user?.id && !m.isTrashed);
       case 'archive':
         return messages.filter(m => m.isArchived && !m.isTrashed);
       case 'trash':
         return messages.filter(m => m.isTrashed);
       default:
-        return [];
+        return messages;
     }
   };
 
   const filteredMessages = getFilteredMessages();
 
-  const handleSelectMessage = (message: Message) => {
+  const handleSelectMessage = async (message: any) => {
     setSelectedMessage(message);
     setComposeState(null);
-    if (!message.isRead) {
-      handleMessageAction(message.id, 'read');
+    try {
+        const threadData = await messageService.getMessagesByRoom(message.roomId);
+        setThread(threadData);
+    } catch (err) {
+        console.error('Failed to fetch thread:', err);
     }
   };
 
-  const handleTrash = (id: number) => {
+  const handleTrash = (id: string) => {
     handleMessageAction(id, 'trash');
     toast({ title: "Message moved to Trash." });
   }
 
-  const handleArchive = (id: number) => {
+  const handleArchive = (id: string) => {
     handleMessageAction(id, 'archive');
     toast({ title: "Message Archived." });
   }
 
-  const handleUnarchive = (id: number) => {
+  const handleUnarchive = (id: string) => {
     handleMessageAction(id, 'unarchive');
     toast({ title: "Message moved to Inbox." });
   }
 
-  const handleToggleStar = (id: number) => {
-    const message = messages.find(m => m.id === id);
+  const handleToggleStar = (id: string) => {
+    const message = messages.find(m => m._id === id);
     if (message) {
       handleMessageAction(id, 'toggleStar');
       toast({ title: message.isStarred ? 'Unstarred' : 'Starred' });
@@ -329,8 +337,19 @@ function InboxComponent() {
                   </div>
                 </button>
               )) : (
-                <div className="text-center text-muted-foreground p-8">
-                  <p>No messages in {mailbox}.</p>
+                <div className="flex flex-col items-center justify-center h-full py-16 px-4 text-center bg-gray-light/30 border border-transparent rounded-lg">
+                  <div className="h-20 w-20 bg-primary-green/10 rounded-full flex items-center justify-center mb-4">
+                    <Inbox className="h-8 w-8 text-primary-green" />
+                  </div>
+                  <h3 className="text-xl font-bold text-text-dark mb-2">Your inbox is empty</h3>
+                  <p className="text-sm text-gray-text max-w-[250px] mb-6">
+                    When you contact property owners or receive messages, they'll appear here in your {mailbox}.
+                  </p>
+                  <Button asChild className="bg-primary-green hover:bg-primary-green-hover text-white">
+                    <Link href="/browse">
+                      Explore Properties
+                    </Link>
+                  </Button>
                 </div>
               )}
             </div>
@@ -382,13 +401,13 @@ export default function InboxPage() {
 }
 
 function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onToggleStar, onCompose }: {
-  message: Message,
+  message: any,
   mailbox: MailboxType,
-  onTrash: (id: number) => void,
-  onArchive: (id: number) => void,
-  onUnarchive: (id: number) => void,
-  onToggleStar: (id: number) => void,
-  onCompose: (mode: ComposeMode, message: Message) => void;
+  onTrash: (id: string) => void,
+  onArchive: (id: string) => void,
+  onUnarchive: (id: string) => void,
+  onToggleStar: (id: string) => void,
+  onCompose: (mode: ComposeMode, message: any) => void;
 }) {
   const isSentMailbox = mailbox === 'sent';
   return (
@@ -398,21 +417,21 @@ function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onTogg
           {mailbox === 'archive' ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={() => onUnarchive(message.id)}><ArchiveRestore className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => onUnarchive(message._id)}><ArchiveRestore className="h-4 w-4" /></Button>
               </TooltipTrigger>
               <TooltipContent>Unarchive</TooltipContent>
             </Tooltip>
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={() => onArchive(message.id)} disabled={isSentMailbox}><Archive className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => onArchive(message._id)} disabled={isSentMailbox}><Archive className="h-4 w-4" /></Button>
               </TooltipTrigger>
               <TooltipContent>Archive</TooltipContent>
             </Tooltip>
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onTrash(message.id)}><Trash2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onTrash(message._id)}><Trash2 className="h-4 w-4" /></Button>
             </TooltipTrigger>
             <TooltipContent>Delete</TooltipContent>
           </Tooltip>
@@ -455,7 +474,7 @@ function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onTogg
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onToggleStar(message.id)}
+              onClick={() => onToggleStar(message._id)}
               disabled={isSentMailbox}
             >
               <Star className={cn("h-4 w-4", message.isStarred && "fill-primary text-primary")} />

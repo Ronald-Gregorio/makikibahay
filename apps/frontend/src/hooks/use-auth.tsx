@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { SurveyData, Review } from '@/lib/types';
+import { userService } from '@/services/api/users';
 
 // Define the shape of the user object
 interface User {
@@ -9,6 +10,7 @@ interface User {
   name: string;
   email: string;
   role: 'user' | 'owner' | 'admin';
+  verificationStatus?: 'unverified' | 'pending' | 'verified' | 'rejected';
 }
 
 // Define the shape of the Auth context
@@ -16,14 +18,14 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, pass: string, role: 'user' | 'owner') => Promise<boolean>;
   adminLogin: (email: string, pass: string) => Promise<boolean>;
-  signup: (name: string, email: string, pass: string, role: 'user' | 'owner') => Promise<{ success: boolean; message?: string }>;
+  signup: (name: string, email: string, pass: string, role: 'user' | 'owner', username?: string) => Promise<{ success: boolean; message?: string; field?: string }>;
   logout: () => void;
   updateUser?: (updates: Partial<User>) => void;
   loading: boolean;
   surveyData: SurveyData | null;
   saveSurveyData: (data: SurveyData) => void;
-  favorites: number[];
-  toggleFavorite: (listingId: number) => void;
+  favorites: string[];
+  toggleFavorite: (listingId: string) => void;
 }
 
 // Create the Auth context
@@ -33,14 +35,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // In a real app, this would be a database.
 const userStore: { [email: string]: { id: string; name: string; email: string; passwordHash: string; role: 'user' | 'owner' | 'admin' } } = {
   'admin@example.com': {
-    id: '999',
+    id: '65f8a1b2c4d5e6f7a8b9c0d1',
     name: 'Admin',
     email: 'admin@example.com',
     passwordHash: 'admin123',
     role: 'admin'
   },
   'owner@example.com': {
-    id: '103', // Matches Pat Professional from mock-data
+    id: '65f8a1b2c4d5e6f7a8b9c0d2', // Matches Pat Professional from mock-data
     name: 'Pat Professional',
     email: 'owner@example.com',
     passwordHash: 'owner123',
@@ -55,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     // Check if user is logged in from a previous session (e.g., from localStorage)
@@ -64,14 +66,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        // Also load their survey data and favorites
+        
+        // Load favorites from DB if logged in
+        userService.getFavorites().then(data => {
+            setFavorites(data.map(f => f._id || f.id));
+        }).catch(err => console.error("Failed to fetch favorites", err));
+
+        // Also load their survey data
         const storedSurvey = localStorage.getItem(`makikibahay-survey-${parsedUser.id}`);
         if (storedSurvey) {
           setSurveyData(JSON.parse(storedSurvey));
-        }
-        const storedFavorites = localStorage.getItem(`makikibahay-favorites-${parsedUser.id}`);
-        if (storedFavorites) {
-          setFavorites(JSON.parse(storedFavorites));
         }
       }
     } catch (error) {
@@ -102,13 +106,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(loggedInUser);
         localStorage.setItem('makikibahay-user', JSON.stringify({ ...loggedInUser, token: data.token }));
 
+        // Fetch favorites after login
+        userService.getFavorites().then(favs => {
+            setFavorites(favs.map(f => f._id || f.id));
+        });
+
         const storedSurvey = localStorage.getItem(`makikibahay-survey-${loggedInUser.id}`);
         if (storedSurvey) {
           setSurveyData(JSON.parse(storedSurvey));
-        }
-        const storedFavorites = localStorage.getItem(`makikibahay-favorites-${loggedInUser.id}`);
-        if (storedFavorites) {
-          setFavorites(JSON.parse(storedFavorites));
         }
         return true;
       }
@@ -133,13 +138,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return false;
   };
 
-  const signup = async (name: string, email: string, pass: string, role: 'user' | 'owner'): Promise<{ success: boolean; message?: string }> => {
+  const signup = async (name: string, email: string, pass: string, role: 'user' | 'owner', username?: string): Promise<{ success: boolean; message?: string; field?: string }> => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const body: any = { name, email, password: pass, role };
+      if (username) body.username = username;
+
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password: pass, role })
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
@@ -151,7 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setFavorites([]);
         return { success: true };
       }
-      return { success: false, message: data.message || 'Signup failed' };
+      return { success: false, message: data.message || 'Signup failed', field: data.field };
     } catch (err: any) {
       console.error('Signup request failed', err);
       return { success: false, message: err.message || 'Network error during signup' };
@@ -193,15 +201,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const toggleFavorite = (listingId: number) => {
+  const toggleFavorite = async (listingId: string) => {
     if (!user) return;
 
-    const newFavorites = favorites.includes(listingId)
+    const isFav = favorites.includes(listingId);
+    const newFavorites = isFav
       ? favorites.filter(id => id !== listingId)
       : [...favorites, listingId];
 
+    // Optimistic update
     setFavorites(newFavorites);
     localStorage.setItem(`makikibahay-favorites-${user.id}`, JSON.stringify(newFavorites));
+
+    try {
+        if (isFav) {
+            await userService.removeFavorite(listingId);
+        } else {
+            await userService.addFavorite(listingId);
+        }
+    } catch (err) {
+        console.error("Failed to sync favorites with server", err);
+        // Revert local state on failure
+        const data = await userService.getFavorites();
+        setFavorites(data.map(f => f._id || f.id));
+    }
   }
 
   const value = {

@@ -17,6 +17,11 @@ const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <div className="h-[300px] w-full bg-gray-light animate-pulse rounded-lg" />,
 });
 
+const MarzipanoViewer = dynamic(() => import('@/components/MarzipanoViewer'), {
+  ssr: false,
+  loading: () => <div className="h-[500px] w-full flex items-center justify-center bg-gray-light text-gray-text rounded-lg">Loading 3D Tour...</div>,
+});
+
 interface User { _id: string; name: string; avatar?: string; }
 interface Room { _id: string; type?: string; price: number; inclusions: string[]; isAvailable: boolean; }
 interface Review { _id: string; rating: number; comment: string; userId: User; createdAt: string; }
@@ -275,6 +280,27 @@ function ListingDetailContent() {
                   items={listing.amenities.slice(Math.ceil(listing.amenities.length / 2))}
                 />
               </div>
+            </section>
+
+            {/* 3D Virtual Tour */}
+            <section id="views">
+              <h2 className="text-2xl font-bold text-text-dark mb-5">3D Virtual Tour</h2>
+              <MarzipanoViewer 
+                scenes={[
+                  {
+                    id: 'living-room',
+                    name: 'Living Room',
+                    imageUrl: 'https://www.marzipano.net/media/equirect/angra.jpg',
+                    hotspots: [{ pitch: 0.1, yaw: -0.4, label: 'Kitchen', sceneId: 'kitchen' }]
+                  },
+                  {
+                    id: 'kitchen',
+                    name: 'Kitchen',
+                    imageUrl: 'https://www.marzipano.net/media/equirect/angra.jpg',
+                    hotspots: [{ pitch: 0, yaw: 0.5, label: 'Living Room', sceneId: 'living-room' }]
+                  }
+                ]} 
+              />
             </section>
 
             {/* Fees & Policies */}

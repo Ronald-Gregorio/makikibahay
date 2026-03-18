@@ -50,7 +50,7 @@ export function PropertyCard({ listing }: PropertyCardProps) {
         <Link href={`/listings/${listing.id}`}>
           <div className="aspect-video relative">
             <Image
-              src={listing.photos[0].url}
+              src={listing.photos?.[0]?.url || 'https://placehold.co/400x300.png?text=No+Photo'}
               alt={listing.name}
               layout="fill"
               objectFit="cover"

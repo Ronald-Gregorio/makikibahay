@@ -1,28 +1,19 @@
 import { api } from '../../lib/api';
-import type { User, Listing, Review } from '../../lib/types';
 
 export const userService = {
-    getProfile: () => {
-        return api.get<User>('/users/profile');
-    },
-
-    updateProfile: (data: Partial<User>) => {
-        return api.put<User>('/users/profile', data);
-    },
-
     getFavorites: () => {
-        return api.get<Listing[]>('/users/favorites');
+        return api.get<any[]>('/users/me/favorites');
     },
 
-    addFavorite: (listingId: number | string) => {
-        return api.post<{ message: string; favorite_id: number }>('/users/favorites', { listing_id: listingId });
+    addFavorite: (listingId: string) => {
+        return api.post('/users/me/favorites', { listingId });
     },
 
-    removeFavorite: (listingId: number | string) => {
-        return api.delete<{ message: string }>(`/users/favorites/${listingId}`);
+    removeFavorite: (listingId: string) => {
+        return api.delete(`/users/me/favorites/${listingId}`);
     },
 
     getMyReviews: () => {
-        return api.get<Review[]>('/users/reviews');
+        return api.get<any[]>('/reviews/me');
     }
 };

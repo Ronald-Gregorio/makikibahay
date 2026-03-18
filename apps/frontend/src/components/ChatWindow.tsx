@@ -126,7 +126,8 @@ export default function ChatWindow({ listingId, ownerId, isOpen, onClose }: Chat
       await api.post('/messages', {
         content: messageText,
         receiverId: ownerId,
-        listingId
+        listingId,
+        roomId
       });
 
       setMessageText('');

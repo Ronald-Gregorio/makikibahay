@@ -5,23 +5,31 @@ import Review from '../models/Review.js';
 
 export const getListings = async (req: Request, res: Response) => {
     try {
-        const { priceMin, priceMax, amenities } = req.query;
+        const { priceMin, priceMax, amenities, limit } = req.query;
         let query: any = {};
 
-        if (priceMin || priceMax) {
-            query.priceMin = {};
-            if (priceMin) query.priceMin.$gte = Number(priceMin);
-            if (priceMax) query.priceMin.$lte = Number(priceMax);
+        // Price range filter: find listings where priceMin >= user's min AND priceMax <= user's max
+        if (priceMin) {
+            query.priceMin = { ...query.priceMin, $gte: Number(priceMin) };
+        }
+        if (priceMax) {
+            query.priceMax = { ...query.priceMax, $lte: Number(priceMax) };
         }
 
         if (amenities) {
             const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
-            query.amenities = { $in: amenitiesArray };
+            query.amenities = { $all: amenitiesArray };
         }
 
-        const listings = await Listing.find(query).populate('ownerId', 'name avatar');
+        const maxResults = limit ? Math.min(Number(limit), 100) : 50;
+
+        const listings = await Listing.find(query)
+            .populate('ownerId', 'name avatar')
+            .limit(maxResults)
+            .sort({ createdAt: -1 });
         res.json(listings);
     } catch (error) {
+        console.error('Error fetching listings:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -59,7 +67,7 @@ export const getListingById = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
     try {
-        const { name, address, priceMin, priceMax, description, totalRooms, availableRooms, amenities, rules, location, photos, rooms } = req.body;
+        const { name, address, priceMin, priceMax, totalRooms, availableRooms, amenities, rules, location, photos, rooms, type } = req.body;
 
         // Assuming user is attached to req by auth middleware
         // const ownerId = req.user._id; 
@@ -85,7 +93,8 @@ export const createListing = async (req: Request, res: Response) => {
             amenities,
             rules,
             location,
-            photos
+            photos,
+            type
         });
 
         const createdListing = await listing.save();
@@ -93,6 +102,7 @@ export const createListing = async (req: Request, res: Response) => {
         if (rooms && Array.isArray(rooms) && rooms.length > 0) {
             const roomDocs = rooms.map(room => ({
                 listingId: createdListing._id,
+                type: room.type || 'Standard',
                 sizeSqm: room.size_sqm || 15,
                 price: room.price,
                 inclusions: room.inclusions,
@@ -106,5 +116,36 @@ export const createListing = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error creating listing:', error);
         res.status(500).json({ message: 'Server error when creating listing' });
+    }
+};
+
+export const getOwnerListings = async (req: Request, res: Response) => {
+    try {
+        const ownerId = req.query.ownerId || (req as any).user?._id;
+
+        if (!ownerId) {
+            res.status(400).json({ message: 'Owner ID required' });
+            return;
+        }
+
+        const listings = await Listing.find({ ownerId })
+            .populate('ownerId', 'name avatar')
+            .sort({ createdAt: -1 });
+
+        // For each listing, get the room count
+        const listingsWithRooms = await Promise.all(listings.map(async (listing) => {
+            const rooms = await Room.find({ listingId: listing._id });
+            return {
+                ...listing.toObject(),
+                totalRooms: rooms.length,
+                availableRooms: rooms.filter(r => r.isAvailable).length,
+                rooms
+            };
+        }));
+
+        res.json(listingsWithRooms);
+    } catch (error) {
+        console.error('Error fetching owner listings:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 };

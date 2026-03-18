@@ -18,7 +18,7 @@ const adminNavItems = [
     { href: '/inbox', label: 'Inbox', icon: Inbox },
     { href: '/admin/moderation', label: 'Moderation', icon: Shield },
     { href: '/admin/metrics', label: 'Metrics', icon: BarChart2 },
-    { href: '/admin/logs', label: 'Logs', icon: FileText },
+    { href: '/admin/system-logs', label: 'Logs', icon: FileText },
     { href: '/admin/tickets', label: 'Tickets', icon: Ticket },
 ];
 

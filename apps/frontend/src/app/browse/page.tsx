@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, MapPin, BedDouble, Heart, Mail, Phone, SlidersHorizontal } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Search, Filter, MapPin, BedDouble, Heart, Mail, Phone, SlidersHorizontal, BookmarkPlus } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { savedSearchService } from '@/services/api/savedSearches';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -9,6 +12,8 @@ const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
   loading: () => <div className="h-full w-full bg-gray-light animate-pulse rounded-lg" />,
 });
+
+import { useToast } from '@/hooks/use-toast';
 
 interface Listing {
   _id?: string;
@@ -111,6 +116,14 @@ export default function BrowsePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [locationQuery, setLocationQuery] = useState('');
+  const [mapCenter, setMapCenter] = useState<[number, number]>([15.4865, 120.9734]);
+  const [mapZoom, setMapZoom] = useState(13);
+  
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const q = searchParams.get('q');
+  const { toast } = useToast();
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
@@ -121,6 +134,13 @@ export default function BrowsePage() {
       if (filters.priceMax < 20000) params.append('priceMax', filters.priceMax.toString());
       filters.propertyTypes.forEach(t => params.append('type', t));
       filters.popularAmenities.forEach(a => params.append('amenities', a));
+      filters.communityAmenities.forEach(a => params.append('amenities', a));
+      filters.specialtyProperty.forEach(s => params.append('specialty', s));
+      filters.petPolicy.forEach(p => params.append('pets', p));
+      
+      if (filters.beds !== 'Any') params.append('beds', filters.beds);
+      if (filters.baths !== 'Any') params.append('baths', filters.baths);
+
       params.append('limit', '20');
       const res = await fetch(`${apiUrl}/api/listings?${params.toString()}`);
       if (res.ok) {
@@ -134,7 +154,34 @@ export default function BrowsePage() {
     }
   }, [filters]);
 
-  useEffect(() => { handleSearch(); }, []);
+  useEffect(() => { 
+    if (q) {
+      setLocationQuery(q);
+      handleGeocode(q);
+    }
+    handleSearch(); 
+  }, [q]);
+
+  const handleGeocode = async (address: string) => {
+    if (!address) return;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setMapCenter([parseFloat(lat), parseFloat(lon)]);
+        setMapZoom(15);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Location Not Found',
+          description: `Could not find "${address}" on the map.`
+        });
+      }
+    } catch (error) {
+       console.error('Geocoding error:', error);
+    }
+  };
 
   const toggleArr = (key: keyof FilterState, value: string) => {
     setFilters(prev => {
@@ -163,6 +210,20 @@ export default function BrowsePage() {
             <SlidersHorizontal className="h-4 w-4" />
             Filters
           </button>
+
+          {/* Location Search Input */}
+          <div className="flex-1 min-w-[200px] max-w-md relative">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-text" />
+             <input 
+                type="text" 
+                placeholder="Search location..."
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleGeocode(locationQuery)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-border rounded-full text-sm outline-none focus:border-primary-green transition-all"
+             />
+          </div>
+
           <span className="text-sm text-gray-text">
             {loading ? 'Searching…' : `${listings.length} Properties Found`}
           </span>
@@ -338,19 +399,39 @@ export default function BrowsePage() {
               </FilterSection>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setFilters(defaultFilters)}
-                  className="flex-1 py-2.5 border border-gray-border rounded text-sm font-medium text-text-dark hover:bg-gray-light transition-colors"
-                >
-                  Clear All
-                </button>
-                <button
-                  onClick={handleSearch}
-                  className="flex-1 py-2.5 bg-primary-green hover:bg-primary-green-hover text-white rounded text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Search className="h-4 w-4" /> Search
-                </button>
+              <div className="flex flex-col gap-2 pt-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFilters(defaultFilters)}
+                    className="flex-1 py-2.5 border border-gray-border rounded text-sm font-medium text-text-dark hover:bg-gray-light transition-colors"
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    onClick={handleSearch}
+                    className="flex-1 py-2.5 bg-primary-green hover:bg-primary-green-hover text-white rounded text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Search className="h-4 w-4" /> Search
+                  </button>
+                </div>
+                
+                {user && (
+                    <button
+                        onClick={async () => {
+                            try {
+                                const name = prompt('Enter a name for this search:', `Search ${new Date().toLocaleDateString()}`);
+                                if (!name) return;
+                                await savedSearchService.saveSearch(name, filters);
+                                toast({ title: 'Search Saved', description: `"${name}" has been added to your saved searches.` });
+                            } catch (err) {
+                                toast({ variant: 'destructive', title: 'Error', description: 'Failed to save search.' });
+                            }
+                        }}
+                        className="w-full py-2.5 border border-primary-green text-primary-green hover:bg-green-50 rounded text-sm font-bold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                        <BookmarkPlus className="h-4 w-4" /> Save This Search
+                    </button>
+                )}
               </div>
             </div>
           </aside>
@@ -393,8 +474,8 @@ export default function BrowsePage() {
             {/* Map */}
             <div className="hidden lg:block lg:w-[400px] flex-shrink-0 sticky top-[120px] h-[calc(100vh-140px)] rounded-xl overflow-hidden shadow-[0_4px_6px_rgba(0,0,0,0.1)]">
               <Map
-                center={[15.4865, 120.9734]}
-                zoom={13}
+                center={mapCenter}
+                zoom={mapZoom}
                 markers={mapMarkers}
                 className="h-full w-full"
               />
@@ -408,7 +489,27 @@ export default function BrowsePage() {
 
 /** Apartments.com style horizontal listing card */
 function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
-  const [favorited, setFavorited] = useState(false);
+  const { user, favorites, toggleFavorite } = useAuth();
+  const { toast } = useToast();
+  const isFavorite = favorites.includes(id);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Required',
+        description: 'You need to be logged in to save favorites.',
+      });
+      return;
+    }
+    toggleFavorite(id);
+    toast({
+      title: isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
+      description: `${listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
+    });
+  };
 
   return (
     <article className="flex border border-gray-border rounded-lg overflow-hidden bg-white hover:shadow-[0_4px_6px_rgba(0,0,0,0.1)] transition-shadow">
@@ -420,11 +521,11 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
           className="w-full h-full object-cover"
         />
         <button
-          onClick={() => setFavorited(f => !f)}
-          className={`absolute top-3 right-3 text-2xl transition-colors ${favorited ? 'text-red-alert' : 'text-gray-border hover:text-red-alert'}`}
+          onClick={handleFavoriteClick}
+          className={`absolute top-3 right-3 text-2xl transition-colors ${isFavorite ? 'text-red-alert' : 'text-gray-border hover:text-red-alert'}`}
           aria-label="Save to favorites"
         >
-          ♥
+          {isFavorite ? '♥' : '♡'}
         </button>
       </div>
 
@@ -478,7 +579,7 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
             href={`/listings/${id}`}
             className="flex items-center justify-center gap-1.5 flex-1 py-2.5 border border-gray-border text-text-dark rounded font-bold text-sm hover:bg-gray-light transition-colors"
           >
-            <Phone className="h-4 w-4" /> View Details
+            View Details
           </Link>
         </div>
       </div>

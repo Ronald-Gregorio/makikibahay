@@ -56,12 +56,19 @@ export default function FavoritesPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border-2 border-dashed border-muted-foreground/30 rounded-lg">
-          <HeartCrack className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h2 className="mt-4 text-2xl font-semibold">No Favorites Yet</h2>
-          <p className="mt-2 text-muted-foreground">
-            Click the heart icon on a listing to save it here.
+        <div className="flex flex-col items-center justify-center py-20 px-4 mt-8 bg-gray-light/30 border border-gray-border rounded-xl text-center">
+          <div className="h-24 w-24 bg-red-alert/10 rounded-full flex items-center justify-center mb-6">
+            <HeartCrack className="h-10 w-10 text-red-alert" />
+          </div>
+          <h2 className="text-2xl font-bold text-text-dark mb-3">No Saved Properties</h2>
+          <p className="text-gray-text max-w-md mb-8">
+            You haven't saved any properties yet. Keep track of boarding houses you love by clicking the heart icon on any listing.
           </p>
+          <Button asChild size="lg" className="bg-primary-green hover:bg-primary-green-hover text-white">
+            <Link href="/browse">
+              Start Browsing Now
+            </Link>
+          </Button>
         </div>
       )}
     </div>

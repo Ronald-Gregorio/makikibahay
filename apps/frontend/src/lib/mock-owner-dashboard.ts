@@ -12,7 +12,7 @@ export interface OwnerDashboardData {
 
 export interface OwnerProperty extends Listing {
   propertyCode: string;
-  status: 'active' | 'inactive' | 'maintenance' | 'pending_approval';
+  status: 'Active' | 'Unpublished' | 'Pending';
   propertyType: 'boarding_house' | 'dormitory' | 'apartment' | 'transient';
   amenities: string[];
   policies: {
@@ -369,8 +369,8 @@ export const sampleOwnerDashboardData: OwnerDashboardData = {
   },
   properties: [
     {
-      id: 1,
-      owner_id: 101,
+      id: '1',
+      owner_id: '101',
       owner_name: 'Sunny Day',
       owner_phone: '09171234567',
       propertyCode: 'SUN-001',
@@ -391,7 +391,7 @@ export const sampleOwnerDashboardData: OwnerDashboardData = {
       rooms: [],
       reviews: [],
       amenities: ['Wi-Fi', 'Kitchen', 'Laundry Area'],
-      status: 'active',
+      status: 'Active',
       propertyType: 'boarding_house',
       policies: {
         visitors: 'Until 10 PM',

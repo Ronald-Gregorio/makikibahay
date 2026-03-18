@@ -52,7 +52,7 @@ export default function ListingsManagementPage() {
     const { toast } = useToast();
 
     useEffect(() => {
-        listingService.getAll()
+        listingService.getAdminListings()
             .then(data => setListings(data))
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -69,14 +69,9 @@ export default function ListingsManagementPage() {
             );
         }
 
-        // Filter by status (mock implementation)
+        // Filter by status
         if (statusFilter !== 'all') {
-            // For now, all listings are 'Active'. This is a placeholder.
-            if (statusFilter === 'Active') {
-                result = result.filter(listing => true);
-            } else {
-                result = [];
-            }
+            result = result.filter(listing => listing.status === statusFilter);
         }
 
         setFilteredListings(result);
@@ -85,7 +80,7 @@ export default function ListingsManagementPage() {
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedListingIds(filteredListings.map(l => l.id.toString()));
+            setSelectedListingIds(filteredListings.filter(l => l.id).map(l => l.id.toString()));
         } else {
             setSelectedListingIds([]);
         }
@@ -99,16 +94,37 @@ export default function ListingsManagementPage() {
         }
     };
 
-    const handleBulkUnpublish = () => {
-        // Mock implementation
-        toast({ title: "Bulk Action", description: `${selectedListingIds.length} listings have been unpublished.` });
-        setSelectedListingIds([]);
+    const handleBulkUnpublish = async () => {
+        try {
+            await listingService.bulkUpdateListingsStatus(selectedListingIds, 'Unpublished');
+            setListings(prev => prev.map(l => selectedListingIds.includes(l.id?.toString() || '') ? { ...l, status: 'Unpublished' } : l));
+            setSelectedListingIds([]);
+            toast({ title: "Bulk Action", description: `${selectedListingIds.length} listings have been unpublished.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to unpublish listings." });
+        }
     }
 
-    const handleBulkDelete = () => {
-        setListings(prev => prev.filter(l => !selectedListingIds.includes(l.id.toString())));
-        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedListingIds.length} listings have been deleted.` });
-        setSelectedListingIds([]);
+    const handleBulkActivate = async () => {
+        try {
+            await listingService.bulkUpdateListingsStatus(selectedListingIds, 'Active');
+            setListings(prev => prev.map(l => selectedListingIds.includes(l.id?.toString() || '') ? { ...l, status: 'Active' } : l));
+            setSelectedListingIds([]);
+            toast({ title: "Bulk Action", description: `${selectedListingIds.length} listings have been activated.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to activate listings." });
+        }
+    }
+
+    const handleBulkDelete = async () => {
+        try {
+            await listingService.bulkDeleteListings(selectedListingIds);
+            setListings(prev => prev.filter(l => !selectedListingIds.includes(l.id?.toString() || '')));
+            setSelectedListingIds([]);
+            toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedListingIds.length} listings have been deleted.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to delete listings." });
+        }
     }
 
     return (
@@ -156,13 +172,13 @@ export default function ListingsManagementPage() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Bulk Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleBulkActivate}>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Activate Selected
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleBulkUnpublish}>
                                     <EyeOff className="mr-2 h-4 w-4" />
                                     Unpublish Selected
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { }}>
-                                    <BookMarked className="mr-2 h-4 w-4" />
-                                    Feature Selected
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive" onClick={handleBulkDelete}>
@@ -203,7 +219,7 @@ export default function ListingsManagementPage() {
                                     <TableCell colSpan={5} className="text-center py-4">Loading...</TableCell>
                                 </TableRow>
                             )}
-                            {filteredListings.map(listing => (
+                            {filteredListings.filter(listing => listing.id).map(listing => (
                                 <ListingRow
                                     key={listing.id}
                                     listing={listing}
@@ -268,12 +284,17 @@ function ThreeDModelView({ room }: { room: Room }) {
 }
 
 function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, isSelected: boolean, onSelectRow: (listingId: string, checked: boolean) => void }) {
-    const roomsWith3d = listing.rooms.filter(room => room.model_3d_url);
+    const safeRooms = listing.rooms || [];
+    const safePhotos = listing.photos || [];
+    const safeRules = listing.rules || [];
+    const roomsWith3d = safeRooms.filter(room => room.model_3d_url);
     const [selectedRoomId, setSelectedRoomId] = useState<string | undefined>(
-        roomsWith3d[0]?.room_id.toString()
+        roomsWith3d[0]?.room_id?.toString()
     );
 
-    const selectedRoom = roomsWith3d.find(room => room.room_id.toString() === selectedRoomId);
+    const selectedRoom = roomsWith3d.find(room => room.room_id?.toString() === selectedRoomId);
+    const coverPhoto = safePhotos.find(p => p.is_cover) || safePhotos[0];
+    const photoUrl = coverPhoto?.url || 'https://placehold.co/64x64.png?text=No+Photo';
 
     return (
         <Dialog>
@@ -281,14 +302,14 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                 <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                         checked={isSelected}
-                        onCheckedChange={(checked) => onSelectRow(listing.id.toString(), !!checked)}
+                        onCheckedChange={(checked) => onSelectRow(listing.id?.toString() || '', !!checked)}
                         aria-label={`Select listing ${listing.name}`}
                     />
                 </TableCell>
                 <DialogTrigger asChild>
                     <TableCell className="cursor-pointer">
                         <div className="flex items-center gap-4">
-                            <Image src={listing.photos[0].url} alt={listing.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="apartment room" />
+                            <Image src={photoUrl} alt={listing.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="apartment room" />
                             <div>
                                 <div className="font-semibold hover:underline">{listing.name}</div>
                                 <p className="text-sm text-muted-foreground">{listing.address}</p>
@@ -298,11 +319,14 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                 </DialogTrigger>
                 <TableCell>{listing.owner_name}</TableCell>
                 <TableCell>
-                    <Badge>Active</Badge>
+                    <Badge variant={listing.status === 'Active' ? 'default' : listing.status === 'Pending' ? 'secondary' : 'outline'} 
+                           className={listing.status === 'Active' ? 'bg-green-500 hover:bg-green-600 text-white' : ''}>
+                        {listing.status || 'Active'}
+                    </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Link href={`/owner/listings/edit/${listing.id}`} passHref>
+                        <Link href={`/admin/listings/${listing.id}/edit`} passHref>
                             <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
                         </Link>
                         <AlertDialog>
@@ -335,10 +359,10 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                         <div>
                             <h4 className="font-semibold mb-2">Photos</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                {listing.photos.map((photo) => (
+                                {safePhotos.length > 0 ? safePhotos.map((photo) => (
                                     <div key={photo.photo_id} className="aspect-square relative">
                                         <Image
-                                            src={photo.url}
+                                            src={photo.url || 'https://placehold.co/200x200.png?text=No+Photo'}
                                             alt={`${listing.name} photo`}
                                             fill
                                             objectFit="cover"
@@ -346,7 +370,9 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                                             data-ai-hint="apartment interior"
                                         />
                                     </div>
-                                ))}
+                                )) : (
+                                    <p className="text-muted-foreground col-span-full text-center py-4">No photos available.</p>
+                                )}
                             </div>
                         </div>
 
@@ -364,18 +390,22 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {listing.rooms.map(room => (
-                                        <TableRow key={room.room_id}>
-                                            <TableCell className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-muted-foreground" />{room.type}</TableCell>
-                                            <TableCell className="font-semibold">₱{room.price.toLocaleString()}</TableCell>
-                                            <TableCell>{room.inclusions.join(', ')}</TableCell>
+                                    {safeRooms.length > 0 ? safeRooms.map(room => (
+                                        <TableRow key={room.room_id || Math.random()}>
+                                            <TableCell className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-muted-foreground" />{room.type || 'Unknown'}</TableCell>
+                                            <TableCell className="font-semibold">₱{(room.price || 0).toLocaleString()}</TableCell>
+                                            <TableCell>{(room.inclusions || []).join(', ') || '—'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={room.is_available ? "default" : "destructive"} className={room.is_available ? "bg-green-500 text-white" : ""}>
                                                     {room.is_available ? 'Available' : 'Occupied'}
                                                 </Badge>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No rooms found.</TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
@@ -392,7 +422,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                                         </SelectTrigger>
                                         <SelectContent>
                                             {roomsWith3d.map(room => (
-                                                <SelectItem key={room.room_id} value={room.room_id.toString()}>
+                                                <SelectItem key={room.room_id || Math.random()} value={room.room_id?.toString() || ''}>
                                                     {room.type}
                                                 </SelectItem>
                                             ))}
@@ -414,12 +444,14 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                         <div>
                             <h4 className="font-semibold mb-2">House Rules</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {listing.rules.map((rule, index) => (
+                                {safeRules.length > 0 ? safeRules.map((rule, index) => (
                                     <div key={index} className="flex items-center gap-2">
                                         <CheckCircle className="h-5 w-5 text-green-500" />
                                         <span>{rule}</span>
                                     </div>
-                                ))}
+                                )) : (
+                                    <p className="text-muted-foreground col-span-full">No house rules specified.</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -429,7 +461,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                         <Button variant="outline">Close</Button>
                     </DialogClose>
                     <Button asChild>
-                        <Link href={`/owner/listings/edit/${listing.id}`}>
+                        <Link href={`/admin/listings/${listing.id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit Listing
                         </Link>
                     </Button>

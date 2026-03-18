@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IRoom extends Document {
     listingId: mongoose.Types.ObjectId;
+    type: string;
     sizeSqm: number;
     price: number;
     inclusions: string[];
@@ -12,6 +13,7 @@ export interface IRoom extends Document {
 
 const RoomSchema: Schema = new Schema({
     listingId: { type: Schema.Types.ObjectId, ref: 'Listing', required: true },
+    type: { type: String, required: true },
     sizeSqm: { type: Number, required: true, min: 1 },
     price: { type: Number, required: true, min: 0 },
     inclusions: [{ type: String }],

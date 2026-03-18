@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlusCircle, Edit, Trash2, Building, Key, DollarSign, MessageSquare, Wrench, FileText, BarChart2, Camera, Video, Vr, ChevronRight } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Building, Key, DollarSign, MessageSquare, Wrench, FileText, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { dashboardService } from '@/services/api/dashboard';
 import { listingService } from '@/services/api/listings';
@@ -15,31 +15,50 @@ import {
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/index';
 
-const CONFIG_TABS = ['Property Profiles', 'Location & Mapping', 'Unit Taxonomy', 'Pricing & Availability', 'Media Assets'];
-
 export default function OwnerDashboardPage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [myListings, setMyListings] = useState<Listing[]>([]);
+    const [metrics, setMetrics] = useState<any>(null);
+    const [summary, setSummary] = useState<any>(null);
+    const [tenants, setTenants] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeConfigTab, setActiveConfigTab] = useState('Property Profiles');
+    const [activeConfigTab, setActiveConfigTab] = useState('Active Residents');
 
     useEffect(() => {
         if (!user || user.role !== 'owner') { router.push('/login'); return; }
-        dashboardService.getOwnerListings()
-            .then(data => setMyListings(data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [user, router]);
+        
+        const fetchData = async () => {
+            try {
+                const [listingsData, metricsData, summaryData, tenantsData] = await Promise.all([
+                    dashboardService.getOwnerListings(),
+                    dashboardService.getOwnerMetrics(),
+                    dashboardService.getOwnerSummary(),
+                    dashboardService.getOwnerTenants()
+                ]);
+                setMyListings(listingsData);
+                setMetrics(metricsData);
+                setSummary(summaryData);
+                setTenants(tenantsData);
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+                toast({ variant: 'destructive', title: 'Error', description: 'Failed to load dashboard data.' });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [user, router, toast]);
 
     if (!user || user.role !== 'owner' || loading) {
-        return <div className="flex items-center justify-center h-64 text-gray-text">Loading dashboard…</div>;
+        return <div className="flex items-center justify-center h-64 text-gray-text animate-pulse font-medium">Loading your dashboard infrastructure...</div>;
     }
 
-    const totalRooms = myListings.reduce((a: number, l: any) => a + (l.totalRooms || 0), 0);
-    const availableRooms = myListings.reduce((a: number, l: any) => a + (l.availableRooms || 0), 0);
-    const vacancyRate = totalRooms > 0 ? ((availableRooms / totalRooms) * 100).toFixed(1) : '0.0';
+    const occupancyRate = metrics?.occupancyRate || 0;
+    const availableRooms = metrics?.availableRooms || 0;
+    const totalRooms = metrics?.totalRooms || 0;
 
     const handleDelete = async (id: string | number) => {
         try {
@@ -52,149 +71,158 @@ export default function OwnerDashboardPage() {
     };
 
     return (
-        <div className="bg-gray-light min-h-screen">
+        <div className="bg-[#f8f9fa] min-h-screen">
 
             {/* ── Dashboard Header ── */}
-            <div className="bg-white border-b border-gray-border px-6 py-4">
+            <div className="bg-white border-b border-gray-border px-6 py-6 shadow-sm">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                     <div>
-                        <h1 className="text-[28px] font-bold text-text-dark">Welcome back, {user.name}!</h1>
-                        <p className="text-gray-text text-sm mt-0.5">Here's what's happening with your properties today.</p>
+                        <h1 className="text-3xl font-bold text-text-dark tracking-tight">Owner Command Center</h1>
+                        <p className="text-gray-text text-lg mt-1">Hello, {user.name}. Here's the performance of your property portfolio.</p>
                     </div>
                     <Link
                         href="/owner/listings/create"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-primary-green hover:bg-primary-green-hover text-white font-semibold rounded transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary-green hover:bg-primary-green-hover text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
                     >
-                        <PlusCircle className="h-4 w-4" /> Add Property
+                        <PlusCircle className="h-5 w-5" /> Add New Property
                     </Link>
                 </div>
             </div>
 
-            <div className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
+            <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-10">
 
                 {/* ── Portfolio Overview Metrics ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <MetricCard
                         icon={<Building className="h-6 w-6" />}
-                        iconColor="bg-blue-50 text-blue-primary"
+                        iconColor="bg-blue-50 text-blue-600"
                         label="Active Listings"
-                        value={myListings.length.toString()}
-                        trend="+2 this month"
+                        value={metrics?.listingsCount || myListings.length}
+                        trend="Total Properties"
                         trendPositive
                     />
                     <MetricCard
                         icon={<Key className="h-6 w-6" />}
-                        iconColor="bg-orange-50 text-orange-primary"
-                        label="Vacancy Rate"
-                        value={`${vacancyRate}%`}
-                        trend={`${availableRooms} rooms available`}
-                        trendPositive={false}
+                        iconColor="bg-orange-50 text-orange-600"
+                        label="Average Occupancy"
+                        value={`${occupancyRate.toFixed(1)}%`}
+                        trend={`${totalRooms - availableRooms} rooms filled`}
+                        trendPositive={occupancyRate > 70}
                     />
                     <MetricCard
                         icon={<DollarSign className="h-6 w-6" />}
                         iconColor="bg-green-50 text-primary-green"
-                        label="Rooms Occupied"
-                        value={`${totalRooms - availableRooms}`}
-                        trend={`${totalRooms > 0 ? (((totalRooms - availableRooms) / totalRooms) * 100).toFixed(0) : 0}% occupancy`}
-                        trendPositive
+                        label="Available Units"
+                        value={availableRooms.toString()}
+                        trend="Across all properties"
+                        trendPositive={false}
                     />
                     <MetricCard
                         icon={<MessageSquare className="h-6 w-6" />}
                         iconColor="bg-purple-50 text-purple-600"
                         label="Inquiries"
-                        value="5"
-                        trend="this month"
+                        value={metrics?.inquiryCount || 0}
+                        trend="New messages"
                         trendPositive
                     />
                 </div>
 
-                {/* ── Action Items + Market Snapshot ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Action Items */}
-                    <div className="lg:col-span-2 bg-white border border-gray-border rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-lg font-bold text-text-dark">Action Items</h2>
-                            <Link href="/inbox" className="text-sm text-primary-green hover:underline font-medium">View All</Link>
+                {/* ── Action Items ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Real Action Items */}
+                    <div className="lg:col-span-2 bg-white border border-gray-border rounded-xl p-8 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-text-dark">Required Actions</h2>
+                            <span className="text-sm font-semibold text-primary-green bg-green-50 px-3 py-1 rounded-full">
+                                {Number(metrics?.pendingApplications || 0) + Number(metrics?.openMaintenance || 0)} Total Tasks
+                            </span>
                         </div>
-                        <div className="space-y-3">
-                            <TaskItem
-                                icon={<Wrench className="h-5 w-5" />}
-                                title="Open Maintenance Requests"
-                                desc="Emergency Water Leak - Unit 4B"
-                                urgent
-                            />
-                            <TaskItem
-                                icon={<FileText className="h-5 w-5" />}
-                                title="Pending Applications"
-                                desc="3 new applications awaiting review"
-                            />
-                            <TaskItem
-                                icon={<MessageSquare className="h-5 w-5" />}
-                                title="Unread Messages"
-                                desc="5 new inquiries from potential tenants"
-                            />
-                            <TaskItem
-                                icon={<BarChart2 className="h-5 w-5" />}
-                                title="Feedbacks"
-                                desc="2 new resident reviews submitted"
-                            />
+                        <div className="space-y-4">
+                            {summary?.maintenance?.length > 0 ? summary.maintenance.map((req: any) => (
+                                <TaskItem
+                                    key={req._id}
+                                    icon={<Wrench className="h-5 w-5" />}
+                                    title={req.title}
+                                    desc={`Property: ${req.listingId?.name || 'Unknown'}`}
+                                    urgent={req.priority === 'high' || req.priority === 'urgent'}
+                                />
+                            )) : (
+                                <div className="py-4 text-center text-gray-text italic border border-dashed border-gray-border rounded-lg">
+                                    No open maintenance requests.
+                                </div>
+                            )}
+
+                            {summary?.applications?.length > 0 ? summary.applications.map((app: any) => (
+                                <TaskItem
+                                    key={app._id}
+                                    icon={<FileText className="h-5 w-5" />}
+                                    title="New Application"
+                                    desc={`${app.userId?.name || 'Applicant'} for ${app.listingId?.name || 'Property'}`}
+                                />
+                            )) : (
+                                <div className="py-4 text-center text-gray-text italic border border-dashed border-gray-border rounded-lg">
+                                    No pending applications.
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Market Snapshot */}
-                    <div className="bg-white border border-gray-border rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-lg font-bold text-text-dark">Market Snapshot</h2>
-                        </div>
-                        <p className="text-xs text-gray-text mb-4">Rent Comparable Report — Cabanatuan City</p>
-
-                        {[
-                            { label: 'Avg. Studio Market Rent', market: '₱3,500', yours: '₱3,800', positive: true },
-                            { label: 'Avg. 1 Bed Market Rent', market: '₱5,000', yours: '₱4,800', positive: false },
-                        ].map(row => (
-                            <div key={row.label} className="flex justify-between pb-4 mb-4 border-b border-gray-border last:border-0 last:mb-0 last:pb-0">
+                    {/* Quick Stats / Mini Chart */}
+                    <div className="bg-white border border-gray-border rounded-xl p-8 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold text-text-dark mb-2">Market Insight</h2>
+                            <p className="text-sm text-gray-text mb-6">Real-time status of your portfolio availability.</p>
+                            
+                            <div className="space-y-6">
                                 <div>
-                                    <span className="text-xs text-gray-text block">{row.label}</span>
-                                    <span className="text-lg font-bold text-text-dark">{row.market}</span>
+                                    <div className="flex justify-between text-sm mb-2">
+                                        <span className="font-semibold text-text-dark">Occupancy Rate</span>
+                                        <span className="font-bold text-primary-green">{occupancyRate.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-gray-light rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-primary-green transition-all duration-1000" 
+                                            style={{ width: `${occupancyRate}%` }} 
+                                        />
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-xs text-gray-text block">Your Avg.</span>
-                                    <span className={`text-lg font-bold ${row.positive ? 'text-primary-green' : 'text-orange-primary'}`}>{row.yours}</span>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-3 bg-gray-light/30 rounded-lg">
+                                        <span className="block text-xs text-gray-text uppercase font-bold">Total Rooms</span>
+                                        <span className="text-xl font-bold text-text-dark">{totalRooms}</span>
+                                    </div>
+                                    <div className="p-3 bg-gray-light/30 rounded-lg">
+                                        <span className="block text-xs text-gray-text uppercase font-bold">Vacant</span>
+                                        <span className="text-xl font-bold text-orange-600">{availableRooms}</span>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
-
-                        {/* Bar chart */}
-                        <div className="flex items-end justify-between h-24 border-b border-gray-border pb-2 mb-2 mt-4 gap-1.5">
-                            {[60, 75, 65, 85, 90, 100].map((h, i) => (
-                                <div
-                                    key={i}
-                                    className={`flex-1 rounded-t transition-colors ${i === 5 ? 'bg-primary-green' : 'bg-gray-border hover:bg-primary-green'}`}
-                                    style={{ height: `${h}%` }}
-                                />
-                            ))}
                         </div>
-                        <p className="text-xs text-gray-text text-center">6-Month Neighborhood Rent Trend</p>
+                        <div className="mt-8 pt-6 border-t border-gray-light">
+                            <Link href="/owner/listings" className="text-primary-green font-bold text-sm flex items-center justify-center gap-2 hover:underline">
+                                Manage Inventory <ChevronRight className="h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
                 {/* ── My Listings Table ── */}
-                <div className="bg-white border border-gray-border rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-                    <div className="flex items-center justify-between p-6 border-b border-gray-border">
-                        <h2 className="text-lg font-bold text-text-dark">My Listings</h2>
-                        <Link href="/owner/listings/create" className="text-sm text-primary-green hover:underline font-medium flex items-center gap-1">
-                            <PlusCircle className="h-4 w-4" /> Add New
+                <div className="bg-white border border-gray-border rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between p-8 border-b border-gray-border">
+                        <h2 className="text-2xl font-bold text-text-dark">My Property Inventory</h2>
+                        <Link href="/owner/listings/create" className="text-primary-green hover:text-primary-green-hover font-bold flex items-center gap-2 group">
+                            <PlusCircle className="h-5 w-5 transition-transform group-hover:scale-110" /> Add New Listing
                         </Link>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-light text-gray-text text-xs uppercase">
+                            <thead className="bg-[#fcfdfe] text-gray-text text-xs uppercase tracking-widest font-bold">
                                 <tr>
-                                    <th className="px-6 py-3">Listing</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Rooms</th>
-                                    <th className="px-6 py-3">Price Range</th>
-                                    <th className="px-6 py-3 text-right">Actions</th>
+                                    <th className="px-8 py-4">Property</th>
+                                    <th className="px-8 py-4">Status</th>
+                                    <th className="px-8 py-4">Rooms</th>
+                                    <th className="px-8 py-4">Price Range</th>
+                                    <th className="px-8 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -202,49 +230,54 @@ export default function OwnerDashboardPage() {
                                     const lId = listing._id || listing.id;
                                     const photo = listing.photos?.[0] || 'https://placehold.co/64x64.png';
                                     return (
-                                        <tr key={lId} className="border-t border-gray-border hover:bg-gray-light/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="relative w-14 h-14 flex-shrink-0 rounded overflow-hidden">
-                                                        <Image src={photo} alt={listing.name} fill className="object-cover" />
+                                        <tr key={lId} className="border-t border-gray-border hover:bg-gray-light/30 transition-colors group">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-border shadow-sm">
+                                                        <Image src={photo} alt={listing.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                                                     </div>
                                                     <div>
-                                                        <Link href={`/listings/${lId}`} className="font-semibold text-text-dark hover:text-primary-green hover:underline">
+                                                        <Link href={`/listings/${lId}`} className="text-lg font-bold text-text-dark hover:text-primary-green transition-colors">
                                                             {listing.name}
                                                         </Link>
-                                                        <p className="text-xs text-gray-text mt-0.5">{listing.address}</p>
+                                                        <p className="text-sm text-gray-text mt-1">{listing.address}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="px-2.5 py-1 text-xs font-medium bg-green-50 text-primary-green rounded-full">Active</span>
+                                            <td className="px-8 py-6">
+                                                <span className="px-3 py-1 text-xs font-bold uppercase bg-green-50 text-primary-green rounded-full border border-green-100">Active</span>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-text">
-                                                {listing.availableRooms ?? 0} / {listing.totalRooms ?? 0}
+                                            <td className="px-8 py-6 font-medium text-text-dark">
+                                                <span className={listing.availableRooms > 0 ? 'text-text-dark' : 'text-red-alert'}>
+                                                    {listing.availableRooms ?? 0}
+                                                </span>
+                                                <span className="text-gray-text mx-1">/</span>
+                                                <span>{listing.totalRooms ?? 0} Available</span>
                                             </td>
-                                            <td className="px-6 py-4 font-medium text-text-dark">
-                                                ₱{(listing.priceMin || 0).toLocaleString()} – ₱{(listing.priceMax || 0).toLocaleString()}
+                                            <td className="px-8 py-6">
+                                                <div className="font-bold text-text-dark">₱{(listing.priceMin || 0).toLocaleString()}</div>
+                                                <div className="text-xs text-gray-text tracking-tighter">— ₱{(listing.priceMax || 0).toLocaleString()}</div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Link href={`/owner/listings/edit/${lId}`} className="p-1.5 text-gray-text hover:text-primary-green transition-colors">
-                                                        <Edit className="h-4 w-4" />
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <Link href={`/owner/listings/edit/${lId}`} className="p-2 bg-gray-light/50 text-gray-text hover:text-primary-green hover:bg-green-50 rounded-lg transition-all">
+                                                        <Edit className="h-5 w-5" />
                                                     </Link>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
-                                                            <button className="p-1.5 text-gray-text hover:text-red-alert transition-colors">
-                                                                <Trash2 className="h-4 w-4" />
+                                                            <button className="p-2 bg-gray-light/50 text-gray-text hover:text-red-alert hover:bg-red-50 rounded-lg transition-all">
+                                                                <Trash2 className="h-5 w-5" />
                                                             </button>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
-                                                                <AlertDialogTitle>Delete Listing?</AlertDialogTitle>
-                                                                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                                                                <AlertDialogTitle className="text-2xl font-bold">Delete Permanent Listing?</AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-lg">This will remove "{listing.name}" from the platform forever. This action is irreversible.</AlertDialogDescription>
                                                             </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(lId)} className="bg-red-alert hover:bg-red-600 text-white">
-                                                                    Delete
+                                                            <AlertDialogFooter className="mt-6">
+                                                                <AlertDialogCancel className="h-12 px-6">Keep Listing</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(lId)} className="bg-red-alert hover:bg-red-700 text-white h-12 px-8 font-bold">
+                                                                    Confirm Deletion
                                                                 </AlertDialogAction>
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
@@ -254,164 +287,99 @@ export default function OwnerDashboardPage() {
                                         </tr>
                                     );
                                 })}
-                                {myListings.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-gray-text">
-                                            No listings yet. <Link href="/owner/listings/create" className="text-primary-green hover:underline">Create your first listing →</Link>
-                                        </td>
-                                    </tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                {/* ── Property & Unit Configuration ── */}
-                <div className="bg-white border border-gray-border rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-                    <div className="p-6 border-b border-gray-border">
-                        <h2 className="text-lg font-bold text-text-dark">Property & Unit Configuration</h2>
+                {/* ── My Tenants Section ── */}
+                <div className="bg-white border border-gray-border rounded-xl shadow-sm overflow-hidden">
+                    <div className="p-8 border-b border-gray-border flex justify-between items-center bg-[#fcfdfe]">
+                        <div>
+                            <h2 className="text-2xl font-bold text-text-dark">Tenant & Resident Management</h2>
+                            <p className="text-gray-text mt-1 font-medium">Manage your active leases and background checks.</p>
+                        </div>
+                        <div className="flex gap-2">
+                             <button onClick={() => setActiveConfigTab('Active Residents')} className={`px-5 py-2 rounded-lg font-bold text-sm transition-all ${activeConfigTab === 'Active Residents' ? 'bg-primary-green text-white shadow-md' : 'bg-gray-light text-gray-text hover:bg-gray-200'}`}>Active</button>
+                             <button onClick={() => setActiveConfigTab('Pending Applications')} className={`px-5 py-2 rounded-lg font-bold text-sm transition-all ${activeConfigTab === 'Pending Applications' ? 'bg-primary-green text-white shadow-md' : 'bg-gray-light text-gray-text hover:bg-gray-200'}`}>Applications</button>
+                        </div>
                     </div>
 
-                    {/* Config Tabs */}
-                    <div className="flex gap-0 border-b border-gray-border overflow-x-auto">
-                        {CONFIG_TABS.map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveConfigTab(tab)}
-                                className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap relative transition-colors ${activeConfigTab === tab
-                                        ? 'text-primary-green'
-                                        : 'text-gray-text hover:text-text-dark'
-                                    }`}
-                            >
-                                {tab}
-                                {activeConfigTab === tab && (
-                                    <span className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-green" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="p-6">
-                        {activeConfigTab === 'Property Profiles' && (
-                            <div className="max-w-2xl space-y-4">
-                                <h3 className="font-semibold text-text-dark mb-4">Building Details</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField label="Property Name" defaultValue={myListings[0]?.name || ''} />
-                                    <FormField label="Property Type" type="select" options={['Boarding House', 'Apartment', 'Condo', 'Studio']} />
-                                    <FormField label="Year Built" type="number" defaultValue="2020" />
-                                    <FormField label="Total Units" type="number" defaultValue={String(myListings[0] ? (myListings[0] as any).totalRooms || 0 : 0)} />
-                                </div>
-                                <button className="px-5 py-2.5 bg-primary-green text-white rounded font-medium hover:bg-primary-green-hover transition-colors">
-                                    Save Profile Details
-                                </button>
-                            </div>
-                        )}
-
-                        {activeConfigTab === 'Location & Mapping' && (
-                            <div className="max-w-2xl space-y-4">
-                                <h3 className="font-semibold text-text-dark mb-4">Location & Mapping</h3>
-                                <FormField label="Address" defaultValue={myListings[0]?.address || ''} />
-                                <div className="h-40 bg-gray-light rounded-lg flex items-center justify-center text-gray-text border border-gray-border">
-                                    Map Preview
-                                </div>
-                                <button className="px-5 py-2.5 border border-gray-border text-text-dark rounded font-medium hover:bg-gray-light transition-colors">
-                                    Update Geographic Configuration
-                                </button>
-                            </div>
-                        )}
-
-                        {activeConfigTab === 'Unit Taxonomy' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-semibold text-text-dark">Floor Plans & Room Types</h3>
-                                    <div className="flex gap-2">
-                                        <button className="text-sm px-3 py-1.5 border border-gray-border rounded hover:bg-gray-light transition-colors">+ Add Boarding Room</button>
-                                        <button className="text-sm px-3 py-1.5 border border-gray-border rounded hover:bg-gray-light transition-colors">+ Add Floor Plan</button>
-                                    </div>
-                                </div>
-                                <div className="border border-gray-border rounded-lg overflow-hidden">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-gray-light text-gray-text text-xs uppercase">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left">Room Type</th>
-                                                <th className="px-4 py-3 text-left">Beds/Baths</th>
-                                                <th className="px-4 py-3 text-left">Price</th>
-                                                <th className="px-4 py-3 text-left">Status</th>
-                                                <th className="px-4 py-3" />
+                    <div className="p-8">
+                        {activeConfigTab === 'Active Residents' && (
+                            <div className="border border-gray-border rounded-lg overflow-hidden">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-[#fcfdfe] text-gray-text text-xs uppercase font-bold">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left">Resident</th>
+                                            <th className="px-6 py-4 text-left">Property / Unit</th>
+                                            <th className="px-6 py-4 text-left">Monthly Rent</th>
+                                            <th className="px-6 py-4 text-left">Lease Ends</th>
+                                            <th className="px-6 py-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-light">
+                                        {tenants.length > 0 ? tenants.map((t) => (
+                                            <tr key={t._id} className="hover:bg-gray-light/20 transition-colors">
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">
+                                                            {t.userId?.name?.[0] || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-text-dark">{t.userId?.name}</div>
+                                                            <div className="text-xs text-gray-text">{t.userId?.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-gray-text">
+                                                    <div className="font-medium text-text-dark">{t.listingId?.name}</div>
+                                                    <div className="text-xs italic">{t.roomId?.type}</div>
+                                                </td>
+                                                <td className="px-6 py-5 font-bold text-text-dark">₱{t.monthlyRent?.toLocaleString()}</td>
+                                                <td className="px-6 py-5 text-gray-text font-medium">{t.endDate ? new Date(t.endDate).toLocaleDateString() : 'N/A'}</td>
+                                                <td className="px-6 py-5 text-right">
+                                                    <button className="text-primary-green font-bold hover:underline">View Details</button>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            {(myListings[0] as any)?.rooms?.map((r: any, i: number) => (
-                                                <tr key={r._id || i} className="border-t border-gray-border">
-                                                    <td className="px-4 py-3 font-medium text-text-dark">{r.type || `Room ${i + 1}`}</td>
-                                                    <td className="px-4 py-3 text-gray-text">Shared Bath</td>
-                                                    <td className="px-4 py-3 text-text-dark">₱{r.price?.toLocaleString()}</td>
-                                                    <td className="px-4 py-3">
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${r.isAvailable ? 'bg-green-50 text-primary-green' : 'bg-red-50 text-red-alert'}`}>
-                                                            {r.isAvailable ? 'Available' : 'Occupied'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <button className="text-primary-green text-sm hover:underline">Edit</button>
-                                                    </td>
-                                                </tr>
-                                            )) || (
-                                                    <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-text">No rooms configured.</td></tr>
-                                                )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        )) : (
+                                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-text italic">No active residents found in your properties.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
 
-                        {activeConfigTab === 'Pricing & Availability' && (
-                            <div className="max-w-2xl space-y-4">
-                                <h3 className="font-semibold text-text-dark mb-4">Pricing & Availability</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField label="Base Price (₱)" type="number" defaultValue={String((myListings[0] as any)?.priceMin || 0)} />
-                                    <FormField label="Maximum Price (₱)" type="number" defaultValue={String((myListings[0] as any)?.priceMax || 0)} />
-                                    <FormField label="Move-In Date" type="date" />
-                                    <FormField label="Lease Terms" type="select" options={['Month-to-Month', '6 Months', '12 Months']} />
-                                </div>
-                                <FormField label="Availability Status" type="select" options={['Available Now', 'Available Soon', 'No Vacancies']} />
-                                <button className="px-5 py-2.5 bg-primary-green text-white rounded font-medium hover:bg-primary-green-hover transition-colors">
-                                    Save Pricing Strategy
-                                </button>
-                            </div>
-                        )}
-
-                        {activeConfigTab === 'Media Assets' && (
-                            <div>
-                                <h3 className="font-semibold text-text-dark mb-4">Media & Marketing Assets</h3>
-                                <div className="grid grid-cols-3 gap-4 mb-6">
-                                    <div className="border-2 border-dashed border-gray-border rounded-lg p-8 text-center cursor-pointer hover:border-primary-green hover:bg-[rgba(33,141,61,0.02)] transition-colors">
-                                        <Camera className="h-8 w-8 text-gray-text mx-auto mb-2" />
-                                        <p className="text-sm font-medium text-text-dark">Add Photos</p>
-                                    </div>
-                                    <div className="border-2 border-dashed border-gray-border rounded-lg p-8 text-center cursor-pointer hover:border-primary-green hover:bg-[rgba(33,141,61,0.02)] transition-colors">
-                                        <Video className="h-8 w-8 text-gray-text mx-auto mb-2" />
-                                        <p className="text-sm font-medium text-text-dark">Add Videos</p>
-                                    </div>
-                                    <div className="border-2 border-dashed border-blue-primary bg-blue-50 rounded-lg p-8 text-center cursor-pointer hover:opacity-80 transition-opacity">
-                                        <span className="text-4xl block mb-2">🥽</span>
-                                        <p className="text-sm font-medium text-blue-primary">Upload 3D Virtual Tour</p>
-                                    </div>
-                                </div>
-
-                                {/* Gallery preview */}
-                                {(myListings[0] as any)?.photos?.length > 0 && (
-                                    <>
-                                        <h4 className="text-sm font-bold text-gray-text mb-3">Active Marketing Gallery</h4>
-                                        <div className="flex gap-3 overflow-x-auto pb-2">
-                                            {(myListings[0] as any).photos.slice(0, 5).map((p: string, i: number) => (
-                                                <div key={i} className="relative w-36 h-24 flex-shrink-0 rounded overflow-hidden">
-                                                    <Image src={p} alt={`Gallery ${i}`} fill className="object-cover" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                        {activeConfigTab === 'Pending Applications' && (
+                             <div className="border border-gray-border rounded-lg overflow-hidden">
+                             <table className="w-full text-sm">
+                                 <thead className="bg-[#fcfdfe] text-gray-text text-xs uppercase font-bold">
+                                     <tr>
+                                         <th className="px-6 py-4 text-left">Applicant</th>
+                                         <th className="px-6 py-4 text-left">Target Listing</th>
+                                         <th className="px-6 py-4 text-left">Date Submitted</th>
+                                         <th className="px-6 py-4 text-right">Actions</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody className="divide-y divide-gray-light">
+                                     {summary?.applications?.length > 0 ? summary.applications.map((app: any) => (
+                                         <tr key={app._id} className="hover:bg-gray-light/20 transition-colors">
+                                             <td className="px-6 py-5">
+                                                 <div className="font-bold text-text-dark">{app.userId?.name}</div>
+                                                 <div className="text-xs text-gray-text">{app.userId?.email}</div>
+                                             </td>
+                                             <td className="px-6 py-5 text-text-dark font-medium">{app.listingId?.name}</td>
+                                             <td className="px-6 py-5 text-gray-text">{new Date(app.createdAt).toLocaleDateString()}</td>
+                                             <td className="px-6 py-5 text-right">
+                                                 <button className="px-4 py-1.5 bg-primary-green text-white rounded font-bold text-xs hover:bg-primary-green-hover shadow-sm">Review App</button>
+                                             </td>
+                                         </tr>
+                                     )) : (
+                                         <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-text italic">No pending applications at this time.</td></tr>
+                                     )}
+                                 </tbody>
+                             </table>
+                         </div>
                         )}
                     </div>
                 </div>
@@ -423,17 +391,17 @@ export default function OwnerDashboardPage() {
 
 function MetricCard({ icon, iconColor, label, value, trend, trendPositive }: {
     icon: React.ReactNode; iconColor: string; label: string;
-    value: string; trend: string; trendPositive: boolean;
+    value: string | number; trend: string; trendPositive: boolean;
 }) {
     return (
-        <div className="bg-white border border-gray-border rounded-lg p-5 flex items-center gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-            <div className={`w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+        <div className="bg-white border border-gray-border rounded-xl p-6 flex items-center gap-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${iconColor} shadow-inner`}>
                 {icon}
             </div>
             <div>
-                <p className="text-sm text-gray-text">{label}</p>
-                <p className="text-2xl font-bold text-text-dark">{value}</p>
-                <p className={`text-xs font-medium mt-0.5 ${trendPositive ? 'text-primary-green' : 'text-orange-primary'}`}>
+                <p className="text-sm font-bold text-gray-text uppercase tracking-widest">{label}</p>
+                <p className="text-3xl font-black text-text-dark tracking-tighter">{value}</p>
+                <p className={`text-xs font-bold mt-1 ${trendPositive ? 'text-primary-green' : 'text-orange-600'}`}>
                     {trend}
                 </p>
             </div>
@@ -454,26 +422,6 @@ function TaskItem({ icon, title, desc, urgent }: { icon: React.ReactNode; title:
             <button className="text-xs px-3 py-1.5 border border-gray-border rounded hover:bg-gray-light transition-colors whitespace-nowrap">
                 Review
             </button>
-        </div>
-    );
-}
-
-function FormField({ label, type = 'text', defaultValue = '', options = [] }: {
-    label: string; type?: string; defaultValue?: string; options?: string[];
-}) {
-    return (
-        <div>
-            <label className="block text-xs font-bold text-text-dark mb-1.5">{label}</label>
-            {type === 'select' ? (
-                <select className="w-full px-3 py-2.5 border border-gray-border rounded text-sm outline-none focus:border-primary-green transition">
-                    {options.map(o => <option key={o}>{o}</option>)}
-                </select>
-            ) : (
-                <input
-                    type={type} defaultValue={defaultValue}
-                    className="w-full px-3 py-2.5 border border-gray-border rounded text-sm outline-none focus:border-primary-green focus:shadow-[0_0_0_2px_rgba(33,141,61,0.2)] transition"
-                />
-            )}
         </div>
     );
 }

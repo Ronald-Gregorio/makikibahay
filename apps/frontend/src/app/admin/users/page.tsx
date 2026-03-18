@@ -105,22 +105,37 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleBulkSuspend = () => {
-        setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Suspended' } : u));
-        setSelectedUserIds([]);
-        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been suspended.` });
+    const handleBulkSuspend = async () => {
+        try {
+            await dashboardService.bulkUpdateUsersStatus(selectedUserIds, 'Suspended');
+            setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Suspended' } : u));
+            setSelectedUserIds([]);
+            toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been suspended.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to suspend users." });
+        }
     }
 
-    const handleBulkActivate = () => {
-        setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Active' } : u));
-        setSelectedUserIds([]);
-        toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been activated.` });
+    const handleBulkActivate = async () => {
+        try {
+            await dashboardService.bulkUpdateUsersStatus(selectedUserIds, 'Active');
+            setUsers(prev => prev.map(u => selectedUserIds.includes(u.id) ? { ...u, status: 'Active' } : u));
+            setSelectedUserIds([]);
+            toast({ title: "Bulk Action", description: `${selectedUserIds.length} users have been activated.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to activate users." });
+        }
     }
 
-    const handleBulkDelete = () => {
-        setUsers(prev => prev.filter(u => !selectedUserIds.includes(u.id)));
-        setSelectedUserIds([]);
-        toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedUserIds.length} users have been deleted.` });
+    const handleBulkDelete = async () => {
+        try {
+            await dashboardService.bulkDeleteUsers(selectedUserIds);
+            setUsers(prev => prev.filter(u => !selectedUserIds.includes(u.id)));
+            setSelectedUserIds([]);
+            toast({ variant: 'destructive', title: "Bulk Action", description: `${selectedUserIds.length} users have been deleted.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to delete users." });
+        }
     }
 
     return (

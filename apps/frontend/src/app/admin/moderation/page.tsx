@@ -23,7 +23,7 @@ type ReviewWithListing = Review & { listingName: string; listingId: string; stat
 export default function ContentModerationPage() {
     const [reviews, setReviews] = useState<ReviewWithListing[]>([]);
     const [filteredReviews, setFilteredReviews] = useState<ReviewWithListing[]>([]);
-    const [selectedReviewIds, setSelectedReviewIds] = useState<number[]>([]);
+    const [selectedReviewIds, setSelectedReviewIds] = useState<(string | number)[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -59,7 +59,7 @@ export default function ContentModerationPage() {
 
     }, [searchQuery, ratingFilter, reviews]);
 
-    const handleModerate = (reviewId: number, action: 'approved' | 'rejected') => {
+    const handleModerate = (reviewId: string | number, action: 'approved' | 'rejected') => {
         setReviews(prev => prev.map(r => r.review_id === reviewId ? { ...r, status: action } : r));
         toast({
             title: `Review ${action}`,
@@ -89,7 +89,7 @@ export default function ContentModerationPage() {
         }
     };
 
-    const handleSelectRow = (reviewId: number, checked: boolean) => {
+    const handleSelectRow = (reviewId: string | number, checked: boolean) => {
         if (checked) {
             setSelectedReviewIds(prev => [...prev, reviewId]);
         } else {
@@ -194,7 +194,7 @@ export default function ContentModerationPage() {
                             )}
                             {filteredReviews.map(review => (
                                 <ReviewRow
-                                    key={review.review_id}
+                                    key={String(review.review_id)}
                                     review={review}
                                     onModerate={handleModerate}
                                     isSelected={selectedReviewIds.includes(review.review_id)}
@@ -209,7 +209,7 @@ export default function ContentModerationPage() {
     );
 }
 
-function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: ReviewWithListing, onModerate: (reviewId: number, action: 'approved' | 'rejected') => void, isSelected: boolean, onSelectRow: (reviewId: number, checked: boolean) => void }) {
+function ReviewRow({ review, onModerate, isSelected, onSelectRow }: { review: ReviewWithListing, onModerate: (reviewId: string | number, action: 'approved' | 'rejected') => void, isSelected: boolean, onSelectRow: (reviewId: string | number, checked: boolean) => void }) {
     return (
         <Dialog>
             <TableRow data-state={isSelected ? "selected" : undefined}>

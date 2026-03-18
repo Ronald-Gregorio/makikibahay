@@ -55,22 +55,40 @@ export const googleAuth = async (req: Request, res: Response) => {
 };
 
 export const register = async (req: Request, res: Response) => {
-    const { name, email, password, role } = req.body;
-    console.log('Register attempt:', { name, email, role });
+    const { name, email, username, password, role } = req.body;
+    console.log('Register attempt:', { name, email, username, role });
     try {
-        let user = await User.findOne({ email });
-        console.log('User check result:', user ? `Found user with ID: ${user._id}` : 'No user found');
+        // Check email uniqueness
+        const existingEmail = await User.findOne({ email: email.toLowerCase() });
+        if (existingEmail) {
+            res.status(400).json({ message: 'Email is already in use', field: 'email' });
+            return;
+        }
 
-        if (user) {
-            res.status(400).json({ message: 'User already exists with this email' });
+        // Check username uniqueness (if provided)
+        if (username) {
+            const existingUsername = await User.findOne({ username });
+            if (existingUsername) {
+                res.status(400).json({ message: 'Username is already taken', field: 'username' });
+                return;
+            }
+        }
+
+        // Validate password strength
+        if (!password || password.length < 8) {
+            res.status(400).json({ message: 'Password must be at least 8 characters long', field: 'password' });
+            return;
+        }
+        if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+            res.status(400).json({ message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number', field: 'password' });
             return;
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        user = await User.create({
-            email,
+        const userData: any = {
+            email: email.toLowerCase(),
             name,
             password: hashedPassword,
             role: role || 'user',
@@ -82,26 +100,31 @@ export const register = async (req: Request, res: Response) => {
                 amenities: [],
                 proximityMinutes: 10
             }
-        });
+        };
+        if (username) userData.username = username;
+
+        const user = await User.create(userData);
 
         const token = generateToken((user._id as any).toString());
         res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
+            username: user.username,
             role: user.role,
             token,
         });
     } catch (error: any) {
         console.error('Register Error Details:', {
             message: error.message,
-            stack: error.stack,
-            code: error.code, // MongoDB error codes (e.g., 11000 for duplicate)
-            name: error.name
+            code: error.code,
         });
 
         if (error.code === 11000) {
-            res.status(400).json({ message: 'Email or username already exists' });
+            // Determine which field caused the duplicate
+            const field = error.keyPattern?.email ? 'email' : error.keyPattern?.username ? 'username' : 'unknown';
+            const msg = field === 'email' ? 'Email is already in use' : field === 'username' ? 'Username is already taken' : 'Duplicate entry';
+            res.status(400).json({ message: msg, field });
             return;
         }
 
@@ -113,17 +136,39 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { email: identifier, password } = req.body;
     try {
-        const user = await User.findOne({ email });
-        if (!user || !user.password) {
-            res.status(401).json({ message: 'Invalid credentials. Please attempt Google Login if you registered via OAuth.' });
+        if (!identifier || !password) {
+            res.status(400).json({ message: 'Email/Username and password are required' });
+            return;
+        }
+
+        // Detect if input is email (contains @) or username
+        const isEmail = identifier.includes('@');
+        let user;
+
+        if (isEmail) {
+            // Case-insensitive email lookup
+            user = await User.findOne({ email: identifier.toLowerCase() });
+        } else {
+            // Case-sensitive username lookup
+            user = await User.findOne({ username: identifier });
+        }
+
+        if (!user) {
+            const fieldType = isEmail ? 'email' : 'username';
+            res.status(401).json({ message: `No account found with this ${fieldType}`, field: fieldType });
+            return;
+        }
+
+        if (!user.password) {
+            res.status(401).json({ message: 'This account uses Google Sign-In. Please log in with Google.', field: 'general' });
             return;
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            res.status(401).json({ message: 'Invalid credentials' });
+            res.status(401).json({ message: 'Incorrect password', field: 'password' });
             return;
         }
 
@@ -132,6 +177,7 @@ export const login = async (req: Request, res: Response) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            username: user.username,
             role: user.role,
             avatar: user.avatar,
             token,

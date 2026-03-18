@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/index';
 import { Label } from '@/components/ui/index';
 import { useToast } from '@/hooks/use-toast';
-import { User, Edit, Pencil, UserCheck, Wallet, SlidersHorizontal, MapPin, Footprints, Star, MessageSquare } from 'lucide-react';
+import { User, Edit, Pencil, UserCheck, Wallet, SlidersHorizontal, MapPin, Footprints, Star, MessageSquare, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/index';
 import { Separator } from '@/components/ui/index';
 import Link from 'next/link';
@@ -142,6 +142,19 @@ export default function ProfilePage() {
                   )}
                 </CardTitle>
                 <CardDescription className="mt-1">{user.email}</CardDescription>
+                <div className="mt-2">
+                  {user.verificationStatus === 'verified' ? (
+                    <Badge variant="secondary" className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200">
+                      <ShieldCheck className="h-3 w-3 mr-1" /> Verified
+                    </Badge>
+                  ) : (
+                    <Link href="/profile/verify">
+                      <Badge variant="outline" className={`cursor-pointer hover:bg-muted ${user.verificationStatus === 'pending' ? 'text-blue-600 border-blue-200' : user.verificationStatus === 'rejected' ? 'text-red-600 border-red-200' : ''}`}>
+                        {user.verificationStatus === 'pending' ? 'Verification Pending' : user.verificationStatus === 'rejected' ? 'Verification Rejected' : 'Get Verified'}
+                      </Badge>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
             {!isEditing && (
@@ -279,7 +292,7 @@ export default function ProfilePage() {
                     <Card key={review.review_id || review._id} className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listing_id || '#'}`} className="font-semibold underline hover:text-primary">{'this property'}</Link></p>
+                          <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listing_id || '#'}`} className="font-semibold underline hover:text-primary">{review.listing_name || 'this property'}</Link></p>
                           <p className="mt-2 text-foreground">{review.comment}</p>
                         </div>
                         <div className="flex items-center gap-1">

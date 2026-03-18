@@ -4,6 +4,28 @@
 
 ### 🚀 Features Implemented
 
+## Version 0.1.1 - UI Refinements & 3D Integration (Current)
+
+### 🚀 Features Implemented
+
+#### Complete Header and Footer Rebuild
+- Replaced the custom mobile app drawer with Radix UI `<Sheet>` for better accessibility and native feel.
+- Overhauled the footer into a multi-column design aligned to external UI references.
+
+#### UX Flow Refinements
+- Implemented actionable "Zero States" for `/favorites`, `/inbox`, and Owner Dashboard to eliminate dead-ends and guide the user to explore properties or create listings.
+
+#### Advanced Search (Phase 3)
+- Expanded the filter parameters in `/browse` to include Specialty Housing, Pet Policies, Community Amenities, and Star Ratings.
+- Appended these advanced filters dynamically to the search query payload fetching from the backend.
+
+#### Two-Column Property Detail Page (Phase 3)
+- Redesigned the `/listings/[id]` page layout to feature a sticky navigation tab bar and a persistent sticky Contact module on desktop viewports.
+
+#### Marzipano 3D Virtual Tours (Phase 4)
+- Added the `marzipano` package and integrated a `MarzipanoViewer` strictly isolated from Next.js SSR logic using dynamic imports.
+- Rendered interactive hotspots within the 3D scene to allow navigation between rooms.
+
 #### Environment Configuration Infrastructure
 **Rationale**: Establishing a robust environment configuration system is critical for security, scalability, and developer experience. By implementing comprehensive .env file structure across all workspaces, we prevent credential leaks and provide clear documentation for required environment variables.
 

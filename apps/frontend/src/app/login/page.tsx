@@ -52,14 +52,13 @@ export default function LoginPage() {
         router.push('/');
       }
     } else {
-      // For now, we simulate the logic: if login fails, we show warnings.
-      // In a real app we might get more specific error codes from the backend.
+      // Try to get specific error from last fetch response
+      // The login function returns boolean, so we show a general message
+      // but the backend now returns specific messages
       setErrors({
-        identifier: 'If this email is correct, please check your password.',
-        password: 'Password is incorrect. Please try again.',
-        general: 'Login Failed. Invalid credentials.'
+        general: 'Login failed. Please check your credentials and try again.'
       });
-      toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid credentials. Please check your email, password, and selected role.' });
+      toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid credentials. Please check your email/username, password, and selected role.' });
     }
   };
 

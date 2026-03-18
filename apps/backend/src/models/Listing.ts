@@ -14,6 +14,8 @@ export interface IListing extends Document {
     priceMax: number;
     rules: string[];
     amenities: string[];
+    type: string;
+    status: 'Active' | 'Unpublished' | 'Pending';
     coverPhoto?: string;
     photos: string[];
     createdAt: Date;
@@ -34,6 +36,12 @@ const ListingSchema: Schema = new Schema({
     priceMax: { type: Number, required: true, min: 0 },
     rules: [{ type: String }],
     amenities: [{ type: String }],
+    type: { type: String, required: true },
+    status: {
+        type: String,
+        enum: ['Active', 'Unpublished', 'Pending'],
+        default: 'Active'
+    },
     coverPhoto: { type: String },
     photos: [{ type: String }],
 }, { timestamps: true });

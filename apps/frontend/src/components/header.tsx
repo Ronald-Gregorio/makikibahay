@@ -7,19 +7,34 @@ import {
   Menu, Home, LogOut, User, Heart, LayoutDashboard,
   Bell, Inbox, BarChart, X, Search, BookmarkCheck,
   PlusCircle, HelpCircle, Languages, ChartPie, Vault,
-  Key, UsersRound, ShieldCheck, Settings, Building
+  Key, UsersRound, ShieldCheck, Settings, Building,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/index';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/index';
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
+} from '@/components/ui/sheet';
 
 export function AppHeader() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const hasNotifications = true;
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/browse?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
 
   const getDashboardLink = () => {
     if (!user) return '/';
@@ -38,17 +53,95 @@ export function AppHeader() {
 
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-4">
-            <button
-              className="btn-icon p-2 text-text-dark hover:text-primary-green transition-colors"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <Link href="/" className="flex items-center gap-2 text-primary-green no-underline">
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="btn-icon p-2 text-text-dark hover:text-primary-green transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 flex flex-col pt-10">
+                <SheetHeader className="px-5 pb-4 border-b border-gray-border text-left">
+                  <SheetTitle className="text-lg font-bold text-text-dark">Site Directory</SheetTitle>
+                </SheetHeader>
+                <nav className="flex-1 overflow-y-auto py-2">
+                  <div className="px-5 py-2 text-xs font-bold text-gray-text uppercase tracking-wider">Public Pages</div>
+                  <SideLink href="/" icon={<Home className="h-4 w-4" />} label="Home" onClick={() => setMenuOpen(false)} />
+                  <SideLink href="/browse" icon={<Search className="h-4 w-4" />} label="Browse" onClick={() => setMenuOpen(false)} />
+
+                  {(user?.role === 'user' || !user) && (
+                    <>
+                      <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">My Account</div>
+                      <SideLink href="/saved-searches" icon={<BookmarkCheck className="h-4 w-4" />} label="Saved Searches" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/favorites" icon={<Heart className="h-4 w-4" />} label="Favorites" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/profile" icon={<User className="h-4 w-4" />} label="My Profile" onClick={() => setMenuOpen(false)} />
+                    </>
+                  )}
+
+                  {user?.role === 'user' && (
+                    <>
+                      <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Renter Tools</div>
+                      <SideLink href="/inbox" icon={<Inbox className="h-4 w-4" />} label="Inbox" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="#" icon={<HelpCircle className="h-4 w-4" />} label="Help Center" onClick={() => setMenuOpen(false)} />
+                    </>
+                  )}
+
+                  {(!user || user.role === 'user') && (
+                    <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider italic text-primary-green">Are you an Owner?</div>
+                  )}
+
+                  {(user?.role === 'owner' || !user) && (
+                    <>
+                      <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Property Managers</div>
+                      <SideLink href="/signup?role=owner" icon={<PlusCircle className="h-4 w-4" />} label="Add Property" onClick={() => setMenuOpen(false)} />
+                      {user?.role === 'owner' && <SideLink href="/owner/dashboard" icon={<Building className="h-4 w-4" />} label="Owner Dashboard" onClick={() => setMenuOpen(false)} />}
+                    </>
+                  )}
+
+                  {user?.role === 'admin' && (
+                    <>
+                      <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider text-red-alert">Admin Panel</div>
+                      <SideLink href="/admin/dashboard" icon={<ChartPie className="h-4 w-4" />} label="Platform Analytics" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/admin/users" icon={<UsersRound className="h-4 w-4" />} label="User Management" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/admin/listings" icon={<Home className="h-4 w-4" />} label="Listing Management" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/admin/settings" icon={<Settings className="h-4 w-4" />} label="Global Settings" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/admin/system-logs" icon={<Settings className="h-4 w-4" />} label="System Logs" onClick={() => setMenuOpen(false)} />
+                    </>
+                  )}
+                </nav>
+                <div className="p-5 border-t border-gray-border">
+                  <Link
+                    href="/signup?role=owner"
+                    onClick={() => setMenuOpen(false)}
+                    className="block w-full text-center bg-primary-green hover:bg-primary-green-hover text-white font-semibold py-3 rounded transition-colors"
+                  >
+                    + Add Property
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <Link href="/" className="flex items-center gap-2 text-primary-green no-underline flex-shrink-0">
               <Home className="h-7 w-7" />
-              <span className="text-2xl font-black tracking-tight text-primary-green">Makikibahay</span>
+              <span className="text-2xl font-black tracking-tight text-primary-green hidden sm:inline">Makikibahay</span>
             </Link>
+          </div>
+
+          {/* Center: Search Bar (Desktop) */}
+          <div className="hidden md:flex flex-1 max-w-md mx-4">
+            <form onSubmit={handleSearch} className="w-full relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-text" />
+              <input
+                type="text"
+                placeholder="Search addresses, landmarks, or schools..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-light/50 border border-gray-border rounded-full text-sm focus:outline-none focus:border-primary-green focus:bg-white transition-all"
+              />
+              <button type="submit" className="sr-only">Search</button>
+            </form>
           </div>
 
           {/* Center Nav */}
@@ -104,7 +197,7 @@ export function AppHeader() {
                       <DropdownMenuItem asChild>
                         <Link href="/inbox">
                           <p className="font-medium">New message from Sunny Day</p>
-                          <p className="text-xs text-gray-text">"Yes, the solo room is still available..."</p>
+                          <p className="text-xs text-gray-text">&quot;Yes, the solo room is still available...&quot;</p>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -166,7 +259,7 @@ export function AppHeader() {
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="text-red-alert">
+                    <DropdownMenuItem onClick={logout} className="text-red-alert cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" /> Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -186,75 +279,6 @@ export function AppHeader() {
           </div>
         </div>
       </header>
-
-      {/* ── Slide-out Side Menu ── */}
-      {/* Overlay */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-[998]"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-
-      {/* Drawer */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white z-[999] shadow-xl flex flex-col transform transition-transform duration-200 ${menuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-      >
-        {/* Drawer Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-border">
-          <span className="text-lg font-bold text-text-dark">Site Directory</span>
-          <button
-            onClick={() => setMenuOpen(false)}
-            className="text-gray-text hover:text-text-dark transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Drawer Content */}
-        <nav className="flex-1 overflow-y-auto py-2">
-          {/* Public Pages */}
-          <div className="px-5 py-2 text-xs font-bold text-gray-text uppercase tracking-wider">Public Pages</div>
-          <SideLink href="/" icon={<Home className="h-4 w-4" />} label="Home" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/browse" icon={<Search className="h-4 w-4" />} label="Browse" onClick={() => setMenuOpen(false)} />
-
-          {/* My Account */}
-          <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">My Account</div>
-          <SideLink href="/saved-searches" icon={<BookmarkCheck className="h-4 w-4" />} label="Saved Searches" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/favorites" icon={<Heart className="h-4 w-4" />} label="Favorites" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/profile" icon={<User className="h-4 w-4" />} label="My Profile" onClick={() => setMenuOpen(false)} />
-
-          {/* Renter Tools */}
-          <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Renter Tools</div>
-          <SideLink href="/inbox" icon={<Inbox className="h-4 w-4" />} label="Inbox" onClick={() => setMenuOpen(false)} />
-          <SideLink href="#" icon={<Languages className="h-4 w-4" />} label="Language Selector" onClick={() => setMenuOpen(false)} />
-          <SideLink href="#" icon={<HelpCircle className="h-4 w-4" />} label="Help Center" onClick={() => setMenuOpen(false)} />
-
-          {/* Property Managers */}
-          <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Property Managers</div>
-          <SideLink href="/signup?role=owner" icon={<PlusCircle className="h-4 w-4" />} label="Add Property" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/owner/dashboard" icon={<Building className="h-4 w-4" />} label="Owner Dashboard" onClick={() => setMenuOpen(false)} />
-
-          {/* Admin & Dashboards */}
-          <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Admin & Dashboards</div>
-          <SideLink href="/admin/dashboard" icon={<ChartPie className="h-4 w-4" />} label="Platform Analytics" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/admin/users" icon={<UsersRound className="h-4 w-4" />} label="User Management" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/admin/moderation" icon={<ShieldCheck className="h-4 w-4" />} label="Content Moderation" onClick={() => setMenuOpen(false)} />
-          <SideLink href="/admin/logs" icon={<Settings className="h-4 w-4" />} label="System Settings" onClick={() => setMenuOpen(false)} />
-        </nav>
-
-        {/* Drawer Footer CTA */}
-        <div className="p-5 border-t border-gray-border">
-          <Link
-            href="/signup?role=owner"
-            onClick={() => setMenuOpen(false)}
-            className="block w-full text-center bg-primary-green hover:bg-primary-green-hover text-white font-semibold py-3 rounded transition-colors"
-          >
-            + Add Property
-          </Link>
-        </div>
-      </aside>
     </>
   );
 }

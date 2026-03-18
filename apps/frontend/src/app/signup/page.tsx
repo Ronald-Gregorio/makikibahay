@@ -22,17 +22,18 @@ function GoogleIcon() {
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<'user' | 'owner'>('user');
-  const [errors, setErrors] = useState<{ email?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; username?: string; password?: string; general?: string }>({});
   const { signup } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSignup = async () => {
     setErrors({});
-    const result = await signup(name, email, password, role);
+    const result = await signup(name, email, password, role, username);
     if (result.success) {
       toast({ title: 'Signup Successful', description: 'Your account has been created.' });
       if (role === 'owner') {
@@ -41,12 +42,12 @@ export default function SignupPage() {
         router.push('/');
       }
     } else {
-      const isEmailError = result.message?.toLowerCase().includes('email') || result.message?.toLowerCase().includes('user already exists');
-      if (isEmailError) {
-        setErrors({ email: result.message });
-      } else {
-        setErrors({ general: result.message });
-      }
+      // Use field-specific errors from backend
+      const field = result.field || 'general';
+      if (field === 'email') setErrors({ email: result.message });
+      else if (field === 'username') setErrors({ username: result.message });
+      else if (field === 'password') setErrors({ password: result.message });
+      else setErrors({ general: result.message });
       toast({ variant: 'destructive', title: 'Signup Failed', description: result.message || 'Please check your inputs.' });
     }
   };
@@ -81,6 +82,18 @@ export default function SignupPage() {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor={`${currentRole}-username`}>Username</Label>
+        <Input
+          id={`${currentRole}-username`}
+          type="text"
+          placeholder="juandelacruz"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className={errors.username ? 'border-red-500' : ''}
+        />
+        {errors.username && <p className="text-xs text-red-500 mt-1">{errors.username}</p>}
+      </div>
+      <div className="space-y-2">
         <Label htmlFor={`${currentRole}-email`}>Email</Label>
         <Input
           id={`${currentRole}-email`}
@@ -101,8 +114,12 @@ export default function SignupPage() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className={errors.password ? 'border-red-500' : ''}
         />
+        {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
+        <p className="text-xs text-muted-foreground">Min 8 chars, with uppercase, lowercase, and a number</p>
       </div>
+      {errors.general && <p className="text-sm text-red-500 text-center">{errors.general}</p>}
     </CardContent>
   );
 

@@ -36,11 +36,8 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 RUN npm run build --filter=@makikibahay/frontend...
 
-# Bypass Docker BuildKit trailing slash and snapshot bugs on WSL2 using tar for transferring multi-stage build directories smoothly
-RUN tar cf standalone.tar -C /app/apps/frontend/.next/standalone .
-RUN tar cf static.tar -C /app/apps/frontend/.next/static .
-# Package public folder assets explicitly since Next.js standalone does not trace them
-RUN tar cf public.tar -C /app/apps/frontend/public . || true
+# Ensure appropriate metadata
+ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS runner
 WORKDIR /app
@@ -50,18 +47,13 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # We extract standalone into the runner. Notice it preserves the apps/frontend tree because of the outputFileTracingRoot
-COPY --from=installer /app/standalone.tar ./
-RUN tar xf standalone.tar && rm standalone.tar
+COPY --from=installer /app/apps/frontend/.next/standalone ./
 
 # We manually place the static files exactly where Next.js expects them inside the standalone internal app directory
-RUN mkdir -p /app/apps/frontend/.next/static
-COPY --from=installer /app/static.tar /app/apps/frontend/.next/static/
-RUN cd /app/apps/frontend/.next/static && tar xf static.tar && rm static.tar
+COPY --from=installer /app/apps/frontend/.next/static ./apps/frontend/.next/static
 
-# Restore the public folder next to server.js
-RUN mkdir -p /app/apps/frontend/public
-COPY --from=installer /app/public.tar /app/apps/frontend/public/
-RUN cd /app/apps/frontend/public && tar xf public.tar && rm public.tar || true
+# Restore the public folder next to server.js (if it exists)
+COPY --from=installer /app/apps/frontend/public* ./apps/frontend/public
 
 # Fix permissions manually 
 RUN chown -R nextjs:nodejs /app

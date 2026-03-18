@@ -2,11 +2,19 @@ import { api } from '../../lib/api';
 
 export const dashboardService = {
     getOwnerMetrics: () => {
-        return api.get<any>('/owner/metrics');
+        return api.get<any>('/dashboard/owner/metrics');
     },
 
     getOwnerListings: () => {
-        return api.get<any[]>('/owner/listings');
+        return api.get<any[]>('/dashboard/owner/listings');
+    },
+
+    getOwnerSummary: () => {
+        return api.get<any>('/dashboard/owner/summary');
+    },
+
+    getOwnerTenants: () => {
+        return api.get<any[]>('/dashboard/owner/tenants');
     },
 
     getAdminMetrics: () => {
@@ -27,5 +35,13 @@ export const dashboardService = {
 
     getAdminReviews: () => {
         return api.get<any[]>('/admin/reviews');
+    },
+
+    bulkUpdateUsersStatus: (userIds: string[], status: string) => {
+        return api.patch('/admin/users/bulk-status', { userIds, status });
+    },
+
+    bulkDeleteUsers: (userIds: string[]) => {
+        return api.delete('/admin/users/bulk', { data: { userIds } });
     }
 };

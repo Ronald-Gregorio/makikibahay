@@ -7,6 +7,9 @@ export interface IMessage extends Document {
     listingId: mongoose.Types.ObjectId;
     content: string;
     isRead: boolean;
+    isStarred: boolean;
+    isArchived: boolean;
+    isTrashed: boolean;
     sentAt: Date;
 }
 
@@ -17,6 +20,9 @@ const MessageSchema: Schema = new Schema({
     listingId: { type: Schema.Types.ObjectId, ref: 'Listing', required: true },
     content: { type: String, required: true, maxlength: 1000 },
     isRead: { type: Boolean, default: false },
+    isStarred: { type: Boolean, default: false },
+    isArchived: { type: Boolean, default: false },
+    isTrashed: { type: Boolean, default: false },
     sentAt: { type: Date, default: Date.now }
 });
 

@@ -2,8 +2,8 @@ import type { Listing } from './types';
 
 export const listings: Listing[] = [
   {
-    id: 1,
-    owner_id: 101,
+    id: '1',
+    owner_id: '101',
     owner_name: 'Sunny Day',
     owner_phone: '09171234567',
     name: 'Sunshine Residences',
@@ -32,8 +32,8 @@ export const listings: Listing[] = [
     ]
   },
   {
-    id: 2,
-    owner_id: 102,
+    id: '2',
+    owner_id: '102',
     owner_name: 'Maria Maple',
     owner_phone: '09287654321',
     name: 'Maple Tree Dormitory',
@@ -59,8 +59,8 @@ export const listings: Listing[] = [
     ]
   },
   {
-    id: 3,
-    owner_id: 103,
+    id: '3',
+    owner_id: '103',
     owner_name: 'Pat Professional',
     owner_phone: '09998887766',
     name: 'The Professional\'s Pad',

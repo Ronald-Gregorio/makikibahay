@@ -55,6 +55,20 @@ export default function AdminDashboardPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Shield className="h-5 w-5" />
+                            <span>Identity Verification</span>
+                        </CardTitle>
+                        <CardDescription>Review and approve user and owner identity documents.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Button asChild>
+                            <Link href="/admin/verifications">Review Verifications</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Shield className="h-5 w-5" />
                             <span>Content Moderation</span>
                         </CardTitle>
                         <CardDescription>Review and moderate user-submitted reviews and content.</CardDescription>
@@ -89,7 +103,7 @@ export default function AdminDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <Button asChild>
-                            <Link href="/admin/logs">View Logs</Link>
+                            <Link href="/admin/system-logs">View Logs</Link>
                         </Button>
                     </CardContent>
                 </Card>

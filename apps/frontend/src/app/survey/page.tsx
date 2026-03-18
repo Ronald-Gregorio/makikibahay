@@ -48,7 +48,9 @@ export default function SurveyPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([2000, 8000]);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [location, setLocation] = useState('');
+  const [locationCoords, setLocationCoords] = useState<[number, number]>([15.4865, 120.9734]);
   const [walkingDistance, setWalkingDistance] = useState<'5' | '10' | '15'>('10');
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   const progress = (step / totalSteps) * 100;
 
@@ -68,6 +70,26 @@ export default function SurveyPage() {
       setAmenities((prev) => [...prev, amenityLabel]);
     } else {
       setAmenities((prev) => prev.filter((label) => label !== amenityLabel));
+    }
+  };
+
+  const handleGeocode = async () => {
+    if (!location) return;
+    setIsGeocoding(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setLocationCoords([parseFloat(lat), parseFloat(lon)]);
+        toast({ title: 'Location Found', description: 'Map updated to your search.' });
+      } else {
+        toast({ variant: 'destructive', title: 'Not Found', description: 'Could not find that location.' });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGeocoding(false);
     }
   };
 
@@ -187,12 +209,23 @@ export default function SurveyPage() {
             <div className="space-y-6 animate-in fade-in duration-500">
               <h3 className="font-semibold text-lg">Where is your "home base"?</h3>
               <p className="text-muted-foreground">Pin a location on the map (like your school or workplace) to find nearby places.</p>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
-                <Input placeholder="Search for a location..." className="pl-10" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <div className="relative flex gap-2">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+                  <Input 
+                    placeholder="Search for a location (e.g. SM Cabanatuan)..." 
+                    className="pl-10" 
+                    value={location} 
+                    onChange={(e) => setLocation(e.target.value)} 
+                    onKeyDown={(e) => e.key === 'Enter' && handleGeocode()}
+                  />
+                </div>
+                <Button variant="outline" onClick={handleGeocode} disabled={isGeocoding}>
+                  {isGeocoding ? '...' : 'Search'}
+                </Button>
               </div>
               <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden relative z-0">
-                <Map center={[15.4865, 120.9734]} zoom={13} />
+                <Map center={locationCoords} zoom={15} markers={[{position: locationCoords, title: 'Your Home Base'}]} />
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Message from '../models/Message.js';
+import Listing from '../models/Listing.js';
 
 export const getMessages = async (req: Request, res: Response) => {
     try {
@@ -13,59 +14,40 @@ export const getMessages = async (req: Request, res: Response) => {
 
 export const createMessage = async (req: Request, res: Response) => {
     try {
-        const { content, receiverId, listingId } = req.body;
-        // senderId should come from auth middleware
-        const senderId = req.body.senderId || req.headers['x-user-id'];
+        const { content, receiverId, listingId, roomId: clientRoomId } = req.body;
+        const senderId = (req as any).user?._id?.toString() || req.body.senderId || req.headers['x-user-id'];
 
         if (!senderId) {
             res.status(401).json({ message: 'Unauthorized' });
             return;
         }
 
-        // Construct roomId consistent with frontend: listing_LISTINGID_user_USERID_owner_OWNERID
-        // We need to know who is who. 
-        // If sender is owner, roomId is listing_ID_user_RECEIVER_owner_SENDER
-        // If sender is user, roomId is listing_ID_user_SENDER_owner_RECEIVER
-        // This logic is fragile. Frontend sends roomId usually, or backend deduces it.
-        // ChatWindow.tsx sends { content, receiverId, listingId } to POST /api/messages
-        // and calculates roomId locally.
+        if (!content || !receiverId || !listingId) {
+            res.status(400).json({ message: 'content, receiverId, and listingId are required' });
+            return;
+        }
 
-        // We should probably accept roomId in body or recalculate it.
-        // Re-calculating requires knowing if sender is owner or user.
-        // For now, let's assume we can derive it or client sends it?
-        // Frontend ChatWindow doesn't send roomId in body of POST!
-        // It sends: { content, receiverId, listingId }.
+        // Compute roomId: either use what the client sent, or construct it
+        let roomId = clientRoomId;
 
-        // Let's assume standard format: `listing_${listingId}_user_${userId}_owner_${ownerId}`
-        // But we don't know who is owner. Listing has ownerId.
-        // We should fetch listing to find ownerId.
+        if (!roomId) {
+            // Fetch the listing to determine the owner
+            const listing = await Listing.findById(listingId);
+            if (!listing) {
+                res.status(404).json({ message: 'Listing not found' });
+                return;
+            }
 
-        // WORKAROUND: Client should send roomId.
-        // OPTION 2: Fetch listing.
-
-        // Let's rely on basic logic: 
-        // If senderId == listing.ownerId -> sender is owner.
-
-        // Ideally, pass roomId from frontend. I should update frontend?
-        // Or just accept it here if passed.
-
-        // Let's accept roomId if passed, otherwise try to construct it? 
-        // Wait, ChatWindow.tsx DOES NOT pass roomId.
-
-        // I will fetch listing to get ownerId.
-        // Then construct roomId.
-
-        // But for now, let's just create message with provided info and handle roomId if possible.
-        // Actually, `Message` model REQUIRES roomId.
-
-        // I will mock roomId generation or fetch listing. fetching listing is safer.
-
-        // However, I can't import Listing model easily if I want to avoid cycles? No, it's fine.
+            const ownerId = listing.ownerId.toString();
+            // Determine who is the user and who is the owner in this conversation
+            const userId = senderId === ownerId ? receiverId : senderId;
+            roomId = `listing_${listingId}_user_${userId}_owner_${ownerId}`;
+        }
 
         const io = req.app.get('io');
 
         const message = new Message({
-            roomId: req.body.roomId || 'default_room', // Placeholder if not logic implemented
+            roomId,
             senderId,
             receiverId,
             listingId,
@@ -74,22 +56,90 @@ export const createMessage = async (req: Request, res: Response) => {
             isRead: false
         });
 
-        // Better logic:
-        // If we want to support the frontend as is, we need to fetch listing.
-        // But finding Listing model...
-
-        // Let's just respond success for now and fix logic later? No, implementing basic save.
-
         await message.save();
 
         // Emit socket event
         if (io) {
-            io.to(message.roomId).emit('messageReceived', message);
+            io.to(roomId).emit('messageReceived', message);
         }
 
         res.status(201).json(message);
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+export const getConversations = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?._id;
+
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const messages = await Message.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { senderId: new Message.db.base.Types.ObjectId(userId) },
+                        { receiverId: new Message.db.base.Types.ObjectId(userId) }
+                    ]
+                }
+            },
+            { $sort: { sentAt: -1 } },
+            {
+                $group: {
+                    _id: '$roomId',
+                    lastMessage: { $first: '$$ROOT' }
+                }
+            },
+            { $replaceRoot: { newRoot: '$lastMessage' } },
+            { $sort: { sentAt: -1 } }
+        ]);
+
+        // Manually populate since aggregate doesn't support it easily for multiple fields
+        const populatedMessages = await Message.populate(messages, [
+            { path: 'senderId', select: 'name avatar email' },
+            { path: 'receiverId', select: 'name avatar email' },
+            { path: 'listingId', select: 'name photos' }
+        ]);
+
+        res.json(populatedMessages);
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const updateMessageStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { isRead, isStarred, isArchived, isTrashed } = req.body;
+        const userId = (req as any).user?._id;
+
+        const message = await Message.findById(id);
+
+        if (!message) {
+            res.status(404).json({ message: 'Message not found' });
+            return;
+        }
+
+        // Verify user is sender or receiver
+        if (message.senderId.toString() !== userId.toString() && message.receiverId.toString() !== userId.toString()) {
+            res.status(403).json({ message: 'Not authorized to update this message' });
+            return;
+        }
+
+        if (isRead !== undefined) message.isRead = isRead;
+        if (isStarred !== undefined) message.isStarred = isStarred;
+        if (isArchived !== undefined) message.isArchived = isArchived;
+        if (isTrashed !== undefined) message.isTrashed = isTrashed;
+
+        await message.save();
+        res.json(message);
+    } catch (error) {
+        console.error('Error updating message status:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

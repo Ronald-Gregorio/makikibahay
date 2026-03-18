@@ -41,3 +41,28 @@ export const createReview = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const getMyReviews = async (req: Request, res: Response) => {
+    try {
+        // In a real app, middleware adds user to req
+        // For now, we'll try to get it from req.user if present, else return empty or handle mock
+        const userId = (req as any).user?._id || (req as any).user?.id;
+
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const reviews = await Review.find({ userId }).populate('listingId', 'name').sort({ createdAt: -1 });
+        
+        // Map to include listing_name for frontend compatibility if needed
+        const formattedReviews = reviews.map(r => ({
+            ...r.toObject(),
+            listing_name: (r.listingId as any)?.name
+        }));
+
+        res.json(formattedReviews);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};

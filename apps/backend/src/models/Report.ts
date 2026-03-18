@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { ReportType, ReportStatus } from '@makikibahay/types';
+
+type ReportType = 'listing' | 'owner' | 'user';
+type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
 export interface IReport extends Document {
     reporterId: mongoose.Types.ObjectId;

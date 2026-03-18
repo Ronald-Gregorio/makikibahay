@@ -6,13 +6,24 @@ export function AppFooter() {
     <footer className="bg-gray-light border-t border-gray-border mt-16">
       {/* Main footer columns */}
       <div className="max-w-[1400px] mx-auto px-5 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          {/* Logo & Intro */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="flex items-center gap-2 text-primary-green no-underline mb-4">
+              <Home className="h-6 w-6" />
+              <span className="text-xl font-black tracking-tight text-primary-green">Makikibahay</span>
+            </Link>
+            <p className="text-sm text-gray-text leading-relaxed">
+              Find your next perfect home in Cabanatuan. Whether it's a solo room, shared space, or studio, Makikibahay connects you directly with trusted property owners.
+            </p>
+          </div>
 
           {/* Advertisers */}
           <div>
             <h4 className="text-base font-bold text-text-dark mb-5">Advertisers</h4>
             <ul className="space-y-2.5">
-              <li><FooterLink href="/owner/listings/create">Add a Property</FooterLink></li>
+              <li><FooterLink href="/signup?role=owner">Add a Property</FooterLink></li>
               <li><FooterLink href="/owner/dashboard">Customer Portal</FooterLink></li>
               <li><FooterLink href="#">Community Forum</FooterLink></li>
             </ul>
@@ -40,7 +51,6 @@ export function AppFooter() {
               <li><FooterLink href="#">Avoid Scams</FooterLink></li>
               <li><FooterLink href="#">Accessibility</FooterLink></li>
               <li><FooterLink href="#">Sitemap</FooterLink></li>
-              <li><FooterLink href="#">Cookie Policy</FooterLink></li>
             </ul>
           </div>
 

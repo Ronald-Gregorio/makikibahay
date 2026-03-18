@@ -9,6 +9,10 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import listingRoutes from './routes/listings.js';
 import messageRoutes from './routes/messages.js';
+import verificationRoutes from './routes/verification.js';
+import dashboardRoutes from './routes/dashboard.js';
+import settingsRoutes from './routes/settings.js';
+import savedSearchRoutes from './routes/savedSearches.js';
 // import surveyRoutes from './routes/survey.js';
 
 dotenv.config();
@@ -99,6 +103,8 @@ io.on('connection', (socket) => {
 
 import uploadRoutes from './routes/upload.js';
 import reviewRoutes from './routes/reviews.js';
+import adminRoutes from './routes/admin.js';
+import { initSettings } from './controllers/settingsController.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -106,6 +112,11 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/verification', verificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/saved-searches', savedSearchRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -119,6 +130,9 @@ const startServer = async () => {
   try {
     await connectDB();
     console.log('Database connected successfully.');
+    
+    await initSettings();
+    console.log('Default settings initialized.');
 
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
