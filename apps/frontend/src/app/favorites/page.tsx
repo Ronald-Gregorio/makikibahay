@@ -17,7 +17,7 @@ export default function FavoritesPage() {
   useEffect(() => {
     if (user) {
       userService.getFavorites()
-        .then(data => setFavoriteListings(data))
+        .then(data => setFavoriteListings(data || []))
         .catch(console.error)
         .finally(() => setLoading(false));
     } else {
@@ -49,7 +49,7 @@ export default function FavoritesPage() {
           Here are the properties you've saved.
         </p>
       </header>
-      {favoriteListings.length > 0 ? (
+      {favoriteListings?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {favoriteListings.map((listing) => (
             <PropertyCard key={listing.id} listing={listing} />

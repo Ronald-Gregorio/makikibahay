@@ -126,6 +126,7 @@ export default function SignupPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-112px)] bg-background">
       <Card className="w-full max-w-md mx-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSignup(); }}>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>Join as a user looking for a home, or an owner listing a property.</CardDescription>
@@ -143,7 +144,7 @@ export default function SignupPage() {
           </TabsContent>
         </Tabs>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full bg-[#218d3d] hover:bg-[#218d3d]/90 text-white" onClick={handleSignup}>Create Account</Button>
+          <Button type="submit" className="w-full bg-[#218d3d] hover:bg-[#218d3d]/90 text-white">Create Account</Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" className="underline hover:text-primary">
@@ -151,6 +152,7 @@ export default function SignupPage() {
             </Link>
           </p>
         </CardFooter>
+        </form>
       </Card>
     </div>
   );

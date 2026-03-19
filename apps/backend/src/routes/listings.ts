@@ -1,5 +1,5 @@
 import express from 'express';
-import { getListings, getListingById, createListing, getFeaturedListings, getOwnerListings } from '../controllers/listingController.js';
+import { getListings, getListingById, createListing, getFeaturedListings, getOwnerListings, updateListing, deleteListing } from '../controllers/listingController.js';
 
 const router = express.Router();
 
@@ -10,5 +10,7 @@ router.get('/featured', getFeaturedListings);
 router.get('/owner', protect, getOwnerListings);
 router.get('/:id', getListingById);
 router.post('/', protect, createListing);
+router.patch('/:id', protect, updateListing);
+router.delete('/:id', protect, deleteListing);
 
 export default router;

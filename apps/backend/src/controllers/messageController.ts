@@ -22,8 +22,8 @@ export const createMessage = async (req: Request, res: Response) => {
             return;
         }
 
-        if (!content || !receiverId || !listingId) {
-            res.status(400).json({ message: 'content, receiverId, and listingId are required' });
+        if (!content || !receiverId) {
+            res.status(400).json({ message: 'content and receiverId are required' });
             return;
         }
 
@@ -31,17 +31,21 @@ export const createMessage = async (req: Request, res: Response) => {
         let roomId = clientRoomId;
 
         if (!roomId) {
-            // Fetch the listing to determine the owner
-            const listing = await Listing.findById(listingId);
-            if (!listing) {
-                res.status(404).json({ message: 'Listing not found' });
-                return;
+            if (listingId) {
+                // Listing-scoped conversation
+                const listing = await Listing.findById(listingId);
+                if (!listing) {
+                    res.status(404).json({ message: 'Listing not found' });
+                    return;
+                }
+                const ownerId = listing.ownerId.toString();
+                const userId = senderId === ownerId ? receiverId : senderId;
+                roomId = `listing_${listingId}_user_${userId}_owner_${ownerId}`;
+            } else {
+                // Direct message (no listing) — build a stable canonical roomId
+                const participants = [senderId, receiverId].sort();
+                roomId = `dm_${participants[0]}_${participants[1]}`;
             }
-
-            const ownerId = listing.ownerId.toString();
-            // Determine who is the user and who is the owner in this conversation
-            const userId = senderId === ownerId ? receiverId : senderId;
-            roomId = `listing_${listingId}_user_${userId}_owner_${ownerId}`;
         }
 
         const io = req.app.get('io');
@@ -50,7 +54,7 @@ export const createMessage = async (req: Request, res: Response) => {
             roomId,
             senderId,
             receiverId,
-            listingId,
+            ...(listingId ? { listingId } : {}),
             content,
             sentAt: new Date(),
             isRead: false
@@ -58,7 +62,6 @@ export const createMessage = async (req: Request, res: Response) => {
 
         await message.save();
 
-        // Emit socket event
         if (io) {
             io.to(roomId).emit('messageReceived', message);
         }

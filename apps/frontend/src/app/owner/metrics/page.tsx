@@ -32,23 +32,13 @@ export default function MetricsPage() {
         return <div className="flex h-screen items-center justify-center">Loading Metrics Dashboard...</div>;
     }
 
-    // Default to mock structure if API hasn't fully implemented the aggregations yet
+    // Fallback safely to empty data instead of mock values
     const safeData = metrics || {};
-    const occupancyData = safeData.occupancyData || [
-        { month: "Jan", occupied: 82 }, { month: "Feb", occupied: 85 }, { month: "Mar", occupied: 87 },
-        { month: "Apr", occupied: 86 }, { month: "May", occupied: 90 }, { month: "Jun", occupied: 92 }
-    ];
-    const inquiryVolumeData = safeData.inquiryVolumeData || [
-        { month: 'Jan', inquiries: 12 }, { month: 'Feb', inquiries: 19 }, { month: 'Mar', inquiries: 15 },
-        { month: 'Apr', inquiries: 21 }, { month: 'May', inquiries: 25 }, { month: 'Jun', inquiries: 18 }
-    ];
-    const leadSourceData = safeData.leadSourceData || [
-        { name: 'Makikibahay Search', value: 400, fill: 'var(--color-search)' },
-        { name: 'Social Media', value: 300, fill: 'var(--color-social)' },
-        { name: 'Referrals', value: 200, fill: 'var(--color-referrals)' },
-        { name: 'Walk-ins', value: 100, fill: 'var(--color-walkins)' },
-    ];
-    const stats = safeData.stats || { occupancyRate: "92%", avgStay: "14.5 months", churnRate: "5.8%", conversionRate: "21%" };
+    const occupancyData = safeData.occupancyData || [];
+    const inquiryVolumeData = safeData.inquiryVolumeData || [];
+    const leadSourceData = safeData.leadSourceData || [];
+    const stats = safeData.stats || { occupancyRate: "0%", avgStay: "0", churnRate: "0%", conversionRate: "0%" };
+    
     const chartConfig = {
         inquiries: { label: 'Inquiries', color: 'hsl(var(--primary))' },
         search: { label: 'Search', color: 'hsl(var(--chart-1))' },

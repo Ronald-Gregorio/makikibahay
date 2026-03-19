@@ -111,6 +111,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-112px)] bg-background">
       <Card className="w-full max-w-md mx-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Welcome Back!</CardTitle>
           <CardDescription>Sign in to find your perfect boarding house.</CardDescription>
@@ -128,7 +129,7 @@ export default function LoginPage() {
           </TabsContent>
         </Tabs>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full bg-[#218d3d] hover:bg-[#218d3d]/90 text-white" onClick={handleLogin}>Sign In</Button>
+          <Button type="submit" className="w-full bg-[#218d3d] hover:bg-[#218d3d]/90 text-white">Sign In</Button>
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/signup" className="underline hover:text-primary">
@@ -136,6 +137,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </CardFooter>
+        </form>
       </Card>
     </div>
   );

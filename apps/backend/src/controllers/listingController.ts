@@ -149,3 +149,87 @@ export const getOwnerListings = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const updateListing = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const ownerId = (req as any).user?._id?.toString();
+        const listing = await Listing.findById(req.params.id);
+
+        if (!listing) {
+            res.status(404).json({ message: 'Listing not found' });
+            return;
+        }
+
+        // Enforce ownership (or admin)
+        if (listing.ownerId.toString() !== ownerId) {
+            res.status(403).json({ message: 'Forbidden' });
+            return;
+        }
+
+        const { name, address, priceMin, priceMax, totalRooms, availableRooms, amenities, rules, location, photos, rooms, type, status } = req.body;
+
+        if (name !== undefined) listing.name = name;
+        if (address !== undefined) listing.address = address;
+        if (priceMin !== undefined) listing.priceMin = priceMin;
+        if (priceMax !== undefined) listing.priceMax = priceMax;
+        if (totalRooms !== undefined) listing.totalRooms = totalRooms;
+        if (availableRooms !== undefined) listing.availableRooms = availableRooms;
+        if (amenities !== undefined) listing.amenities = amenities;
+        if (rules !== undefined) listing.rules = rules;
+        if (location !== undefined) listing.location = location;
+        if (photos !== undefined) listing.photos = photos;
+        if (type !== undefined) listing.type = type;
+        if (status !== undefined) listing.status = status;
+
+        await listing.save();
+
+        // Replace rooms if provided
+        if (rooms && Array.isArray(rooms)) {
+            await Room.deleteMany({ listingId: listing._id });
+            if (rooms.length > 0) {
+                const roomDocs = rooms.map(room => ({
+                    listingId: listing._id,
+                    type: room.type || 'Standard',
+                    sizeSqm: room.size_sqm || 15,
+                    price: room.price,
+                    inclusions: room.inclusions,
+                    isAvailable: room.is_available,
+                    model3dUrl: room.model_3d_url,
+                }));
+                await Room.insertMany(roomDocs);
+            }
+        }
+
+        const updatedRooms = await Room.find({ listingId: listing._id });
+        res.json({ ...listing.toObject(), rooms: updatedRooms });
+    } catch (error) {
+        console.error('Error updating listing:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const deleteListing = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const ownerId = (req as any).user?._id?.toString();
+        const listing = await Listing.findById(req.params.id);
+
+        if (!listing) {
+            res.status(404).json({ message: 'Listing not found' });
+            return;
+        }
+
+        if (listing.ownerId.toString() !== ownerId) {
+            res.status(403).json({ message: 'Forbidden' });
+            return;
+        }
+
+        await Room.deleteMany({ listingId: listing._id });
+        await Listing.deleteOne({ _id: listing._id });
+
+        res.json({ message: 'Listing deleted' });
+    } catch (error) {
+        console.error('Error deleting listing:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+

@@ -223,7 +223,7 @@ export default function ListingsManagementPage() {
                                 <ListingRow
                                     key={listing.id}
                                     listing={listing}
-                                    isSelected={selectedListingIds.includes(listing.id.toString())}
+                                    isSelected={selectedListingIds.includes(listing.id?.toString() || '')}
                                     onSelectRow={handleSelectRow}
                                 />
                             ))}

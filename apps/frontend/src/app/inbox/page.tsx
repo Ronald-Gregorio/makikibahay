@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/index';
 import { Button } from '@/components/ui/index';
 import { Inbox, Send, Star, Archive, Trash2, Mail, Edit, Reply, ReplyAll, Forward, ArchiveRestore, PanelLeft, X } from 'lucide-react';
@@ -45,11 +45,13 @@ interface ComposeState {
   mode: ComposeMode;
   message: any | null;
   recipient?: string;
+  initialSubject?: string;
 }
 
 function InboxComponent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter(); // Added router for auth guard
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
   const [thread, setThread] = useState<any[]>([]);
@@ -60,6 +62,11 @@ function InboxComponent() {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     const fetchConversations = async () => {
       try {
         setLoading(true);
@@ -73,15 +80,14 @@ function InboxComponent() {
       }
     };
 
-    if (user) {
-      fetchConversations();
-    }
-  }, [user, toast]);
+    fetchConversations();
+  }, [user, toast, router]);
 
   useEffect(() => {
     const to = searchParams.get('to');
+    const subject = searchParams.get('subject');
     if (to) {
-      handleCompose('new', null, to);
+      handleCompose('new', null, to, subject || '');
     }
   }, [searchParams]);
 
@@ -141,14 +147,14 @@ function InboxComponent() {
   };
 
   const handleAddSentMessage = async (to: string, subject: string, text: string) => {
-      if (!composeState?.recipient && !selectedMessage) return;
+      if (!to) return;
       
       try {
           // Use current message's listingId if replying
           const listingId = selectedMessage?.listingId?._id || selectedMessage?.listingId || searchParams.get('listingId');
           const receiverId = to;
           
-          await messageService.sendMessage(text, receiverId, listingId, selectedMessage?.roomId);
+          await messageService.sendMessage(subject ? `[Subject: ${subject}]\n\n${text}` : text, receiverId, listingId, selectedMessage?.roomId);
           
           // Refresh conversations
           const data = await messageService.getConversations();
@@ -213,9 +219,9 @@ function InboxComponent() {
     }
   }
 
-  const handleCompose = (mode: ComposeMode, message: Message | null, recipient?: string) => {
+  const handleCompose = (mode: ComposeMode, message: Message | null, recipient?: string, initialSubject?: string) => {
     setSelectedMessage(null);
-    setComposeState({ mode, message, recipient });
+    setComposeState({ mode, message, recipient, initialSubject });
   }
 
   const SidebarButton = ({ type, icon, label, count }: { type: MailboxType, icon: React.ReactNode, label: string, count?: number }) => {
@@ -496,7 +502,7 @@ function ComposeView({ composeState, onSend, onClose }: { composeState: ComposeS
   const { mode, message, recipient } = composeState;
 
   let to = recipient || '';
-  let subject = '';
+  let subject = composeState.initialSubject || '';
   let body = '';
 
   if (message) {

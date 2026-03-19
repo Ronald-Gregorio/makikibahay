@@ -1,45 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookmarkCheck, Trash2, Search, ArrowRight } from 'lucide-react';
+import { BookmarkCheck, Trash2, Search, ArrowRight, Loader2 } from 'lucide-react';
+import { savedSearchService } from '@/services/api/savedSearches';
+import { useToast } from '@/hooks/use-toast';
 
 interface SavedSearch {
     id: string;
+    _id?: string;
     name: string;
     filters: Record<string, string>;
     resultsCount: number;
-    savedAt: string;
+    savedAt?: string;
+    createdAt?: string;
 }
 
-const MOCK_SAVED: SavedSearch[] = [
-    {
-        id: '1',
-        name: 'Affordable Solo Rooms in Nueva Ecija',
-        filters: { priceMax: '₱5,000', propertyType: 'Boarding House', amenities: 'WiFi, AC' },
-        resultsCount: 14,
-        savedAt: '2026-03-10',
-    },
-    {
-        id: '2',
-        name: 'Studio Units near Wesleyan University',
-        filters: { priceMax: '₱8,000', propertyType: 'Studio Type', community: 'Near University' },
-        resultsCount: 7,
-        savedAt: '2026-03-08',
-    },
-    {
-        id: '3',
-        name: 'Pet-Friendly Apartments',
-        filters: { petPolicy: 'Any Pet Friendly', priceMax: '₱10,000' },
-        resultsCount: 3,
-        savedAt: '2026-03-05',
-    },
-];
-
 export default function SavedSearchesPage() {
-    const [searches, setSearches] = useState<SavedSearch[]>(MOCK_SAVED);
+    const [searches, setSearches] = useState<SavedSearch[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
-    const remove = (id: string) => setSearches(prev => prev.filter(s => s.id !== id));
+    useEffect(() => {
+        const fetchSearches = async () => {
+            try {
+                const data = await savedSearchService.getSavedSearches();
+                setSearches(data);
+            } catch (err) {
+                console.error('Failed to load saved searches', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSearches();
+    }, []);
+
+    const remove = async (id: string) => {
+        try {
+            await savedSearchService.deleteSavedSearch(id);
+            setSearches(prev => prev.filter(s => s.id !== id && s._id !== id));
+            toast({ title: 'Search Deleted', description: 'The saved search was removed.' });
+        } catch {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the saved search.' });
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-light">
@@ -53,7 +57,11 @@ export default function SavedSearchesPage() {
                     <p className="text-gray-text mt-1">Resume past searches or run them again to see new listings.</p>
                 </div>
 
-                {searches.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary-green" />
+                    </div>
+                ) : searches.length === 0 ? (
                     <div className="text-center py-20 bg-white border border-gray-border rounded-lg">
                         <Search className="mx-auto h-12 w-12 text-gray-text mb-4" />
                         <h2 className="text-xl font-semibold text-text-dark mb-2">No Saved Searches</h2>
@@ -77,19 +85,22 @@ export default function SavedSearchesPage() {
 
                                     {/* Filter chips */}
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {Object.entries(s.filters).map(([key, val]) => (
-                                            <span
-                                                key={key}
-                                                className="bg-gray-light text-gray-text text-xs font-medium px-3 py-1 rounded-full"
-                                            >
-                                                {val}
-                                            </span>
-                                        ))}
+                                        {Object.entries(s.filters || {}).map(([key, val]) => {
+                                            if (typeof val !== 'string' && typeof val !== 'number') return null;
+                                            return (
+                                              <span
+                                                  key={key}
+                                                  className="bg-gray-light text-gray-text text-xs font-medium px-3 py-1 rounded-full capitalize"
+                                              >
+                                                  {key}: {val}
+                                              </span>
+                                            )
+                                        })}
                                     </div>
 
                                     <div className="flex items-center gap-4 mt-3 text-sm text-gray-text">
-                                        <span className="font-semibold text-primary-green">{s.resultsCount} results</span>
-                                        <span>Saved on {new Date(s.savedAt).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                        <span className="font-semibold text-primary-green">{s.resultsCount ?? 0} results</span>
+                                        <span>Saved on {new Date(s.savedAt || s.createdAt || new Date()).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                                     </div>
                                 </div>
 
@@ -101,7 +112,7 @@ export default function SavedSearchesPage() {
                                         <Search className="h-3.5 w-3.5" /> Run Search <ArrowRight className="h-3.5 w-3.5" />
                                     </Link>
                                     <button
-                                        onClick={() => remove(s.id)}
+                                        onClick={() => remove(s.id || s._id as string)}
                                         className="p-2 text-gray-text hover:text-red-alert transition-colors"
                                         aria-label="Delete saved search"
                                     >

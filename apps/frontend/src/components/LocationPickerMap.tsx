@@ -47,7 +47,11 @@ export default function LocationPickerMap({ initialCenter = [14.5995, 120.9842],
             const updateLocation = async (lat: number, lng: number) => {
                 let address = undefined;
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+                        headers: {
+                            'User-Agent': 'Makikibahay-App/1.0 (Contact: admin@makikibahay.com)'
+                        }
+                    });
                     const data = await res.json();
                     if (data && data.display_name) {
                         address = data.display_name;
@@ -55,7 +59,7 @@ export default function LocationPickerMap({ initialCenter = [14.5995, 120.9842],
                 } catch (err) {
                     console.error("Reverse geocoding failed", err);
                 }
-                onLocationSelect(lat, lng, address);
+                onLocationSelect(lat, lng, address || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
             };
 
             markerInstance.current.on('dragend', () => {

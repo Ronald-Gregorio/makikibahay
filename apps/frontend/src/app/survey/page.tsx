@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { SurveyData } from '@/lib/types';
 import dynamic from 'next/dynamic';
 
-const Map = dynamic(() => import('@/components/Map'), {
+const LocationPickerMap = dynamic(() => import('@/components/LocationPickerMap'), {
   ssr: false,
   loading: () => <div className="aspect-video w-full bg-slate-100 animate-pulse rounded-lg" />
 });
@@ -224,8 +224,15 @@ export default function SurveyPage() {
                   {isGeocoding ? '...' : 'Search'}
                 </Button>
               </div>
-              <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden relative z-0">
-                <Map center={locationCoords} zoom={15} markers={[{position: locationCoords, title: 'Your Home Base'}]} />
+              <div className="mt-4 aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden relative z-0">
+                <LocationPickerMap 
+                  initialCenter={locationCoords} 
+                  initialZoom={15} 
+                  onLocationSelect={(lat, lng, address) => {
+                    setLocationCoords([lat, lng]);
+                    if (address) setLocation(address);
+                  }} 
+                />
               </div>
             </div>
           )}

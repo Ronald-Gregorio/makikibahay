@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/index';
 import { Button } from '@/components/ui/index';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { listingService } from '@/services/api/listings';
 
 const Map = dynamic(() => import('@/components/Map'), {
@@ -229,10 +230,10 @@ function ListingDetailContent() {
                       <p className="text-lg font-bold text-primary-green mt-1">₱{room.price.toLocaleString()}/mo</p>
                     </div>
                     <div className="text-right">
-                      <span className={`text-sm font-medium px-3 py-1 rounded-full ${room.isAvailable ? 'bg-green-50 text-primary-green' : 'bg-red-50 text-red-alert'}`}>
-                        {room.isAvailable ? 'Available Now' : 'Occupied'}
+                      <span className={`text-sm font-medium px-3 py-1 rounded-full ${room.isAvailable ?? (room as any).is_available ? 'bg-green-50 text-primary-green' : 'bg-red-50 text-red-alert'}`}>
+                        {room.isAvailable ?? (room as any).is_available ? 'Available Now' : 'Occupied'}
                       </span>
-                      {room.isAvailable && (
+                      {(room.isAvailable ?? (room as any).is_available) && (
                         <button className="block mt-2 text-sm font-medium px-4 py-1.5 border border-gray-border rounded hover:bg-gray-light transition-colors">
                           Apply Now
                         </button>
@@ -286,18 +287,17 @@ function ListingDetailContent() {
             <section id="views">
               <h2 className="text-2xl font-bold text-text-dark mb-5">3D Virtual Tour</h2>
               <MarzipanoViewer 
-                scenes={[
+                scenes={listing.rooms.filter(r => (r as any).model_3d_url).length > 0 ? listing.rooms.filter(r => (r as any).model_3d_url).map((r, i) => ({
+                    id: r._id,
+                    name: r.type || `Room ${i + 1}`,
+                    imageUrl: (r as any).model_3d_url,
+                    hotspots: []
+                })) : [
                   {
                     id: 'living-room',
                     name: 'Living Room',
                     imageUrl: 'https://www.marzipano.net/media/equirect/angra.jpg',
                     hotspots: [{ pitch: 0.1, yaw: -0.4, label: 'Kitchen', sceneId: 'kitchen' }]
-                  },
-                  {
-                    id: 'kitchen',
-                    name: 'Kitchen',
-                    imageUrl: 'https://www.marzipano.net/media/equirect/angra.jpg',
-                    hotspots: [{ pitch: 0, yaw: 0.5, label: 'Living Room', sceneId: 'living-room' }]
                   }
                 ]} 
               />
@@ -338,15 +338,15 @@ function ListingDetailContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { icon: '🎓', title: 'Schools & Universities', items: ['Contact owner for nearby schools'] },
-                  { icon: '🚌', title: 'Transportation', items: ['Contact owner for transport options'] },
-                  { icon: '🏪', title: 'Points of Interest', items: ['Contact owner for nearby POIs'] },
+                  { icon: '🎓', title: 'Schools & Universities', items: ['See map above for nearby recommendations.'] },
+                  { icon: '🚌', title: 'Transportation', items: (listing as any).transportation && (listing as any).transportation.length > 0 ? (listing as any).transportation : ['Contact owner for transport options'] },
+                  { icon: '🏪', title: 'Points of Interest', items: ['See map above for nearby POIs.'] },
                   { icon: '📊', title: 'Avg Prices in Area', items: [`Studio: ₱${listing.priceMin.toLocaleString()}/mo`, `Room: ₱${listing.priceMax.toLocaleString()}/mo`] },
                 ].map(info => (
                   <div key={info.title}>
                     <h3 className="font-semibold text-text-dark mb-2">{info.icon} {info.title}</h3>
                     <ul className="space-y-2">
-                      {info.items.map((item, i) => (
+                      {info.items.map((item: string, i: number) => (
                         <li key={i} className="flex justify-between text-sm text-gray-text border-b border-gray-border pb-1.5">
                           <span>{item}</span>
                         </li>
@@ -467,9 +467,9 @@ function ListingDetailContent() {
 
               {/* CTA Buttons */}
               <div className="p-4 flex gap-2.5 border-b border-gray-border">
-                <button className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary-green hover:bg-primary-green-hover text-white font-medium rounded transition-colors text-sm">
+                <a href={`/inbox?to=${listing.ownerId?._id || ''}&subject=${encodeURIComponent('Interested in ' + listing.name)}`} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary-green hover:bg-primary-green-hover text-white font-medium rounded transition-colors text-sm">
                   <Mail className="h-4 w-4" /> Message
-                </button>
+                </a>
                 <button className="flex-1 flex items-center justify-center gap-1.5 py-3 border border-primary-green text-primary-green font-medium rounded hover:bg-[rgba(33,141,61,0.05)] transition-colors text-sm">
                   <Calendar className="h-4 w-4" /> Request Tour
                 </button>

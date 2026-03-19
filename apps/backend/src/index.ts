@@ -13,6 +13,7 @@ import verificationRoutes from './routes/verification.js';
 import dashboardRoutes from './routes/dashboard.js';
 import settingsRoutes from './routes/settings.js';
 import savedSearchRoutes from './routes/savedSearches.js';
+import walkthroughRoutes from './routes/walkthroughs.js';
 // import surveyRoutes from './routes/survey.js';
 
 dotenv.config();
@@ -117,6 +118,7 @@ app.use('/api/verification', verificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/saved-searches', savedSearchRoutes);
+app.use('/api/walkthroughs', walkthroughRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

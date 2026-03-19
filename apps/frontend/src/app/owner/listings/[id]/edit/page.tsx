@@ -15,16 +15,22 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
   Combobox
 } from '@/components/ui/index';
-import { PlusCircle, Trash2, Upload } from 'lucide-react';
+import { PlusCircle, Trash2, Upload, Box } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { listingService } from '@/services/api/listings';
+import { walkthroughService, type WalkthroughConfig } from '@/services/api/walkthroughs';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
 
 const LocationPickerMap = dynamic(() => import('@/components/LocationPickerMap'), {
   ssr: false,
   loading: () => <div className="h-[400px] w-full bg-slate-100 animate-pulse rounded-lg" />
+});
+
+const WalkthroughBuilder = dynamic(() => import('@/components/WalkthroughBuilder'), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-lg" />
 });
 
 const roomSchema = z.object({
@@ -77,7 +83,7 @@ const defaultAmenityOptions = [
   { value: 'Appliances Included', label: 'Appliances Included' },
 ];
 
-export default function CreateListingPage() {
+export default function EditListingPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -88,6 +94,8 @@ export default function CreateListingPage() {
   const [propertyTypeOptions, setPropertyTypeOptions] = useState<{value: string, label: string}[]>(defaultPropertyTypeOptions);
   const [amenityOptions, setAmenityOptions] = useState<{value: string, label: string}[]>(defaultAmenityOptions);
   const [rulesOptions, setRulesOptions] = useState<string[]>(defaultRulesOptions);
+  const [existingWalkthrough, setExistingWalkthrough] = useState<WalkthroughConfig | null>(null);
+  const [activeTab, setActiveTab] = useState<'details' | 'photos' | 'tour'>('details');
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -125,6 +133,53 @@ export default function CreateListingPage() {
     control: form.control,
     name: 'rooms',
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const listing = await listingService.getById(params.id);
+        if (listing) {
+          const defaultRooms = listing.rooms?.length ? listing.rooms.map((r: any) => ({
+              type: r.type,
+              price: r.price,
+              inclusions: Array.isArray(r.inclusions) ? r.inclusions.join(', ') : r.inclusions || '',
+              is_available: r.is_available ?? true,
+              model_3d_url: r.model_3d_url || ''
+          })) : [{ type: 'Solo Room', price: 0, inclusions: '', is_available: true, model_3d_url: '' }];
+
+          form.reset({
+            name: listing.name || '',
+            address: listing.address || '',
+            location: {
+              lat: listing.lat || 15.4865,
+              lng: listing.lng || 120.9734
+            },
+            type: (listing as any).type || 'Entire Property',
+            rules: Array.isArray(listing.rules) ? listing.rules : [],
+            amenities: listing.amenities || [],
+            rooms: defaultRooms
+          });
+          if (listing.photos) setPhotos(listing.photos.map((p: any) => p.url));
+        }
+      } catch (err) {
+        toast({ title: 'Error', description: 'Failed to load listing details', variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchWalkthrough = async () => {
+      const wt = await walkthroughService.getWalkthrough(params.id);
+      setExistingWalkthrough(wt);
+    };
+
+    if (params.id) {
+      fetchListing();
+      fetchWalkthrough();
+    }
+  }, [params.id, form, toast]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -240,23 +295,44 @@ export default function CreateListingPage() {
     }
   }
 
+  if (isLoading) return <div className="p-8 text-center text-gray-text font-semibold">Loading listing details...</div>;
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center">
       <Card className="w-full max-w-4xl shadow-lg border-gray-border">
         <CardHeader className="border-b border-gray-border pb-6">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle className="font-headline text-3xl text-text-dark">Create a New Listing</CardTitle>
-              <CardDescription className="text-gray-text mt-1 text-lg">Provide all the details for your property in one place.</CardDescription>
+              <CardTitle className="font-headline text-3xl text-text-dark">Edit Listing</CardTitle>
+              <CardDescription className="text-gray-text mt-1 text-lg">Update the details for your property.</CardDescription>
             </div>
-            <Button variant="outline" onClick={() => router.push('/owner/dashboard')}>
+            <Button variant="outline" onClick={() => router.push('/owner/listings')}>
               Cancel
             </Button>
+          </div>
+          {/* Tab Navigation */}
+          <div className="flex gap-1 mt-5 border border-gray-border rounded-lg p-1 bg-gray-50 self-start">
+            {(['details', 'photos', 'tour'] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`px-5 py-2 rounded-md text-sm font-semibold transition-colors capitalize ${
+                  activeTab === tab
+                    ? 'bg-white shadow text-primary-green'
+                    : 'text-gray-text hover:text-text-dark'
+                }`}
+              >
+                {tab === 'tour' ? '3D Virtual Tour' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-12 py-8">
+              {/* Tab: Details */}
+              <div className={activeTab !== 'details' ? 'hidden' : ''}>
               
               {/* Section 1: Basic Information */}
               <section className="space-y-6">
@@ -548,26 +624,16 @@ export default function CreateListingPage() {
                   />
                 </div>
               </section>
-
               {/* Section 4: Photos */}
               <section className="space-y-6">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
                   <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">4</div>
-                  <h3 className="font-bold text-xl text-text-dark">Upload Photos & 3D Tours</h3>
+                  <h3 className="font-bold text-xl text-text-dark">Upload Photos</h3>
                 </div>
-                
-                <div className="space-y-6">
-                  {/* Standard Photo Uploads */}
-                  <div>
-                    <FormLabel className="text-base font-bold text-text-dark">Property Photos</FormLabel>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-2">
                   {photos.map((photoUrl, idx) => (
                     <Card key={idx} className="group relative aspect-square overflow-hidden bg-muted border-gray-border shadow-sm ring-primary-green/20 hover:ring-2 transition-all">
-                      <img
-                        src={photoUrl}
-                        alt="Listing photo"
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
+                      <img src={photoUrl} alt="Listing photo" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button type="button" variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => handleDeletePhoto(idx)}>
                           <Trash2 className="h-5 w-5" />
@@ -576,49 +642,35 @@ export default function CreateListingPage() {
                     </Card>
                   ))}
                   <div className="relative flex flex-col items-center justify-center aspect-square border-2 border-dashed border-primary-green/30 bg-primary-green/5 rounded-lg text-center hover:bg-primary-green/10 hover:border-primary-green/50 transition-all cursor-pointer overflow-hidden group">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
+                    <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className="flex flex-col items-center animate-in zoom-in duration-300">
                       <Upload className="h-10 w-10 text-primary-green mb-2 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-bold text-primary-green uppercase tracking-tighter">{isPhotoUploading ? "Uploading..." : "Add Photo"}</span>
-                    </div>
-                    </div>
-                  </div>
-                </div>
-
-                  {/* 3D Walkthrough Configs */}
-                  <div>
-                    <div className="mb-4">
-                        <FormLabel className="text-base font-bold text-text-dark">3D Model Virtual Tours</FormLabel>
-                        <p className="text-sm text-gray-text">Optional: Paste your Matterport, Kuula, or direct .GLTF links for each room type below.</p>
-                    </div>
-                    <div className="grid gap-4 bg-gray-light/20 p-4 rounded-lg border border-gray-border">
-                      {fields.map((field, index) => (
-                          <FormField
-                            key={`3d-${field.id}`}
-                            control={form.control}
-                            name={`rooms.${index}.model_3d_url`}
-                            render={({ field: formField }) => (
-                              <FormItem className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-4">
-                                <FormLabel className="text-sm font-semibold text-text-dark">
-                                  {form.watch(`rooms.${index}.type`) || `Room ${index + 1}`}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input className="mt-0!" placeholder="https://my.matterport.com/show/?m=..." {...formField} />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                      ))}
+                      <span className="text-xs font-bold text-primary-green uppercase tracking-tighter">{isPhotoUploading ? 'Uploading...' : 'Add Photo'}</span>
                     </div>
                   </div>
                 </div>
               </section>
+            </div>{/* end details tab */}
+
+            {/* Tab: Photos (standalone) – already shown inside details, this tab shows nothing extra */}
+
+            {/* Tab: 3D Virtual Tour */}
+            <div className={activeTab !== 'tour' ? 'hidden' : ''}>
+              <section className="space-y-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
+                  <Box className="h-5 w-5 text-primary-green" />
+                  <h3 className="font-bold text-xl text-text-dark">3D Virtual Tour Builder</h3>
+                </div>
+                <p className="text-sm text-gray-text">
+                  Upload 360° equirectangular images, navigate between scenes, link them with hotspots, then save your tour. It will be visible to tenants on the listing page.
+                </p>
+                <WalkthroughBuilder
+                  listingId={params.id}
+                  initialConfig={existingWalkthrough}
+                  onSaved={wt => setExistingWalkthrough(wt)}
+                />
+              </section>
+            </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center py-10 border-t border-gray-border bg-gray-light/10">
               <p className="text-sm text-gray-text italic">
@@ -628,8 +680,8 @@ export default function CreateListingPage() {
                 <Button type="button" variant="outline" onClick={() => router.push('/owner/dashboard')} className="px-8 h-12">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPhotoUploading} className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold text-lg shadow-md hover:shadow-lg transition-all">
-                  Publish Listing
+                <Button type="submit" disabled={isPhotoUploading || isLoading} className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold text-lg shadow-md hover:shadow-lg transition-all">
+                  Save Changes
                 </Button>
               </div>
             </CardFooter>

@@ -103,6 +103,11 @@ export const listingService = {
         return data.map(normalizeListing);
     },
 
+    getOwnerListings: async () => {
+        const data = await api.get<any[]>('/listings/owner');
+        return data.map(normalizeListing);
+    },
+
     bulkUpdateListingsStatus: (listingIds: string[], status: string) => {
         return api.patch('/admin/listings/bulk-status', { listingIds, status });
     },

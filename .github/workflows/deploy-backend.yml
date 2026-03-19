@@ -1,0 +1,49 @@
+name: Deploy Backend to K8s
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/backend/**'
+      - 'packages/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/makikibahay-backend:${{ github.sha }}
+
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy to K8s
+        run: |
+          # Swap image tag dynamically
+          sed -i "s|makikibahay-backend:latest|ghcr.io/${{ github.repository_owner }}/makikibahay-backend:${{ github.sha }}|g" k8s/backend-deployment.yaml
+          
+          kubectl apply -f k8s/backend-config.yaml
+          kubectl apply -f k8s/backend-secret.yaml
+          kubectl apply -f k8s/mongo-statefulset.yaml
+          kubectl apply -f k8s/backend-deployment.yaml
+          kubectl apply -f k8s/backend-service.yaml
+          kubectl apply -f k8s/backend-ingress.yaml

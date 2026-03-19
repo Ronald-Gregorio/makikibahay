@@ -235,8 +235,8 @@ export default function AdminMetricsPage() {
                                 <DollarSign className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{totalRevenue}</div>
-                                <p className="text-xs text-muted-foreground">This is a mock value</p>
+                                <div className="text-2xl font-bold">₱{Number(totalRevenue || 0).toLocaleString()}</div>
+                                <p className="text-xs text-muted-foreground">Total platform earnings</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -245,8 +245,8 @@ export default function AdminMetricsPage() {
                                 <Activity className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">+{activeUsers}</div>
-                                <p className="text-xs text-muted-foreground">Mock live users</p>
+                                <div className="text-2xl font-bold">{activeUsers}</div>
+                                <p className="text-xs text-muted-foreground">Currently online</p>
                             </CardContent>
                         </Card>
                     </div>

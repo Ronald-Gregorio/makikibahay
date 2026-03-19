@@ -116,6 +116,7 @@ export default function BrowsePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortOrder, setSortOrder] = useState<string>('newest');
   const [locationQuery, setLocationQuery] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([15.4865, 120.9734]);
   const [mapZoom, setMapZoom] = useState(13);
@@ -140,6 +141,7 @@ export default function BrowsePage() {
       
       if (filters.beds !== 'Any') params.append('beds', filters.beds);
       if (filters.baths !== 'Any') params.append('baths', filters.baths);
+      params.append('sort', sortOrder);
 
       params.append('limit', '20');
       const res = await fetch(`${apiUrl}/api/listings?${params.toString()}`);
@@ -159,8 +161,11 @@ export default function BrowsePage() {
       setLocationQuery(q);
       handleGeocode(q);
     }
-    handleSearch(); 
   }, [q]);
+
+  useEffect(() => {
+    handleSearch(); 
+  }, [filters, sortOrder, handleSearch]);
 
   const handleGeocode = async (address: string) => {
     if (!address) return;
@@ -224,9 +229,20 @@ export default function BrowsePage() {
              />
           </div>
 
-          <span className="text-sm text-gray-text">
-            {loading ? 'Searching…' : `${listings.length} Properties Found`}
-          </span>
+          <div className="flex items-center gap-4 ml-auto">
+            <span className="text-sm text-gray-text">
+              {loading ? 'Searching…' : `${listings.length} Properties Found`}
+            </span>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="text-sm border border-gray-border rounded px-2 py-1 outline-none bg-white focus:border-primary-green"
+            >
+              <option value="newest">Newest</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -569,12 +585,12 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
 
         {/* Actions */}
         <div className="mt-auto flex gap-2.5">
-          <Link
-            href={`/inbox?listing=${id}`}
+          <a
+            href={`/inbox?to=${(listing as any).ownerId?._id || (listing as any).ownerId || ''}&subject=${encodeURIComponent('Interested in ' + listing.name)}`}
             className="flex items-center justify-center gap-1.5 flex-1 py-2.5 border border-primary-green text-primary-green rounded font-bold text-sm hover:bg-[rgba(33,141,61,0.05)] transition-colors"
           >
             <Mail className="h-4 w-4" /> Email
-          </Link>
+          </a>
           <Link
             href={`/listings/${id}`}
             className="flex items-center justify-center gap-1.5 flex-1 py-2.5 border border-gray-border text-text-dark rounded font-bold text-sm hover:bg-gray-light transition-colors"
