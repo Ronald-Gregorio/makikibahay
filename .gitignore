@@ -53,5 +53,4 @@ Thumbs.db
 /coverage
 
 # --- KUBERNETES ---
-backend-secrets.yaml
 k8s/backend-secret.yaml
