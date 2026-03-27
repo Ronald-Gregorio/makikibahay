@@ -361,7 +361,13 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
                   <FormItem>
                     <FormLabel>Map Location</FormLabel>
                     <div className="border rounded-lg overflow-hidden h-[300px]">
-                      <LocationPickerMap initialCenter={[field.value?.lat || 15.4865, field.value?.lng || 120.9734]} onLocationSelect={(lat, lng) => field.onChange({ lat, lng })} />
+                      <LocationPickerMap 
+                        initialCenter={[field.value?.lat || 15.4865, field.value?.lng || 120.9734]} 
+                        onLocationSelect={(lat, lng, address) => {
+                          field.onChange({ lat, lng });
+                          if (address) form.setValue('fullAddress', address);
+                        }}
+                      />
                     </div>
                   </FormItem>
                 )} />
