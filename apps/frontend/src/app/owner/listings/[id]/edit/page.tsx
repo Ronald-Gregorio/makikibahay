@@ -293,9 +293,21 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
       setIsGeocoding(false);
     }
   };
+  function onInvalid(errors: any) {
+    console.error('Form Validation Errors:', errors);
+    const errorCount = Object.keys(errors).length;
+    toast({
+      variant: 'destructive',
+      title: 'Form Invalid',
+      description: `Please fix ${errorCount} error(s) before saving. Check all sections.`
+    });
+  }
 
   async function onSubmit(data: ListingFormValues) {
-    if (!user) return;
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Auth Error', description: 'Must be logged in.' });
+      return;
+    }
     try {
       const payload = {
         ...data,
@@ -308,27 +320,33 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
       };
       if ((payload as any).location) delete (payload as any).location;
       await listingService.update(params.id, payload as any);
-      toast({ title: 'Listing Updated!', description: 'Changes saved successfully.' });
-      router.push('/owner/dashboard');
-    } catch (err) {
-      toast({ title: 'Update Failed', variant: 'destructive' });
+      toast({ title: 'Listing Updated!', description: 'Your changes are now live.' });
+      
+      // Small delay to ensure toast is visible and avoid aggressive redirect blockers
+      setTimeout(() => {
+        router.push('/owner/dashboard');
+      }, 500);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Save Failed', description: 'Server error. Please try again.' });
     }
   }
 
   if (isLoading) return <div className="p-12 text-center font-bold text-gray-text">Loading Listing...</div>;
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center">
+    <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center">
       <Card className="w-full max-w-4xl shadow-lg border-gray-border">
-        <CardHeader className="border-b pb-6 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-3xl font-headline">Edit Listing</CardTitle>
-            <CardDescription className="text-lg">Update property details in the Unified Model.</CardDescription>
+        <CardHeader className="border-b border-gray-border pb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="font-headline text-3xl">Edit Listing</CardTitle>
+              <CardDescription className="text-gray-text mt-1 text-lg">Update property details and 3D views</CardDescription>
+            </div>
+            <Button variant="outline" disabled={form.formState.isSubmitting} onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
           </div>
-          <Button variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
             <CardContent className="space-y-12 py-8">
               
               <section className="space-y-6">
@@ -379,13 +397,13 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
                   <h3 className="font-bold text-xl">Unit Details & Pricing</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 bg-primary-green/5 border rounded-lg">
-                  <FormField control={form.control} name="roomType" render={({ field }) => (<FormItem><FormLabel>Room Type</FormLabel><Input {...field} /></FormItem>)} />
-                  <FormField control={form.control} name="monthlyRent" render={({ field }) => (<FormItem><FormLabel>Monthly Rent (₱)</FormLabel><Input type="number" {...field} /></FormItem>)} />
-                  <FormField control={form.control} name="availableRooms" render={({ field }) => (<FormItem><FormLabel>Available Units</FormLabel><Input type="number" {...field} /></FormItem>)} />
-                  <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Bedrooms</FormLabel><Combobox options={['Studio', '1', '2', '3', '4+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /></FormItem>)} />
-                  <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Bathrooms</FormLabel><Combobox options={['1', '2', '3+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /></FormItem>)} />
-                  <FormField control={form.control} name="squareFeet" render={({ field }) => (<FormItem><FormLabel>Area (sqft)</FormLabel><Input type="number" {...field} /></FormItem>)} />
-                  <FormField control={form.control} name="moveInDate" render={({ field }) => (<FormItem><FormLabel>Move-in Date</FormLabel><Input type="date" {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="roomType" render={({ field }) => (<FormItem><FormLabel>Room Type</FormLabel><Input {...field} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="monthlyRent" render={({ field }) => (<FormItem><FormLabel>Monthly Rent (₱)</FormLabel><Input type="number" {...field} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="availableRooms" render={({ field }) => (<FormItem><FormLabel>Available Units</FormLabel><Input type="number" {...field} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Bedrooms</FormLabel><Combobox options={['Studio', '1', '2', '3', '4+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Bathrooms</FormLabel><Combobox options={['1', '2', '3+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="squareFeet" render={({ field }) => (<FormItem><FormLabel>Area (sqft)</FormLabel><Input type="number" {...field} /><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="moveInDate" render={({ field }) => (<FormItem><FormLabel>Move-in Date</FormLabel><Input type="date" {...field} /><FormMessage /></FormItem>)} />
                 </div>
               </section>
 
@@ -470,9 +488,20 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
                 </div>
               </section>
             </CardContent>
-            <CardFooter className="flex justify-between items-center py-10 border-t bg-gray-50">
-               <Button type="button" variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
-               <Button type="submit" disabled={isPhotoUploading} className="bg-primary-green hover:bg-primary-green-hover text-white px-12 h-12 font-bold shadow-md">Save Changes</Button>
+            <CardFooter className="flex justify-between items-center py-10 border-t bg-gray-light/10">
+               <Button type="button" variant="outline" disabled={form.formState.isSubmitting} onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
+               <Button 
+                type="submit" 
+                disabled={isPhotoUploading || form.formState.isSubmitting} 
+                className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold shadow-md transition-all min-w-[180px]"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : "Save Changes"}
+              </Button>
             </CardFooter>
           </form>
         </Form>

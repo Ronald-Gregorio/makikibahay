@@ -267,6 +267,16 @@ export default function CreateListingPage() {
     }
   };
 
+  function onInvalid(errors: any) {
+    console.error('Form Validation Errors:', errors);
+    const errorCount = Object.keys(errors).length;
+    toast({
+      variant: 'destructive',
+      title: 'Form Invalid',
+      description: `Please fix ${errorCount} error(s) before publishing. Check all sections.`
+    });
+  }
+
   async function onSubmit(data: ListingFormValues) {
     if (!user) {
       toast({ variant: 'destructive', title: 'Auth Error', description: 'Must be logged in.' });
@@ -285,9 +295,13 @@ export default function CreateListingPage() {
       if ((payload as any).location) delete (payload as any).location;
       await listingService.create(payload as any);
       toast({ title: 'Listing Created!', description: 'Your listing is now live.' });
-      router.push('/owner/dashboard');
+      
+      // Small delay to ensure toast is visible and avoid aggressive redirect blockers
+      setTimeout(() => {
+        router.push('/owner/dashboard');
+      }, 500);
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Creation Failed', description: 'Server error' });
+      toast({ variant: 'destructive', title: 'Creation Failed', description: 'Server error. Please try again.' });
     }
   }
 
@@ -300,11 +314,11 @@ export default function CreateListingPage() {
               <CardTitle className="font-headline text-3xl text-text-dark">Create a New Listing</CardTitle>
               <CardDescription className="text-gray-text mt-1 text-lg">Detailed Unified Property Form</CardDescription>
             </div>
-            <Button variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
+            <Button variant="outline" disabled={form.formState.isSubmitting} onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
           </div>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
             <CardContent className="space-y-12 py-8">
               
               <section className="space-y-6">
@@ -390,13 +404,13 @@ export default function CreateListingPage() {
                   <h3 className="font-bold text-xl text-text-dark">Unit Details & Pricing</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 bg-primary-green/5 rounded-lg border border-primary-green/10">
-                  <FormField name="roomType" control={form.control} render={({ field }) => (<FormItem><FormLabel>Primary Room Type</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                  <FormField name="monthlyRent" control={form.control} render={({ field }) => (<FormItem><FormLabel>Monthly Rent (₱)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                  <FormField name="availableRooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Available Units</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                  <FormField name="bedrooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Bedrooms</FormLabel><Combobox options={[{value:'Studio', label:'Studio'}, {value:'1', label:'1 BR'}, {value:'2', label:'2 BR'}, {value:'3', label:'3 BR'}, {value:'4+', label:'4+ BR'}]} value={field.value} onChange={field.onChange} /></FormItem>)} />
-                  <FormField name="bathrooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Bathrooms</FormLabel><Combobox options={[{value:'1', label:'1'}, {value:'2', label:'2'}, {value:'3+', label:'3+'}]} value={field.value} onChange={field.onChange} /></FormItem>)} />
-                  <FormField name="squareFeet" control={form.control} render={({ field }) => (<FormItem><FormLabel>Area (sqft)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                  <FormField name="moveInDate" control={form.control} render={({ field }) => (<FormItem><FormLabel>Availability Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl></FormItem>)} />
+                  <FormField name="roomType" control={form.control} render={({ field }) => (<FormItem><FormLabel>Primary Room Type</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField name="monthlyRent" control={form.control} render={({ field }) => (<FormItem><FormLabel>Monthly Rent (₱)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField name="availableRooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Available Units</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField name="bedrooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Bedrooms</FormLabel><Combobox options={[{value:'Studio', label:'Studio'}, {value:'1', label:'1 BR'}, {value:'2', label:'2 BR'}, {value:'3', label:'3 BR'}, {value:'4+', label:'4+ BR'}]} value={field.value} onChange={field.onChange} /><FormMessage /></FormItem>)} />
+                  <FormField name="bathrooms" control={form.control} render={({ field }) => (<FormItem><FormLabel>Bathrooms</FormLabel><Combobox options={[{value:'1', label:'1'}, {value:'2', label:'2'}, {value:'3+', label:'3+'}]} value={field.value} onChange={field.onChange} /><FormMessage /></FormItem>)} />
+                  <FormField name="squareFeet" control={form.control} render={({ field }) => (<FormItem><FormLabel>Area (sqft)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField name="moveInDate" control={form.control} render={({ field }) => (<FormItem><FormLabel>Availability Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
               </section>
 
@@ -482,8 +496,19 @@ export default function CreateListingPage() {
 
             </CardContent>
             <CardFooter className="flex justify-between items-center py-10 border-t bg-gray-light/10">
-              <Button type="button" variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
-              <Button type="submit" disabled={isPhotoUploading} className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold shadow-md transition-all">Publish Listing</Button>
+              <Button type="button" variant="outline" disabled={form.formState.isSubmitting} onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
+              <Button 
+                type="submit" 
+                disabled={isPhotoUploading || form.formState.isSubmitting} 
+                className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold shadow-md transition-all min-w-[180px]"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Publishing...
+                  </>
+                ) : "Publish Listing"}
+              </Button>
             </CardFooter>
           </form>
         </Form>
