@@ -67,12 +67,24 @@ function normalizeListing(raw: any): Listing {
         kitchen: !!raw.kitchen,
         appliancesIncluded: !!raw.appliancesIncluded,
 
-        // Legacy compatibility
+        // 9. Normalized Rooms
+        rooms: (raw.rooms || []).map((r: any) => ({
+            room_id: r._id?.toString() || r.room_id?.toString() || r.id?.toString() || '',
+            listing_id: id,
+            type: r.type || 'Standard',
+            size_sqm: r.sizeSqm || r.size_sqm || 0,
+            price: r.price || 0,
+            inclusions: Array.isArray(r.inclusions) ? r.inclusions : [r.inclusions].filter(Boolean),
+            is_available: r.isAvailable ?? r.is_available ?? true,
+            model_3d_url: r.model3dUrl || r.model_3d_url || '',
+        })),
+
+        // Legacy fields for compatibility
         name: raw.listingName || raw.name || '',
         address: raw.fullAddress || raw.address || '',
         priceMin: raw.monthlyRent || raw.priceMin || 0,
         priceMax: raw.monthlyRent || raw.priceMax || 0,
-        totalRooms: raw.totalRooms || raw.total_rooms || 0,
+        totalRooms: (raw.rooms || []).length || raw.totalRooms || raw.total_rooms || 0,
         amenities: raw.amenities || [],
         rules: raw.rules || [],
         status: raw.status || 'Active',

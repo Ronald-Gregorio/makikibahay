@@ -336,20 +336,21 @@ function ListingDetailContent() {
             {/* 3D Virtual Tour */}
             <section id="views">
               <h2 className="text-2xl font-bold text-text-dark mb-5">Virtual Tours & Views</h2>
-              {listing.virtualTour360 || rooms.some(r => r.model_3d_url) ? (
+              {(listing.virtualTour360 || rooms.some(r => r.model_3d_url)) ? (
                 <MarzipanoViewer 
-                  scenes={rooms.filter(r => r.model_3d_url).length > 0 ? rooms.filter(r => r.model_3d_url).map((r, i) => ({
+                  scenes={[
+                    ...(listing.virtualTour360 ? [{
+                      id: 'main-property-tour',
+                      name: 'Main Property Tour',
+                      imageUrl: listing.virtualTour360,
+                      hotspots: []
+                    }] : []),
+                    ...rooms.filter(r => r.model_3d_url).map((r, i) => ({
                       id: String(r.room_id || i),
                       name: r.type || `Room ${i + 1}`,
                       imageUrl: r.model_3d_url!,
                       hotspots: []
-                  })) : [
-                    {
-                      id: 'main-tour',
-                      name: 'Main Property Tour',
-                      imageUrl: listing.virtualTour360 || 'https://www.marzipano.net/media/equirect/angra.jpg',
-                      hotspots: []
-                    }
+                    }))
                   ]} 
                 />
               ) : (

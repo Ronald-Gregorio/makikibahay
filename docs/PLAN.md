@@ -1,58 +1,36 @@
-# PLAN: Bug Fixes — Messaging, Photos & Inbox Crash
+# PLAN: 3D Viewer & 360° Photo Fix
 
-## Root Cause Analysis (by `@debugger`)
+## Problem Statement
+The 360-degree photo (virtual tour) for listings is not displaying on the detail page despite existing in Cloudinary. This is caused by multiple factors:
+1. **Field Mismatch**: Backend returns `model3dUrl` for rooms, while the frontend expects `model_3d_url`, and the API service doesn't normalize room data.
+2. **Logic Conflict**: The detail page chooses between "Listing Tour" OR "Room Tours," preventing both from co-existing or potentially favoring an empty room list.
+3. **UX Gap**: Owners cannot easily upload a 360 photo for the main listing; they are forced to manually paste a URL.
 
-### Bug 1: Inbox `?to=` shows owner ID, not email
-**File:** `apps/frontend/src/app/listings/[id]/page.tsx` — line 470
-```
-href={`/inbox?to=${listing.ownerId?._id || ''}&subject=...`}
-```
-The `?to=` param passes the owner's MongoDB `_id`. The message service sends this as `receiverId`. Need to pass `ownerId.email` instead so the "To:" field shows the owner's email.
+## Goal
+Ensure 100% visibility of 360-degree virtual tours for both properties and individual rooms.
 
-**Backend check needed:** Verify `GET /api/listings/:id` populates `ownerId` with `email` field.
+## Proposed Strategy
+
+### Phase 1: Data Normalization (Frontend Specialist)
+- **Update API Service (`normalizeListing`)**: Ensure that the `rooms` array within a listing is correctly normalized, mapping `model3dUrl` to `model_3d_url`.
+- **Sync Interfaces**: Standardize on `virtualTour360` for the main property tour across all components.
+
+### Phase 2: UI & Component Enhancement (Frontend Specialist)
+- **Refactor `ListingDetailPage`**: 
+    - Adjust the `MarzipanoViewer` logic to merge the main `virtualTour360` as the primary scene, followed by any room-level tours.
+    - Ensure the "360° Virtual Tour" tag appears whenever *any* tour data is present.
+- **Enhance Owner Forms (`Create` & `Edit`)**:
+    - Add a dedicated "Upload 360° Photo" button for the main property `virtualTour360` field.
+    - Ensure the uploaded URL is correctly saved to the backend.
+
+### Phase 3: Verification (Test Engineer)
+- **Manual Verification**: Upload a 360 photo as a listing-level tour and verify it renders on the detail page.
+- **Cross-Component Audit**: Ensure the owner dashboard reflects the presence of enhanced viewing.
+
+## Verification Plan
+1. **Details Page**: Confirm Marzipano viewer loads with the correct Cloudinary URL.
+2. **Owner Forms**: Verify the new upload button works and populates the URL field.
+3. **Console Audit**: Ensure no "model_3d_url is undefined" errors persist.
 
 ---
-
-### Bug 2: Inbox "Sent" tab crashes — `TypeError: Cannot read properties of undefined (reading 'substring')`
-**File:** `apps/frontend/src/app/inbox/page.tsx` — line 342
-```tsx
-{message.text.substring(0, 300)}  // ❌ CRASH — field is `content`, not `text`
-```
-The backend sends messages with a `content` field, but `inbox/page.tsx` has a local `Message` type that uses `text`. When the Sent tab renders, `message.text` is `undefined`.
-
-**Fix:** Replace `message.text` → `message.content` (or `message.text ?? message.content`) throughout the inbox page.
-
----
-
-### Bug 3: Listing detail photos not showing
-**File:** `apps/frontend/src/app/listings/[id]/page.tsx` — lines 146, 154
-```tsx
-src={listing.photos[0] || 'https://placehold.co/800x500.png'}
-```
-The `photos[]` array contains values, but they appear to be invalid paths (e.g. bare filenames from local uploads, not full Cloudinary URLs). Test data likely has empty or invalid photo URLs. The `next/image` component blocks unrecognized domains and shows a gray placeholder instead of the fallback placehold.co URL.
-
-**Fix:** Add defensive guard to skip invalid/empty photo URLs and always fall back to placeholder.
-
----
-
-## Agents
-
-| # | Agent | Task |
-|---|-------|------|
-| 1 | `debugger` | Root cause analysis (done above) |
-| 2 | `frontend-specialist` | Fix all 3 bugs in `inbox/page.tsx` and `listings/[id]/page.tsx` |
-| 3 | `backend-specialist` | Verify `/api/listings/:id` populates `ownerId.email` |
-
-## Files to Change
-
-| File | Change |
-|------|--------|
-| `apps/frontend/src/app/inbox/page.tsx` | `message.text` → `message.content ?? message.text ?? ''` |
-| `apps/frontend/src/app/listings/[id]/page.tsx` | **Line 470:** `?to=${ownerId.email}` instead of `?to=${ownerId._id}` |
-| `apps/frontend/src/app/listings/[id]/page.tsx` | **Lines 146,154:** Guard photo src — only use if valid URL, else placeholder |
-| `apps/backend/src/controllers/listingController.ts` | Check `ownerId` populate includes `email` field |
-
-## Verification
-- Navigate to listing detail → click Message → inbox shows owner email in To field ✅
-- Navigate to Inbox → Sent tab → no crash ✅
-- Navigate to listing detail → photos render (or placeholder if no photo) ✅
+*Orchestrated by Antigravity*

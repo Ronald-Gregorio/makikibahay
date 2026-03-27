@@ -229,6 +229,26 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
     fetchListing();
   }, [params.id, form, toast]);
 
+  const [isMain3DUploading, setIsMain3MainDUploading] = useState(false);
+
+  const handleMain3DPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setIsMain3MainDUploading(true);
+      const file = e.target.files[0];
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await api.postForm<{ url: string }>('/upload', formData);
+        form.setValue('virtualTour360', response.url);
+        toast({ title: '360° Photo Uploaded', description: 'Property virtual tour photo updated.' });
+      } catch (err: any) {
+        toast({ variant: 'destructive', title: 'Upload Failed', description: err.message });
+      } finally {
+        setIsMain3MainDUploading(false);
+      }
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setIsPhotoUploading(true);
@@ -424,7 +444,23 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
                 </div>
                 <div className="space-y-4 pt-4">
                   <FormField control={form.control} name="video" render={({ field }) => (<FormItem><FormLabel>Video URL</FormLabel><Input {...field} /></FormItem>)} />
-                  <FormField control={form.control} name="virtualTour360" render={({ field }) => (<FormItem><FormLabel>360° Tour URL</FormLabel><Input {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="virtualTour360" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>360° Tour URL (Kuula/Matterport/360° Photo)</FormLabel>
+                      <div className="flex gap-2">
+                        <Input {...field} className="flex-1" />
+                        <label className="flex items-center justify-center px-4 py-2 border border-primary-green text-primary-green rounded cursor-pointer hover:bg-primary-green/5 transition-all text-sm font-bold truncate max-w-[150px]">
+                          {isMain3DUploading ? "..." : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" /> Upload 360°
+                            </>
+                          )}
+                          <input type="file" accept="image/*" onChange={handleMain3DPhotoUpload} className="hidden" />
+                        </label>
+                      </div>
+                      <p className="text-[10px] text-gray-text mt-1 italic">Note: Upload an equirectangular panorama image to use our built-in 3D viewer.</p>
+                    </FormItem>
+                  )} />
                 </div>
               </section>
             </CardContent>
