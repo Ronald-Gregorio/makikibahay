@@ -56,7 +56,6 @@ export const googleAuth = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     const { name, email, username, password, role } = req.body;
-    console.log('Register attempt:', { name, email, username, role });
     try {
         // Check email uniqueness
         const existingEmail = await User.findOne({ email: email.toLowerCase() });

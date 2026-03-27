@@ -143,7 +143,7 @@ export default function OwnerDashboardPage() {
                                     key={req._id}
                                     icon={<Wrench className="h-5 w-5" />}
                                     title={req.title}
-                                    desc={`Property: ${req.listingId?.name || 'Unknown'}`}
+                                    desc={`Property: ${req.listingId?.listingName || req.listingId?.name || 'Unknown'}`}
                                     urgent={req.priority === 'high' || req.priority === 'urgent'}
                                 />
                             )) : (
@@ -157,7 +157,7 @@ export default function OwnerDashboardPage() {
                                     key={app._id}
                                     icon={<FileText className="h-5 w-5" />}
                                     title="New Application"
-                                    desc={`${app.userId?.name || 'Applicant'} for ${app.listingId?.name || 'Property'}`}
+                                    desc={`${app.userId?.name || 'Applicant'} for ${app.listingId?.listingName || app.listingId?.name || 'Property'}`}
                                 />
                             )) : (
                                 <div className="py-4 text-center text-gray-text italic border border-dashed border-gray-border rounded-lg">
@@ -234,13 +234,13 @@ export default function OwnerDashboardPage() {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-border shadow-sm">
-                                                        <Image src={photo} alt={listing.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                        <Image src={typeof photo === 'string' ? photo : (photo as any).url} alt={listing.listingName || listing.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                                                     </div>
                                                     <div>
                                                         <Link href={`/listings/${lId}`} className="text-lg font-bold text-text-dark hover:text-primary-green transition-colors">
-                                                            {listing.name}
+                                                            {listing.listingName || listing.name}
                                                         </Link>
-                                                        <p className="text-sm text-gray-text mt-1">{listing.address}</p>
+                                                        <p className="text-sm text-gray-text mt-1">{listing.fullAddress || listing.address}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -254,13 +254,12 @@ export default function OwnerDashboardPage() {
                                                 <span className="text-gray-text mx-1">/</span>
                                                 <span>{listing.totalRooms ?? 0} Available</span>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="font-bold text-text-dark">₱{(listing.priceMin || 0).toLocaleString()}</div>
-                                                <div className="text-xs text-gray-text tracking-tighter">— ₱{(listing.priceMax || 0).toLocaleString()}</div>
+                                             <td className="px-8 py-6">
+                                                <div className="font-bold text-text-dark">₱{(listing.monthlyRent || listing.priceMin || 0).toLocaleString()}</div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center justify-end gap-3">
-                                                    <Link href={`/owner/listings/edit/${lId}`} className="p-2 bg-gray-light/50 text-gray-text hover:text-primary-green hover:bg-green-50 rounded-lg transition-all">
+                                                    <Link href={`/owner/listings/${lId}/edit`} className="p-2 bg-gray-light/50 text-gray-text hover:text-primary-green hover:bg-green-50 rounded-lg transition-all">
                                                         <Edit className="h-5 w-5" />
                                                     </Link>
                                                     <AlertDialog>
@@ -272,7 +271,7 @@ export default function OwnerDashboardPage() {
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle className="text-2xl font-bold">Delete Permanent Listing?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-lg">This will remove "{listing.name}" from the platform forever. This action is irreversible.</AlertDialogDescription>
+                                                                <AlertDialogDescription className="text-lg">This will remove "{listing.listingName || listing.name}" from the platform forever. This action is irreversible.</AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter className="mt-6">
                                                                 <AlertDialogCancel className="h-12 px-6">Keep Listing</AlertDialogCancel>
@@ -332,10 +331,10 @@ export default function OwnerDashboardPage() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-5 text-gray-text">
-                                                    <div className="font-medium text-text-dark">{t.listingId?.name}</div>
+                                                 <td className="px-6 py-5 text-gray-text">
+                                                    <div className="font-medium text-text-dark">{t.listingId?.listingName || t.listingId?.name}</div>
                                                     <div className="text-xs italic">{t.roomId?.type}</div>
-                                                </td>
+                                                 </td>
                                                 <td className="px-6 py-5 font-bold text-text-dark">₱{t.monthlyRent?.toLocaleString()}</td>
                                                 <td className="px-6 py-5 text-gray-text font-medium">{t.endDate ? new Date(t.endDate).toLocaleDateString() : 'N/A'}</td>
                                                 <td className="px-6 py-5 text-right">
@@ -366,9 +365,9 @@ export default function OwnerDashboardPage() {
                                          <tr key={app._id} className="hover:bg-gray-light/20 transition-colors">
                                              <td className="px-6 py-5">
                                                  <div className="font-bold text-text-dark">{app.userId?.name}</div>
-                                                 <div className="text-xs text-gray-text">{app.userId?.email}</div>
-                                             </td>
-                                             <td className="px-6 py-5 text-text-dark font-medium">{app.listingId?.name}</td>
+                                                  <div className="text-xs text-gray-text">{app.userId?.email}</div>
+                                              </td>
+                                              <td className="px-6 py-5 text-text-dark font-medium">{app.listingId?.listingName || app.listingId?.name}</td>
                                              <td className="px-6 py-5 text-gray-text">{new Date(app.createdAt).toLocaleDateString()}</td>
                                              <td className="px-6 py-5 text-right">
                                                  <button className="px-4 py-1.5 bg-primary-green text-white rounded font-bold text-xs hover:bg-primary-green-hover shadow-sm">Review App</button>

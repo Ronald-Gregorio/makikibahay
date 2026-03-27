@@ -1,0 +1,55 @@
+# Repository Analysis and Planning
+
+- [ ] Analyze repository structure and state <!-- id: 0 -->
+    - [x] List root directory <!-- id: 1 -->
+    - [x] Read configuration files (package.json, etc.) <!-- id: 2 -->
+    - [ ] Analyze apps/backend structure <!-- id: 8 -->
+    - [x] Compare root src and apps/frontend/src for redundancy <!-- id: 11 -->
+    - [ ] Analyze packages usage <!-- id: 12 -->
+    - [ ] Check frontend path aliases <!-- id: 13 -->
+    - [x] Check packages/ui content <!-- id: 14 -->
+    - [x] Check backend controllers <!-- id: 15 -->
+    - [x] Analyze source code structure (src folder) <!-- id: 3 -->
+    - [x] Identify missing components and features <!-- id: 4 -->
+- [ ] Analyze reference repository (thesis) <!-- id: 16 -->
+    - [x] List contents <!-- id: 17 -->
+    - [x] Read 'makikibahay to do.md' <!-- id: 20 -->
+    - [x] Read 'makikibahay open code.md' <!-- id: 21 -->
+    - [x] Analyze codebase structure <!-- id: 18 -->
+    - [x] Compare with current repo <!-- id: 19 -->
+- [ ] Create development plan <!-- id: 5 -->
+    - [x] Draft implementation plan <!-- id: 6 -->
+    - [x] Update plan with markdown cleanup <!-- id: 24 -->
+    - [x] Review with user <!-- id: 7 -->
+    - [x] Create Progress/Debugging Documentation <!-- id: 55 -->
+- [ ] Clean up repository <!-- id: 25 -->
+    - [x] Consolidate markdown files <!-- id: 26 -->
+    - [x] Delete root src and configs <!-- id: 27 -->
+    - [x] Update package.json scripts <!-- id: 28 -->
+- [x] Fix Frontend Build Errors <!-- id: 33 -->
+    - [x] Fix UI imports <!-- id: 34 -->
+    - [x] Fix NextAuth types <!-- id: 35 -->
+    - [x] Fix duplicate routes <!-- id: 36 -->
+    - [x] Fix component type errors <!-- id: 37 -->
+- [/] Implement Backend (MERN) <!-- id: 29 -->
+    - [x] Create Mongoose Models <!-- id: 30 -->
+    - [/] Create Controllers <!-- id: 31 -->
+        - [x] Auth Controller <!-- id: 38 -->
+        - [x] Listing Controller <!-- id: 39 -->
+        - [x] User Controller <!-- id: 43 -->
+        - [x] Message Controller <!-- id: 44 -->
+        - [x] Review Controller <!-- id: 46 -->
+    - [x] Define API Routes <!-- id: 32 -->
+        - [x] Auth Routes <!-- id: 40 -->
+        - [x] Listing Routes <!-- id: 41 -->
+        - [x] User Routes <!-- id: 42 -->
+        - [x] Message Routes <!-- id: 45 -->
+        - [x] Review Routes <!-- id: 47 -->
+- [/] Frontend Integration <!-- id: 48 -->
+    - [ ] Update NextAuth callbacks <!-- id: 49 -->
+    - [x] Update NextAuth callbacks <!-- id: 49 -->
+    - [x] Create Backend Auth Middleware <!-- id: 52 -->
+    - [x] Apply Middleware to Routes <!-- id: 53 -->
+    - [x] Create API Client <!-- id: 50 -->
+    - [x] Connect Components <!-- id: 51 -->
+    - [x] Verify Integration <!-- id: 54 -->

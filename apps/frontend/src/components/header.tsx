@@ -92,11 +92,11 @@ export function AppHeader() {
                     <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider italic text-primary-green">Are you an Owner?</div>
                   )}
 
-                  {(user?.role === 'owner' || !user) && (
+                  {user?.role === 'owner' && (
                     <>
                       <div className="px-5 py-2 mt-2 text-xs font-bold text-gray-text uppercase tracking-wider">Property Managers</div>
-                      <SideLink href="/signup?role=owner" icon={<PlusCircle className="h-4 w-4" />} label="Add Property" onClick={() => setMenuOpen(false)} />
-                      {user?.role === 'owner' && <SideLink href="/owner/dashboard" icon={<Building className="h-4 w-4" />} label="Owner Dashboard" onClick={() => setMenuOpen(false)} />}
+                      <SideLink href="/owner/listings/create" icon={<PlusCircle className="h-4 w-4" />} label="Create Listing" onClick={() => setMenuOpen(false)} />
+                      <SideLink href="/owner/dashboard" icon={<Building className="h-4 w-4" />} label="Owner Dashboard" onClick={() => setMenuOpen(false)} />
                     </>
                   )}
 
@@ -111,15 +111,17 @@ export function AppHeader() {
                     </>
                   )}
                 </nav>
-                <div className="p-5 border-t border-gray-border">
-                  <Link
-                    href="/signup?role=owner"
-                    onClick={() => setMenuOpen(false)}
-                    className="block w-full text-center bg-primary-green hover:bg-primary-green-hover text-white font-semibold py-3 rounded transition-colors"
-                  >
-                    + Add Property
-                  </Link>
-                </div>
+                {user?.role === 'owner' && (
+                  <div className="p-5 border-t border-gray-border">
+                    <Link
+                      href="/owner/listings/create"
+                      onClick={() => setMenuOpen(false)}
+                      className="block w-full text-center bg-primary-green hover:bg-primary-green-hover text-white font-semibold py-3 rounded transition-colors"
+                    >
+                      + Create Listing
+                    </Link>
+                  </div>
+                )}
               </SheetContent>
             </Sheet>
 
@@ -168,48 +170,11 @@ export function AppHeader() {
           {/* Right: CTAs + Auth */}
           <div className="flex items-center gap-3">
             {/* Add a Property — for renters and guests */}
-            {(!user || user.role === 'user') && (
-              <Link
-                href="/signup?role=owner"
-                className="hidden md:flex items-center gap-1.5 px-4 py-2 border border-gray-border rounded text-sm font-medium text-text-dark hover:bg-gray-light transition-colors"
-              >
-                <PlusCircle className="h-4 w-4" />
-                Add a Property
-              </Link>
-            )}
+            {/* Navigation CTAs */}
 
             {user ? (
               <>
-                {/* Notification Bell */}
-                {user.role !== 'admin' && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative text-text-dark hover:text-primary-green">
-                        <Bell className="h-5 w-5" />
-                        {hasNotifications && (
-                          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-alert" />
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-80" align="end">
-                      <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/inbox">
-                          <p className="font-medium">New message from Sunny Day</p>
-                          <p className="text-xs text-gray-text">&quot;Yes, the solo room is still available...&quot;</p>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/inbox" className="w-full justify-center text-primary-green font-medium">
-                          View all notifications
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
+                {/* Notification Bell Removed */}
                 {/* Avatar Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -229,11 +194,18 @@ export function AppHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {(user.role === 'owner' || user.role === 'admin') && (
-                      <DropdownMenuItem asChild>
-                        <Link href={getDashboardLink()}>
-                          <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-                        </Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href={getDashboardLink()}>
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/owner/listings/create">
+                            <PlusCircle className="mr-2 h-4 w-4" /> Create Listing
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     {user.role === 'owner' && (
                       <DropdownMenuItem asChild>

@@ -320,6 +320,54 @@ export const bulkDeleteUsers = async (req: Request, res: Response) => {
 };
 
 /**
+ * POST /api/admin/users/bulk-notify
+ */
+export const bulkNotifyUsers = async (req: Request, res: Response) => {
+    const { userIds, message } = req.body;
+    const adminId = (req as any).user?._id;
+
+    if (!adminId || !message || !userIds || !Array.isArray(userIds)) {
+        res.status(400).json({ message: 'Invalid payload' });
+        return;
+    }
+
+    try {
+        const messages = userIds.map((userId) => {
+            const participants = [adminId.toString(), userId.toString()].sort();
+            const roomId = `dm_${participants[0]}_${participants[1]}`;
+
+            return {
+                roomId,
+                senderId: adminId,
+                receiverId: userId,
+                content: message,
+                sentAt: new Date(),
+                isRead: false
+            };
+        });
+
+        await Message.insertMany(messages);
+
+        const io = req.app.get('io');
+        if (io) {
+            messages.forEach((msg) => {
+                io.to(`user_${msg.receiverId}`).emit('newNotification', {
+                    type: 'message',
+                    senderId: adminId,
+                    content: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : '')
+                });
+                io.to(msg.roomId).emit('messageReceived', msg);
+            });
+        }
+
+        res.json({ message: `Successfully sent notification to ${userIds.length} users` });
+    } catch (error) {
+        console.error('Error in bulkNotifyUsers:', error);
+        res.status(500).json({ message: 'Error sending bulk notifications' });
+    }
+};
+
+/**
  * PATCH /api/admin/listings/bulk-status
  */
 export const bulkUpdateListingsStatus = async (req: Request, res: Response) => {

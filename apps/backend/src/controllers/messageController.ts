@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Message from '../models/Message.js';
 import Listing from '../models/Listing.js';
+import User from '../models/User.js';
 
 export const getMessages = async (req: Request, res: Response) => {
     try {
@@ -27,6 +28,18 @@ export const createMessage = async (req: Request, res: Response) => {
             return;
         }
 
+        let actualReceiverId = receiverId;
+
+        // If receiverId is an email, resolve it to an ObjectId
+        if (typeof receiverId === 'string' && receiverId.includes('@')) {
+            const recipientUser = await User.findOne({ email: receiverId });
+            if (!recipientUser) {
+                res.status(404).json({ message: `Recipient user with email ${receiverId} not found` });
+                return;
+            }
+            actualReceiverId = recipientUser._id.toString();
+        }
+
         // Compute roomId: either use what the client sent, or construct it
         let roomId = clientRoomId;
 
@@ -39,11 +52,11 @@ export const createMessage = async (req: Request, res: Response) => {
                     return;
                 }
                 const ownerId = listing.ownerId.toString();
-                const userId = senderId === ownerId ? receiverId : senderId;
+                const userId = senderId === ownerId ? actualReceiverId : senderId;
                 roomId = `listing_${listingId}_user_${userId}_owner_${ownerId}`;
             } else {
                 // Direct message (no listing) — build a stable canonical roomId
-                const participants = [senderId, receiverId].sort();
+                const participants = [senderId, actualReceiverId].sort();
                 roomId = `dm_${participants[0]}_${participants[1]}`;
             }
         }
@@ -53,7 +66,7 @@ export const createMessage = async (req: Request, res: Response) => {
         const message = new Message({
             roomId,
             senderId,
-            receiverId,
+            receiverId: actualReceiverId,
             ...(listingId ? { listingId } : {}),
             content,
             sentAt: new Date(),
@@ -64,6 +77,11 @@ export const createMessage = async (req: Request, res: Response) => {
 
         if (io) {
             io.to(roomId).emit('messageReceived', message);
+            io.to(`user_${actualReceiverId}`).emit('newNotification', {
+                type: 'message',
+                senderId,
+                content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+            });
         }
 
         res.status(201).json(message);
@@ -72,6 +90,7 @@ export const createMessage = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 export const getConversations = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?._id;
@@ -105,7 +124,7 @@ export const getConversations = async (req: Request, res: Response) => {
         const populatedMessages = await Message.populate(messages, [
             { path: 'senderId', select: 'name avatar email' },
             { path: 'receiverId', select: 'name avatar email' },
-            { path: 'listingId', select: 'name photos' }
+            { path: 'listingId', select: 'listingName photos' }
         ]);
 
         res.json(populatedMessages);

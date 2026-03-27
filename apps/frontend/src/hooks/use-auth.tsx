@@ -16,7 +16,7 @@ interface User {
 // Define the shape of the Auth context
 interface AuthContextType {
   user: User | null;
-  login: (email: string, pass: string, role: 'user' | 'owner') => Promise<boolean>;
+  login: (email: string, pass: string, role: 'user' | 'owner') => Promise<{ success: boolean; message?: string; field?: string }>;
   adminLogin: (email: string, pass: string) => Promise<boolean>;
   signup: (name: string, email: string, pass: string, role: 'user' | 'owner', username?: string) => Promise<{ success: boolean; message?: string; field?: string }>;
   logout: () => void;
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = async (email: string, pass: string, role: 'user' | 'owner'): Promise<boolean> => {
+  const login = async (email: string, pass: string, role: 'user' | 'owner'): Promise<{ success: boolean; message?: string; field?: string }> => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiUrl}/api/auth/login`, {
@@ -95,8 +95,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email, password: pass })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         // Check if role matches expected role
         if (role && data.role !== role) {
           // You could strictly enforce role here or just let the backend decide
@@ -115,12 +116,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (storedSurvey) {
           setSurveyData(JSON.parse(storedSurvey));
         }
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (err) {
+      return { success: false, message: data.message || 'Login failed', field: data.field };
+    } catch (err: any) {
       console.error('Login request failed', err);
-      return false;
+      return { success: false, message: err.message || 'Network error during login' };
     }
   };
 

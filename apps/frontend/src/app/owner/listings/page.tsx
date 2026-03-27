@@ -101,10 +101,10 @@ export default function OwnerListingsPage() {
             >
               {/* Cover photo */}
               <div className="w-48 h-auto flex-shrink-0 bg-gray-100 relative hidden md:block">
-                {listing.photos[0] ? (
+                {listing.photos?.[0] ? (
                   <img
-                    src={listing.photos[0].url}
-                    alt={listing.name}
+                    src={typeof listing.photos[0] === 'string' ? listing.photos[0] : (listing.photos[0] as any).url}
+                    alt={listing.listingName || listing.name || 'Property'}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -118,8 +118,8 @@ export default function OwnerListingsPage() {
               <div className="flex-1 p-5 flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="font-bold text-lg text-text-dark leading-tight">{listing.name}</h2>
-                    <p className="text-sm text-gray-text mt-0.5 line-clamp-1">{listing.address}</p>
+                    <h2 className="font-bold text-lg text-text-dark leading-tight">{listing.listingName || listing.name}</h2>
+                    <p className="text-sm text-gray-text mt-0.5 line-clamp-1">{listing.fullAddress || listing.address}</p>
                   </div>
                   <span className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${getStatusBadgeClass(listing.status ?? 'active')}`}>
                     {listing.status || 'Active'}
@@ -129,17 +129,17 @@ export default function OwnerListingsPage() {
                 <div className="flex items-center gap-5 text-sm text-gray-text">
                   <span className="flex items-center gap-1.5">
                     <BedDouble className="h-4 w-4 text-primary-green" />
-                    {listing.total_rooms} room{listing.total_rooms !== 1 ? 's' : ''}
+                    {listing.total_rooms || listing.totalRooms || 0} room{(listing.total_rooms || listing.totalRooms) !== 1 ? 's' : ''}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    {(listing.available_rooms ?? 0) > 0
+                    {(listing.available_rooms ?? listing.availableRooms ?? 0) > 0
                       ? <ToggleRight className="h-4 w-4 text-green-500" />
                       : <ToggleLeft className="h-4 w-4 text-gray-400" />}
-                    {listing.available_rooms ?? 0} available
+                    {listing.available_rooms ?? listing.availableRooms ?? 0} available
                   </span>
                   <span className="flex items-center gap-1.5">
                     <DollarSign className="h-4 w-4 text-primary-green" />
-                    ₱{listing.price_min.toLocaleString()} – ₱{listing.price_max.toLocaleString()}/mo
+                    ₱{(listing.monthlyRent || listing.priceMin || 0).toLocaleString()}/mo
                   </span>
                 </div>
 
@@ -158,7 +158,7 @@ export default function OwnerListingsPage() {
                     <Pencil className="h-3.5 w-3.5" /> Edit
                   </Link>
                   <button
-                    onClick={() => handleDelete(listing.id, listing.name)}
+                    onClick={() => handleDelete(listing.id, listing.listingName || listing.name || 'Listing')}
                     disabled={deletingId === listing.id}
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-40"
                   >

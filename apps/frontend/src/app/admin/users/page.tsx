@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/index";
 import { Badge } from "@/components/ui/index";
 import { Button } from "@/components/ui/index";
-import { Edit, Trash2, Home, BedDouble, Save, X, Search, MoreHorizontal, UserX, UserCheck } from "lucide-react";
+import { Edit, Trash2, Home, BedDouble, Save, X, Search, MoreHorizontal, UserX, UserCheck, Mail } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,6 +24,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter,
 } from "@/components/ui/index";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/index";
 import { useState, useMemo, useEffect } from "react";
@@ -33,7 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/index";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/index";
-
+import { Textarea } from "@/components/ui/index";
 
 import { dashboardService } from "@/services/api/dashboard";
 
@@ -44,6 +45,9 @@ export default function UserManagementPage() {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [isNotifyDialogOpen, setIsNotifyDialogOpen] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
@@ -138,6 +142,22 @@ export default function UserManagementPage() {
         }
     }
 
+    const handleBulkNotify = async () => {
+        if (!notifyMessage.trim()) {
+            toast({ variant: 'destructive', title: "Error", description: "Message cannot be empty." });
+            return;
+        }
+        try {
+            await dashboardService.bulkNotifyUsers(selectedUserIds, notifyMessage);
+            setSelectedUserIds([]);
+            setNotifyMessage('');
+            setIsNotifyDialogOpen(false);
+            toast({ title: "Notifications Sent", description: `Successfully sent messages to ${selectedUserIds.length} users.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to send notifications." });
+        }
+    }
+
     return (
         <>
             <header className="mb-8">
@@ -146,6 +166,30 @@ export default function UserManagementPage() {
                     A list of all users on the platform.
                 </p>
             </header>
+
+            <Dialog open={isNotifyDialogOpen} onOpenChange={setIsNotifyDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Send Notification</DialogTitle>
+                        <DialogDescription>
+                            Send a direct message to {selectedUserIds.length} selected users.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <Label>Message Content</Label>
+                        <Textarea 
+                            placeholder="Enter your message..." 
+                            value={notifyMessage}
+                            onChange={(e) => setNotifyMessage(e.target.value)}
+                            rows={4}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsNotifyDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleBulkNotify}>Send Message</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Card className="mb-6">
                 <CardHeader>
@@ -199,6 +243,11 @@ export default function UserManagementPage() {
                                 <DropdownMenuItem onClick={handleBulkSuspend}>
                                     <UserX className="mr-2 h-4 w-4" />
                                     Suspend Selected
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setIsNotifyDialogOpen(true)}>
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    Send Message
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive" onClick={handleBulkDelete}>
@@ -319,6 +368,11 @@ function UserRow({ user, onUpdateUser, isSelected, onSelectRow }: { user: User, 
                 </TableCell>
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>

@@ -7,6 +7,9 @@ export interface IRoom extends Document {
     price: number;
     inclusions: string[];
     isAvailable: boolean;
+    dimensions?: string; // e.g. "4x5m"
+    maxOccupancy?: number;
+    isPrivateToilet?: boolean;
     model3dUrl?: string;
     waypoints?: any[]; // For 3D tour
 }
@@ -18,6 +21,9 @@ const RoomSchema: Schema = new Schema({
     price: { type: Number, required: true, min: 0 },
     inclusions: [{ type: String }],
     isAvailable: { type: Boolean, default: true },
+    dimensions: { type: String },
+    maxOccupancy: { type: Number },
+    isPrivateToilet: { type: Boolean, default: false },
     model3dUrl: { type: String },
     waypoints: [{ type: Schema.Types.Mixed }]
 });

@@ -23,25 +23,82 @@ export interface OnboardingSurvey {
 export interface Listing {
   id: string;
   _id?: string;
-  owner_id: string;
-  owner_name: string;
-  owner_phone: string;
-  name: string;
-  address: string;
+  ownerId?: string;
+  
+  // 1. Core Property Info
+  listingName: string;
+  propertyType: 'Apartment' | 'Condo' | 'Studio Type' | 'Bed Spacer' | 'Boarding House' | 'Up and Down';
+  description: string;
+  rating: number;
+  
+  // 2. Media & Virtual Viewing
+  photos: string[];
+  video?: string;
+  virtualTour360?: string;
+  hasEnhancedViewing: boolean;
+  floorPlans: string[];
+
+  // 3. Location & Neighborhood
+  fullAddress: string;
   lat: number;
   lng: number;
-  total_rooms: number;
-  available_rooms: number;
-  rules: string[];
-  price_min: number;
-  price_max: number;
+  neighborhoodNear: string[]; // Enums: School, University, etc.
+  transportationOptions: string[];
+
+  // 4. Room, Unit Details & Pricing
+  roomType: string;
+  availableRooms: number;
+  bedrooms: 'Studio' | '1' | '2' | '3' | '4+';
+  bathrooms: '1' | '2' | '3+';
+  squareFeet: number;
+  monthlyRent: number;
+  moveInDate: string;
+
+  // 5. Fees & Policies
+  securityDeposit: number;
+  advancePayment: number;
+  applicationReviewFee: number;
+  specialtyProperty: 'Student Only' | 'Worker Only' | 'Income Restricted' | 'Short-Term' | 'None';
+
+  // 6. Pet Policy
+  petPolicy: 'Cat Friendly' | 'Dog Friendly' | 'Any Pet Friendly' | 'Small Dogs Only' | 'No Pets';
+
+  // 7. House Rules
+  hasCurfew: boolean;
+  visitorsAllowed: boolean;
+  smokingAllowed: boolean;
+  cookingAllowed: boolean;
+  quietHours: string;
+
+  // 8. Amenities
+  airConditioning: boolean;
+  wifi: boolean;
+  washer: boolean;
+  dryer: boolean;
+  utilitiesIncluded: boolean;
+  dishwasher: boolean;
+  parkingType: 'None' | 'Outside' | 'Garage';
+  laundryFacilities: boolean;
+  kitchen: boolean;
+  appliancesIncluded: boolean;
+
+  // Meta
+  status: 'Active' | 'Unpublished' | 'Pending';
+  createdAt?: string;
+  updatedAt?: string;
+
+  // Legacy fields for compatibility
+  name?: string;
+  address?: string;
+  priceMin?: number;
+  priceMax?: number;
+  totalRooms?: number;
+  available_rooms?: number;
+  total_rooms?: number;
   amenities?: string[];
-  status?: 'Active' | 'Unpublished' | 'Pending';
-  created_at: string;
-  updated_at: string;
-  photos: ListingPhoto[];
-  rooms: Room[];
-  reviews: Review[];
+  rules?: string[];
+  reviews?: Review[];
+  rooms?: Room[];
 }
 
 export interface Room {

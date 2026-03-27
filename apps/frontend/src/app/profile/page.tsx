@@ -59,11 +59,13 @@ export default function ProfilePage() {
     }
   }, [user, surveyData, isEditing]);
 
-  if (!user) {
-    // Redirect to login if not authenticated
-    useEffect(() => {
+  useEffect(() => {
+    if (!user) {
       router.push('/login');
-    }, [router]);
+    }
+  }, [user, router]);
+
+  if (!user) {
     return (
       <div className="flex justify-center items-center h-full">
         <p>Redirecting to login...</p>
@@ -169,71 +171,78 @@ export default function ProfilePage() {
           {isEditing ? (
             <div className="space-y-8">
               <Separator />
-              <div>
-                <h3 className="text-xl font-headline mb-4">Edit Your Preferences</h3>
-                <div className="space-y-6">
-                  {/* User Type */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold">I am a</Label>
-                    <RadioGroup value={userType} onValueChange={(v: any) => setUserType(v)} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="student" id="student" /><Label htmlFor="student">Student</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="worker" id="worker" /><Label htmlFor="worker">Worker</Label></div>
-                    </RadioGroup>
-                  </div>
-                  {/* Price Range */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold">My Budget (Monthly)</Label>
-                    <div className="flex gap-4">
-                      <Input type="number" value={priceRange[0]} onChange={e => setPriceRange([+e.target.value, priceRange[1]])} placeholder="Min" />
-                      <Input type="number" value={priceRange[1]} onChange={e => setPriceRange([priceRange[0], +e.target.value])} placeholder="Max" />
+              {user.role === 'user' ? (
+                <div>
+                  <h3 className="text-xl font-headline mb-4">Edit Your Preferences</h3>
+                  <div className="space-y-6">
+                    {/* User Type */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold">I am a</Label>
+                      <RadioGroup value={userType} onValueChange={(v: any) => setUserType(v)} className="flex gap-4">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="student" id="student" /><Label htmlFor="student">Student</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="worker" id="worker" /><Label htmlFor="worker">Worker</Label></div>
+                      </RadioGroup>
                     </div>
-                  </div>
-                  {/* Accommodation Type */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold">Accommodation Type</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {accommodationTypesOptions.map(type => {
-                        const typeId = type.toLowerCase().replace(/ /g, '_');
-                        return (
-                          <div key={typeId} className="flex items-center space-x-2">
-                            <Checkbox id={`edit-${typeId}`} onCheckedChange={(checked) => handleAccommodationTypeChange(!!checked, type)} checked={accommodationTypes.includes(type)} />
-                            <Label htmlFor={`edit-${typeId}`} className="font-normal">{type}</Label>
-                          </div>
-                        )
-                      })}
+                    {/* Price Range */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold">My Budget (Monthly)</Label>
+                      <div className="flex gap-4">
+                        <Input type="number" value={priceRange[0]} onChange={e => setPriceRange([+e.target.value, priceRange[1]])} placeholder="Min" />
+                        <Input type="number" value={priceRange[1]} onChange={e => setPriceRange([priceRange[0], +e.target.value])} placeholder="Max" />
+                      </div>
                     </div>
-                  </div>
-                  {/* Amenities */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold">Amenities</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {amenitiesOptions.map(amenity => {
-                        const amenityId = amenity.toLowerCase().replace(/ /g, '_');
-                        return (
-                          <div key={amenityId} className="flex items-center space-x-2">
-                            <Checkbox id={`edit-${amenityId}`} onCheckedChange={(checked) => handleAmenityChange(!!checked, amenity)} checked={amenities.includes(amenity)} />
-                            <Label htmlFor={`edit-${amenityId}`} className="font-normal">{amenity}</Label>
-                          </div>
-                        )
-                      })}
+                    {/* Accommodation Type */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Accommodation Type</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {accommodationTypesOptions.map(type => {
+                          const typeId = type.toLowerCase().replace(/ /g, '_');
+                          return (
+                            <div key={typeId} className="flex items-center space-x-2">
+                              <Checkbox id={`edit-${typeId}`} onCheckedChange={(checked) => handleAccommodationTypeChange(!!checked, type)} checked={accommodationTypes.includes(type)} />
+                              <Label htmlFor={`edit-${typeId}`} className="font-normal">{type}</Label>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  {/* Walking Distance */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold">Willing to walk up to</Label>
-                    <RadioGroup value={walkingDistance} onValueChange={(v: any) => setWalkingDistance(v)} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="5" id="edit-5" /><Label htmlFor="edit-5">5 mins</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="10" id="edit-10" /><Label htmlFor="edit-10">10 mins</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="15" id="edit-15" /><Label htmlFor="edit-15">15 mins</Label></div>
-                    </RadioGroup>
-                  </div>
-                  {/* Location */}
-                  <div className="space-y-2">
-                    <Label className="font-semibold" htmlFor="location">My Home Base (School/Work)</Label>
-                    <Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Araullo University" />
+                    {/* Amenities */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Amenities</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {amenitiesOptions.map(amenity => {
+                          const amenityId = amenity.toLowerCase().replace(/ /g, '_');
+                          return (
+                            <div key={amenityId} className="flex items-center space-x-2">
+                              <Checkbox id={`edit-${amenityId}`} onCheckedChange={(checked) => handleAmenityChange(!!checked, amenity)} checked={amenities.includes(amenity)} />
+                              <Label htmlFor={`edit-${amenityId}`} className="font-normal">{amenity}</Label>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    {/* Walking Distance */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Willing to walk up to</Label>
+                      <RadioGroup value={walkingDistance} onValueChange={(v: any) => setWalkingDistance(v)} className="flex gap-4">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="5" id="edit-5" /><Label htmlFor="edit-5">5 mins</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="10" id="edit-10" /><Label htmlFor="edit-10">10 mins</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="15" id="edit-15" /><Label htmlFor="edit-15">15 mins</Label></div>
+                      </RadioGroup>
+                    </div>
+                    {/* Location */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold" htmlFor="location">My Home Base (School/Work)</Label>
+                      <Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Araullo University" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <h3 className="text-xl font-headline mb-4">Edit Profile</h3>
+                  <p className="text-muted-foreground text-sm">Update your owner profile information.</p>
+                </div>
+              )}
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSave}>Save Changes</Button>
                 <Button variant="outline" onClick={handleCancel}>Cancel</Button>
@@ -242,77 +251,90 @@ export default function ProfilePage() {
           ) : (
             <>
               <Separator />
-              <div>
-                <h3 className="text-xl font-headline mb-4">Your Preferences</h3>
-                {surveyData ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <UserCheck className="h-5 w-5 text-muted-foreground" />
-                      <div>You are a <Badge variant="secondary">{surveyData.userType}</Badge></div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Wallet className="h-5 w-5 text-muted-foreground" />
-                      <div>Budget: <Badge variant="secondary">₱{surveyData.priceRange[0]} - ₱{surveyData.priceRange[1]}</Badge></div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <SlidersHorizontal className="h-5 w-5 text-muted-foreground mt-1" />
-                      <div>
-                        <p className="mb-2">Amenities:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {surveyData.amenities.map(amenity => <Badge key={amenity} variant="outline">{amenity}</Badge>)}
+              {user.role === 'user' ? (
+                <>
+                  <div>
+                    <h3 className="text-xl font-headline mb-4">Your Preferences</h3>
+                    {surveyData ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <UserCheck className="h-5 w-5 text-muted-foreground" />
+                          <div>You are a <Badge variant="secondary">{surveyData.userType}</Badge></div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Wallet className="h-5 w-5 text-muted-foreground" />
+                          <div>Budget: <Badge variant="secondary">₱{surveyData.priceRange[0]} - ₱{surveyData.priceRange[1]}</Badge></div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <SlidersHorizontal className="h-5 w-5 text-muted-foreground mt-1" />
+                          <div>
+                            <p className="mb-2">Amenities:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {surveyData.amenities.map(amenity => <Badge key={amenity} variant="outline">{amenity}</Badge>)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Footprints className="h-5 w-5 text-muted-foreground" />
+                          <div>Willing to walk: <Badge variant="secondary">{surveyData.walkingDistance} minutes</Badge></div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-muted-foreground" />
+                          <div>Your home base: <span className="font-medium">{surveyData.location || 'Not set'}</span></div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Footprints className="h-5 w-5 text-muted-foreground" />
-                      <div>Willing to walk: <Badge variant="secondary">{surveyData.walkingDistance} minutes</Badge></div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <div>Your home base: <span className="font-medium">{surveyData.location || 'Not set'}</span></div>
-                    </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">You haven't taken the survey yet.</p>
+                        <Button className="mt-4" onClick={() => router.push('/survey')}>Find Recommendations</Button>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">You haven't taken the survey yet.</p>
-                    <Button className="mt-4" onClick={() => router.push('/survey')}>Find Recommendations</Button>
+                  <Separator />
+                  <div>
+                    <h3 className="text-xl font-headline mb-4">My Reviews</h3>
+                    {myReviews.length > 0 ? (
+                      <div className="space-y-4">
+                        {myReviews.map(review => {
+                          return (
+                            <Card key={review.review_id || review._id} className="p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listing_id || '#'}`} className="font-semibold underline hover:text-primary">{review.listing_name || 'this property'}</Link></p>
+                                  <p className="mt-2 text-foreground">{review.comment}</p>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
+                            </Card>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-muted-foreground">You haven't written any reviews yet.</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              ) : (
+                <div className="py-6 space-y-6">
+                  <div>
+                    <h3 className="text-xl font-headline mb-2">Property Owner Account</h3>
+                    <p className="text-muted-foreground text-sm mb-4">You have access to the owner tools for adding and managing your property listings, viewing insights, and responding to inquiries.</p>
+                    <Link href="/owner/dashboard">
+                      <Button className="bg-primary-green hover:bg-primary-green-hover text-white">Go to Owner Dashboard</Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
             </>
           )}
-
-          <Separator />
-          <div>
-            <h3 className="text-xl font-headline mb-4">My Reviews</h3>
-            {myReviews.length > 0 ? (
-              <div className="space-y-4">
-                {myReviews.map(review => {
-                  return (
-                    <Card key={review.review_id || review._id} className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Review for <Link href={`/listings/${review.listing_id || '#'}`} className="font-semibold underline hover:text-primary">{review.listing_name || 'this property'}</Link></p>
-                          <p className="mt-2 text-foreground">{review.comment}</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
-                    </Card>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-2 text-muted-foreground">You haven't written any reviews yet.</p>
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>

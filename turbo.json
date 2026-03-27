@@ -3,7 +3,19 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET",
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+        "MONGODB_URI",
+        "JWT_SECRET",
+        "FRONTEND_URL"
+      ]
     },
     "lint": {
       "outputs": []

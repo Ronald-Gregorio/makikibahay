@@ -1,0 +1,439 @@
+apps/frontend/src/app/about/page.tsx(2,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/dashboard/page.tsx(3,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/dashboard/page.tsx(4,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/dashboard/page.tsx(6,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/admin/layout.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/app/admin/layout.tsx(8,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/admin/layout.tsx(11,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/layout.tsx(12,74): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(17,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(19,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(20,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(21,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(147,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(158,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(177,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(189,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(233,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(239,55): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(242,79): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(271,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(277,55): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(280,79): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(314,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(324,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(334,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/[id]/edit/page.tsx(346,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(5,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(6,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(7,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(8,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(11,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(22,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(32,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(34,31): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(35,27): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(36,28): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(38,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(39,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(40,132): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(41,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(42,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/listings/page.tsx(56,19): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(150,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(206,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(290,42): error TS7006: Parameter 'room' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(295,43): error TS7006: Parameter 'room' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(296,40): error TS7006: Parameter 'p' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(302,38): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(305,43): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(362,74): error TS7006: Parameter 'photo' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(393,75): error TS7006: Parameter 'room' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(424,62): error TS7006: Parameter 'room' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(447,72): error TS7006: Parameter 'rule' implicitly has an 'any' type.
+apps/frontend/src/app/admin/listings/page.tsx(447,78): error TS7006: Parameter 'index' implicitly has an 'any' type.
+apps/frontend/src/app/admin/logs/page.tsx(4,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/logs/page.tsx(5,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/logs/page.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/logs/page.tsx(8,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(5,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(6,67): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(9,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(10,114): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(11,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(12,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(13,57): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(14,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(15,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(16,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(19,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(20,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/metrics/page.tsx(42,19): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(4,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(5,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(10,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(12,114): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(13,53): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(14,24): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(15,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(16,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(17,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(18,132): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(19,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/moderation/page.tsx(35,19): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(37,37): error TS7006: Parameter 'r' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(120,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(178,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(216,38): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/moderation/page.tsx(219,43): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/settings/page.tsx(4,104): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/settings/page.tsx(6,21): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/app/admin/settings/page.tsx(7,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/settings/page.tsx(114,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/settings/page.tsx(115,53): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/system-logs/page.tsx(5,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(6,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(7,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(8,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(9,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(11,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/system-logs/page.tsx(44,19): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/admin/system-logs/page.tsx(88,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/tickets/page.tsx(4,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(5,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(10,127): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(11,53): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(12,27): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/tickets/page.tsx(15,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(4,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(5,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(19,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(28,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(29,53): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(31,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(32,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(33,79): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(34,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(35,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(36,132): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(37,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(39,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/admin/users/page.tsx(59,20): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/admin/users/page.tsx(183,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/users/page.tsx(205,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/admin/users/page.tsx(277,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/users/page.tsx(333,32): error TS7006: Parameter 'open' implicitly has an 'any' type.
+apps/frontend/src/app/admin/users/page.tsx(338,43): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/admin/verifications/page.tsx(4,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/admin/verifications/page.tsx(26,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/admin/verifications/page.tsx(27,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/admin/verifications/page.tsx(28,58): error TS2307: Cannot find module '@/services/api/verification' or its corresponding type declarations.
+apps/frontend/src/app/admin/verifications/page.tsx(138,61): error TS7006: Parameter 'open' implicitly has an 'any' type.
+apps/frontend/src/app/admin/verifications/page.tsx(192,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/api/auth/[...nextauth]/route.ts(1,26): error TS2307: Cannot find module '@/lib/auth' or its corresponding type declarations.
+apps/frontend/src/app/browse/page.tsx(6,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/browse/page.tsx(7,36): error TS2307: Cannot find module '@/services/api/savedSearches' or its corresponding type declarations.
+apps/frontend/src/app/browse/page.tsx(11,34): error TS2307: Cannot find module '@/components/Map' or its corresponding type declarations.
+apps/frontend/src/app/browse/page.tsx(16,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/browse/page.tsx(506,17): error TS2322: Type '{ center: [number, number]; zoom: number; markers: { position: [number, number]; title: string; }[]; className: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'center' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/contact/page.tsx(4,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/contact/page.tsx(5,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/contact/page.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/contact/page.tsx(7,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/contact/page.tsx(8,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/contact/page.tsx(9,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(3,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(4,30): error TS2307: Cannot find module '@/components/property-card' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(9,29): error TS2307: Cannot find module '@/services/api/users' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(10,30): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/favorites/page.tsx(20,15): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/inbox/page.tsx(6,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(9,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(10,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(11,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(12,27): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(13,40): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(14,74): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(15,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(16,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(19,32): error TS2307: Cannot find module '@/services/api/messages' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(20,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/inbox/page.tsx(548,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/inbox/page.tsx(549,70): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/inbox/page.tsx(554,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/layout.tsx(4,27): error TS2307: Cannot find module '@/components/header' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(5,27): error TS2307: Cannot find module '@/components/footer' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(6,25): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(7,30): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(7,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(8,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(9,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(10,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(11,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(14,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(16,34): error TS2307: Cannot find module '@/components/Map' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(21,46): error TS2307: Cannot find module '@/components/MarzipanoViewer' or its corresponding type declarations.
+apps/frontend/src/app/listings/[id]/page.tsx(290,17): error TS2322: Type '{ scenes: { id: string; name: string; imageUrl: any; hotspots: never[]; }[] | { id: string; name: string; imageUrl: string; hotspots: { pitch: number; yaw: number; label: string; sceneId: string; }[]; }[]; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'scenes' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/listings/[id]/page.tsx(328,19): error TS2322: Type '{ center: number[]; zoom: number; markers: { position: number[]; title: string; }[]; className: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'center' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/listings/[id]/page.tsx(438,31): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/login/page.tsx(5,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(6,87): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(7,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(8,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(10,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(11,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(12,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/login/page.tsx(96,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/login/page.tsx(108,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/login/page.tsx(124,51): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/owner/dashboard/page.tsx(4,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/owner/dashboard/page.tsx(9,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/owner/dashboard/page.tsx(10,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/owner/dashboard/page.tsx(11,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/owner/dashboard/page.tsx(12,30): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/owner/dashboard/page.tsx(16,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(17,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(19,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(20,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(21,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(22,60): error TS2307: Cannot find module '@/services/api/walkthroughs' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(23,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(26,48): error TS2307: Cannot find module '@/components/LocationPickerMap' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(31,49): error TS2307: Cannot find module '@/components/WalkthroughBuilder' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(347,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(359,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(377,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(397,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(403,29): error TS2322: Type '{ initialCenter: any[]; onLocationSelect: (lat: any, lng: any, address: any) => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'initialCenter' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(404,48): error TS7006: Parameter 'lat' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(404,53): error TS7006: Parameter 'lng' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(404,58): error TS7006: Parameter 'address' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(443,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(467,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(480,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(496,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(541,42): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(550,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(555,52): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(591,42): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(600,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(605,52): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(668,19): error TS2322: Type '{ listingId: string; initialConfig: any; onSaved: (wt: any) => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'listingId' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/owner/listings/[id]/edit/page.tsx(670,28): error TS7006: Parameter 'wt' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(17,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(19,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(20,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(21,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(22,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(25,48): error TS2307: Cannot find module '@/components/LocationPickerMap' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/create/page.tsx(304,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(316,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(334,32): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(357,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(369,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(381,34): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(396,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(402,29): error TS2322: Type '{ initialCenter: any[]; onLocationSelect: (lat: any, lng: any, address: any) => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'initialCenter' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/owner/listings/create/page.tsx(403,48): error TS7006: Parameter 'lat' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(403,53): error TS7006: Parameter 'lng' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(403,58): error TS7006: Parameter 'address' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(442,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(466,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(479,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(494,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(506,38): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(542,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(557,42): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(604,42): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(613,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(618,52): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(654,42): error TS7031: Binding element 'field' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(663,59): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(668,52): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/create/page.tsx(745,45): error TS7031: Binding element 'formField' implicitly has an 'any' type.
+apps/frontend/src/app/owner/listings/page.tsx(6,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/page.tsx(7,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/page.tsx(8,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/owner/listings/page.tsx(9,30): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/owner/metrics/page.tsx(3,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/owner/metrics/page.tsx(4,67): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/owner/metrics/page.tsx(9,34): error TS2307: Cannot find module '@/services/api/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/owner/metrics/page.tsx(192,57): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/page.tsx(7,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/page.tsx(8,32): error TS2307: Cannot find module '@/services/api/listings' or its corresponding type declarations.
+apps/frontend/src/app/page.tsx(9,30): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/page.tsx(21,13): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/payment/page.tsx(1,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/privacy/page.tsx(2,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(5,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(7,53): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(8,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(9,75): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(10,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(11,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(12,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(14,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(15,27): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(17,44): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(18,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(19,33): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(20,29): error TS2307: Cannot find module '@/services/api/users' or its corresponding type declarations.
+apps/frontend/src/app/profile/page.tsx(49,15): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(96,27): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(97,47): error TS7006: Parameter 't' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(102,18): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(103,55): error TS7006: Parameter 'a' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(139,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(190,78): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(191,78): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(202,81): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(217,84): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(236,71): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/page.tsx(273,57): error TS7006: Parameter 'amenity' implicitly has an 'any' type.
+apps/frontend/src/app/profile/verify/page.tsx(4,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/profile/verify/page.tsx(18,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/profile/verify/page.tsx(19,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/profile/verify/page.tsx(20,37): error TS2307: Cannot find module '@/services/api/verification' or its corresponding type declarations.
+apps/frontend/src/app/profile/verify/page.tsx(140,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/verify/page.tsx(154,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/profile/verify/page.tsx(166,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/saved-searches/page.tsx(6,36): error TS2307: Cannot find module '@/services/api/savedSearches' or its corresponding type declarations.
+apps/frontend/src/app/saved-searches/page.tsx(7,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(5,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(6,87): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(7,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(8,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(10,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(11,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(12,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/signup/page.tsx(81,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/signup/page.tsx(91,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/signup/page.tsx(104,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/signup/page.tsx(116,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/signup/page.tsx(134,51): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(6,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(7,87): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(8,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(9,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(10,44): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(11,26): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(12,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(15,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(16,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(17,33): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(20,48): error TS2307: Cannot find module '@/components/LocationPickerMap' or its corresponding type declarations.
+apps/frontend/src/app/survey/page.tsx(158,63): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(177,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(188,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(201,62): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(219,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(220,33): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(229,19): error TS2322: Type '{ initialCenter: [number, number]; initialZoom: number; onLocationSelect: (lat: any, lng: any, address: any) => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'initialCenter' does not exist on type 'IntrinsicAttributes'.
+apps/frontend/src/app/survey/page.tsx(231,38): error TS7006: Parameter 'lat' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(231,43): error TS7006: Parameter 'lng' implicitly has an 'any' type.
+apps/frontend/src/app/survey/page.tsx(231,48): error TS7006: Parameter 'address' implicitly has an 'any' type.
+apps/frontend/src/components/AuthButtons.tsx(3,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/components/AuthButtons.tsx(4,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(2,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(5,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(6,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(7,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(8,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ChatWindow.tsx(99,15): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/components/ChatWindow.tsx(102,16): error TS7006: Parameter 'error' implicitly has an 'any' type.
+apps/frontend/src/components/ChatWindow.tsx(226,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/components/ChatWindow.tsx(231,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/components/header.tsx(5,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/header.tsx(13,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/components/header.tsx(15,53): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/header.tsx(19,8): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/header.tsx(22,8): error TS2307: Cannot find module '@/components/ui/sheet' or its corresponding type declarations.
+apps/frontend/src/components/ListingCard.tsx(3,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/components/ListingCard.tsx(4,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ListingCard.tsx(5,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ListingCard.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(5,70): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(6,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(8,30): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(9,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(10,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(11,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(12,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/components/property-card.tsx(45,34): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+apps/frontend/src/components/property-card.tsx(45,39): error TS7006: Parameter 'review' implicitly has an 'any' type.
+apps/frontend/src/components/SurveyWizard.tsx(4,24): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/SurveyWizard.tsx(5,58): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/SurveyWizard.tsx(6,23): error TS2307: Cannot find module '@/components/ui/index' or its corresponding type declarations.
+apps/frontend/src/components/ui/accordion.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/alert-dialog.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/alert.tsx(4,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/avatar.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/badge.tsx(4,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/button.tsx(5,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/calendar.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/card.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/carousel.tsx(9,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/chart.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/checkbox.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/combobox.tsx(5,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/combobox.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/components/ui/combobox.tsx(11,8): error TS2307: Cannot find module '@/components/ui/popover' or its corresponding type declarations.
+apps/frontend/src/components/ui/combobox.tsx(12,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/components/ui/combobox.tsx(59,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/frontend/src/components/ui/dialog.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/dropdown-menu.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/form.tsx(15,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/index.ts(1,15): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/input.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/label.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/menubar.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/popover.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/progress.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/radio-group.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/scroll-area.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/select.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/separator.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/sheet.tsx(8,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/sidebar.tsx(8,29): error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+apps/frontend/src/components/ui/sidebar.tsx(9,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/skeleton.tsx(1,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/slider.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/switch.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/table.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/tabs.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/toast.tsx(8,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/toaster.tsx(3,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/components/ui/toaster.tsx(18,31): error TS7031: Binding element 'id' implicitly has an 'any' type.
+apps/frontend/src/components/ui/toaster.tsx(18,35): error TS7031: Binding element 'title' implicitly has an 'any' type.
+apps/frontend/src/components/ui/toaster.tsx(18,42): error TS7031: Binding element 'description' implicitly has an 'any' type.
+apps/frontend/src/components/ui/toaster.tsx(18,55): error TS7031: Binding element 'action' implicitly has an 'any' type.
+apps/frontend/src/components/ui/tooltip.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/WalkthroughBuilder.tsx(11,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+apps/frontend/src/components/WalkthroughBuilder.tsx(12,17): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+apps/frontend/src/components/WalkthroughBuilder.tsx(18,8): error TS2307: Cannot find module '@/services/api/walkthroughs' or its corresponding type declarations.
+apps/frontend/src/components/WalkthroughBuilder.tsx(159,36): error TS7006: Parameter 'hotspot' implicitly has an 'any' type.
+apps/frontend/src/components/WalkthroughBuilder.tsx(315,49): error TS7006: Parameter 'h' implicitly has an 'any' type.
+apps/frontend/src/components/WalkthroughBuilder.tsx(512,49): error TS7006: Parameter 'h' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(4,36): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+apps/frontend/src/hooks/use-auth.tsx(5,29): error TS2307: Cannot find module '@/services/api/users' or its corresponding type declarations.
+apps/frontend/src/hooks/use-auth.tsx(71,41): error TS7006: Parameter 'data' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(72,35): error TS7006: Parameter 'f' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(73,18): error TS7006: Parameter 'err' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(111,41): error TS7006: Parameter 'favs' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(112,35): error TS7006: Parameter 'f' implicitly has an 'any' type.
+apps/frontend/src/hooks/use-auth.tsx(227,31): error TS7006: Parameter 'f' implicitly has an 'any' type.

@@ -32,13 +32,16 @@ const PORT = process.env.PORT || 5000;
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
+  'http://localhost:3002',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3002',
+  'http://frontend:3002', // Docker internal network
 ];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin) {
-    console.log(`CORS Debug: Request from ${origin} to ${req.url}`);
+    // console.log(`CORS Debug: Request from ${origin} to ${req.url}`);
   }
   next();
 });
@@ -49,7 +52,7 @@ app.use(cors({
     if (!origin || ALLOWED_ORIGINS.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS Denied for origin:', origin);
+      // console.log('CORS Denied for origin:', origin);
       callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },

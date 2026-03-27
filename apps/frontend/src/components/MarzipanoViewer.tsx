@@ -93,9 +93,11 @@ export default function MarzipanoViewer({ scenes, initialSceneId }: MarzipanoVie
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      viewer.destroy();
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+      }
     };
-  }, [scenes, initialSceneId]);
+  }, [JSON.stringify(scenes), initialSceneId]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {

@@ -5,28 +5,73 @@ import Review from '../models/Review.js';
 
 export const getListings = async (req: Request, res: Response) => {
     try {
-        const { priceMin, priceMax, amenities, limit } = req.query;
-        let query: any = {};
+        const { priceMin, priceMax, monthlyRentMin, monthlyRentMax, amenities, limit, sort, has3DView, propertyType, type, bedrooms, bathrooms, petPolicy, specialtyProperty } = req.query;
+        const query: any = {};
 
-        // Price range filter: find listings where priceMin >= user's min AND priceMax <= user's max
-        if (priceMin) {
-            query.priceMin = { ...query.priceMin, $gte: Number(priceMin) };
+        // Pricing (Support both old and new field names)
+        const rentMin = monthlyRentMin || priceMin;
+        const rentMax = monthlyRentMax || priceMax;
+        if (rentMin) {
+            query.monthlyRent = { ...query.monthlyRent, $gte: Number(rentMin) };
         }
-        if (priceMax) {
-            query.priceMax = { ...query.priceMax, $lte: Number(priceMax) };
+        if (rentMax) {
+            query.monthlyRent = { ...query.monthlyRent, $lte: Number(rentMax) };
         }
 
+        // Property Type
+        const pType = propertyType || type;
+        if (pType) {
+            query.propertyType = pType;
+        }
+
+        // Rooms
+        if (bedrooms && bedrooms !== 'Any') query.bedrooms = bedrooms;
+        if (bathrooms && bathrooms !== 'Any') query.bathrooms = bathrooms;
+
+        // Policies
+        if (petPolicy) query.petPolicy = petPolicy;
+        if (specialtyProperty) query.specialtyProperty = specialtyProperty;
+
+        // Amenities
         if (amenities) {
             const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
-            query.amenities = { $all: amenitiesArray };
+            const amenityQueries = amenitiesArray.map(a => {
+                const mapping: Record<string, string> = {
+                    'AC': 'airConditioning',
+                    'Air Conditioning': 'airConditioning',
+                    'WiFi': 'wifi',
+                    'wifi': 'wifi',
+                    'Washer': 'washer',
+                    'Dryer': 'dryer',
+                    'Utilities Included': 'utilitiesIncluded',
+                    'Dishwasher': 'dishwasher',
+                    'Kitchen': 'kitchen'
+                };
+                const fieldName = mapping[a as string];
+                return fieldName ? { [fieldName]: true } : { amenities: a };
+            });
+            if (amenityQueries.length > 0) {
+                query.$or = amenityQueries;
+            }
+        }
+
+        if (has3DView === 'true' || req.query.hasEnhancedViewing === 'true') {
+            query.$or = [
+                ...(query.$or || []),
+                { virtualTour360: { $exists: true, $ne: '' } },
+                { hasEnhancedViewing: true }
+            ];
         }
 
         const maxResults = limit ? Math.min(Number(limit), 100) : 50;
+        let sortOption: any = { createdAt: -1 };
+        if (sort === 'price_asc') sortOption = { monthlyRent: 1 };
+        if (sort === 'price_desc') sortOption = { monthlyRent: -1 };
 
         const listings = await Listing.find(query)
-            .populate('ownerId', 'name avatar')
+            .populate('ownerId', 'name avatar email')
             .limit(maxResults)
-            .sort({ createdAt: -1 });
+            .sort(sortOption);
         res.json(listings);
     } catch (error) {
         console.error('Error fetching listings:', error);
@@ -36,7 +81,7 @@ export const getListings = async (req: Request, res: Response) => {
 
 export const getFeaturedListings = async (req: Request, res: Response) => {
     try {
-        const listings = await Listing.find().sort({ createdAt: -1 }).limit(3).populate('ownerId', 'name avatar');
+        const listings = await Listing.find().sort({ createdAt: -1 }).limit(3).populate('ownerId', 'name avatar email');
         res.json(listings);
     } catch (error) {
         res.status(500).json({ message: 'Server error fetching featured listings' });
@@ -45,16 +90,10 @@ export const getFeaturedListings = async (req: Request, res: Response) => {
 
 export const getListingById = async (req: Request, res: Response) => {
     try {
-        const listing = await Listing.findById(req.params.id).populate('ownerId', 'name avatar').lean();
+        const listing = await Listing.findById(req.params.id).populate('ownerId', 'name avatar email').lean();
         if (listing) {
             const rooms = await Room.find({ listingId: req.params.id });
             const reviews = await Review.find({ listingId: req.params.id }).populate('userId', 'name avatar');
-
-            // Transform keys to match frontend expectation if needed, or update frontend.
-            // Frontend expects: rooms (array), reviews (array).
-            // Also frontend might expect mapped field names.
-            // Let's return raw data and update frontend to adapt.
-
             res.json({ ...listing, rooms, reviews });
         } else {
             res.status(404).json({ message: 'Listing not found' });
@@ -67,47 +106,71 @@ export const getListingById = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
     try {
-        const { name, address, priceMin, priceMax, totalRooms, availableRooms, amenities, rules, location, photos, rooms, type } = req.body;
-
-        // Assuming user is attached to req by auth middleware
-        // const ownerId = req.user._id; 
-        // For now, we might receive ownerId in body if no middleware, or assume mock.
-        // But listings MUST have ownerId.
-
-        // If auth middleware is not yet active, extracting from body if present
-        const ownerId = req.body.ownerId;
-
+        const ownerId = (req as any).user?._id || req.body.ownerId;
         if (!ownerId) {
             res.status(400).json({ message: 'Owner ID required' });
             return;
         }
 
-        const listing = new Listing({
+        const data = {
             ownerId,
-            name,
-            address,
-            priceMin,
-            priceMax,
-            totalRooms,
-            availableRooms,
-            amenities,
-            rules,
-            location,
-            photos,
-            type
-        });
+            listingName: req.body.listingName || req.body.name,
+            propertyType: req.body.propertyType || req.body.type,
+            description: req.body.description,
+            photos: req.body.photos,
+            video: req.body.video,
+            virtualTour360: req.body.virtualTour360,
+            hasEnhancedViewing: req.body.hasEnhancedViewing || !!req.body.virtualTour360,
+            floorPlans: req.body.floorPlans,
+            fullAddress: req.body.fullAddress || req.body.address,
+            mapLoc: req.body.mapLoc || req.body.location,
+            neighborhoodNear: req.body.neighborhoodNear,
+            transportationOptions: req.body.transportationOptions,
+            roomType: req.body.roomType || 'Standard',
+            availableRooms: req.body.availableRooms || req.body.available_rooms || 0,
+            bedrooms: req.body.bedrooms || 'Studio',
+            bathrooms: req.body.bathrooms || '1',
+            squareFeet: req.body.squareFeet || 0,
+            monthlyRent: req.body.monthlyRent || req.body.priceMin || 0,
+            moveInDate: req.body.moveInDate || new Date(),
+            securityDeposit: req.body.securityDeposit || 0,
+            advancePayment: req.body.advancePayment || 0,
+            applicationReviewFee: req.body.applicationReviewFee || 0,
+            specialtyProperty: req.body.specialtyProperty || 'None',
+            petPolicy: req.body.petPolicy || 'No Pets',
+            hasCurfew: req.body.hasCurfew,
+            visitorsAllowed: req.body.visitorsAllowed,
+            smokingAllowed: req.body.smokingAllowed,
+            cookingAllowed: req.body.cookingAllowed,
+            quietHours: req.body.quietHours,
+            airConditioning: req.body.airConditioning,
+            wifi: req.body.wifi,
+            washer: req.body.washer,
+            dryer: req.body.dryer,
+            utilitiesIncluded: req.body.utilitiesIncluded,
+            dishwasher: req.body.dishwasher,
+            parkingType: req.body.parkingType,
+            laundryFacilities: req.body.laundryFacilities,
+            kitchen: req.body.kitchen,
+            appliancesIncluded: req.body.appliancesIncluded,
+            status: req.body.status || 'Active'
+        };
 
+        const listing = new Listing(data);
         const createdListing = await listing.save();
 
-        if (rooms && Array.isArray(rooms) && rooms.length > 0) {
-            const roomDocs = rooms.map(room => ({
+        if (req.body.rooms && Array.isArray(req.body.rooms) && req.body.rooms.length > 0) {
+            const roomDocs = req.body.rooms.map((room: any) => ({
                 listingId: createdListing._id,
                 type: room.type || 'Standard',
-                sizeSqm: room.size_sqm || 15,
+                sizeSqm: room.sizeSqm || room.size_sqm || 15,
                 price: room.price,
                 inclusions: room.inclusions,
-                isAvailable: room.is_available,
-                model3dUrl: room.model_3d_url
+                isAvailable: room.isAvailable ?? room.is_available ?? true,
+                dimensions: room.dimensions,
+                maxOccupancy: room.maxOccupancy || room.max_occupancy,
+                isPrivateToilet: room.isPrivateToilet ?? room.is_private_toilet,
+                model3dUrl: room.model3dUrl || room.model_3d_url
             }));
             await Room.insertMany(roomDocs);
         }
@@ -122,17 +185,12 @@ export const createListing = async (req: Request, res: Response) => {
 export const getOwnerListings = async (req: Request, res: Response) => {
     try {
         const ownerId = req.query.ownerId || (req as any).user?._id;
-
         if (!ownerId) {
             res.status(400).json({ message: 'Owner ID required' });
             return;
         }
 
-        const listings = await Listing.find({ ownerId })
-            .populate('ownerId', 'name avatar')
-            .sort({ createdAt: -1 });
-
-        // For each listing, get the room count
+        const listings = await Listing.find({ ownerId }).populate('ownerId', 'name avatar').sort({ createdAt: -1 });
         const listingsWithRooms = await Promise.all(listings.map(async (listing) => {
             const rooms = await Room.find({ listingId: listing._id });
             return {
@@ -142,7 +200,6 @@ export const getOwnerListings = async (req: Request, res: Response) => {
                 rooms
             };
         }));
-
         res.json(listingsWithRooms);
     } catch (error) {
         console.error('Error fetching owner listings:', error);
@@ -154,47 +211,55 @@ export const updateListing = async (req: Request, res: Response): Promise<void> 
     try {
         const ownerId = (req as any).user?._id?.toString();
         const listing = await Listing.findById(req.params.id);
-
         if (!listing) {
             res.status(404).json({ message: 'Listing not found' });
             return;
         }
-
-        // Enforce ownership (or admin)
         if (listing.ownerId.toString() !== ownerId) {
             res.status(403).json({ message: 'Forbidden' });
             return;
         }
 
-        const { name, address, priceMin, priceMax, totalRooms, availableRooms, amenities, rules, location, photos, rooms, type, status } = req.body;
+        const fieldsToUpdate = [
+            'listingName', 'propertyType', 'description', 'photos', 'video', 'virtualTour360', 'floorPlans',
+            'fullAddress', 'mapLoc', 'neighborhoodNear', 'transportationOptions',
+            'roomType', 'availableRooms', 'bedrooms', 'bathrooms', 'squareFeet', 'monthlyRent', 'moveInDate',
+            'securityDeposit', 'advancePayment', 'applicationReviewFee', 'specialtyProperty',
+            'petPolicy', 'hasCurfew', 'visitorsAllowed', 'smokingAllowed', 'cookingAllowed', 'quietHours',
+            'airConditioning', 'wifi', 'washer', 'dryer', 'utilitiesIncluded', 'dishwasher', 'parkingType',
+            'laundryFacilities', 'kitchen', 'appliancesIncluded', 'status'
+        ];
 
-        if (name !== undefined) listing.name = name;
-        if (address !== undefined) listing.address = address;
-        if (priceMin !== undefined) listing.priceMin = priceMin;
-        if (priceMax !== undefined) listing.priceMax = priceMax;
-        if (totalRooms !== undefined) listing.totalRooms = totalRooms;
-        if (availableRooms !== undefined) listing.availableRooms = availableRooms;
-        if (amenities !== undefined) listing.amenities = amenities;
-        if (rules !== undefined) listing.rules = rules;
-        if (location !== undefined) listing.location = location;
-        if (photos !== undefined) listing.photos = photos;
-        if (type !== undefined) listing.type = type;
-        if (status !== undefined) listing.status = status;
+        const body = req.body as Record<string, any>;
+        fieldsToUpdate.forEach(field => {
+            if (body[field] !== undefined) {
+                (listing as any)[field] = body[field];
+            }
+        });
+
+        // Compatibility aliases
+        if (body.name !== undefined) listing.listingName = body.name;
+        if (body.address !== undefined) listing.fullAddress = body.address;
+        if (body.type !== undefined) listing.propertyType = body.type;
+        if (body.priceMin !== undefined) listing.monthlyRent = body.priceMin;
+        if (body.location !== undefined) (listing as any).mapLoc = body.location;
 
         await listing.save();
 
-        // Replace rooms if provided
-        if (rooms && Array.isArray(rooms)) {
+        if (body.rooms && Array.isArray(body.rooms)) {
             await Room.deleteMany({ listingId: listing._id });
-            if (rooms.length > 0) {
-                const roomDocs = rooms.map(room => ({
+            if (body.rooms.length > 0) {
+                const roomDocs = body.rooms.map((room: any) => ({
                     listingId: listing._id,
                     type: room.type || 'Standard',
-                    sizeSqm: room.size_sqm || 15,
+                    sizeSqm: room.sizeSqm || room.size_sqm || 15,
                     price: room.price,
                     inclusions: room.inclusions,
-                    isAvailable: room.is_available,
-                    model3dUrl: room.model_3d_url,
+                    isAvailable: room.isAvailable ?? room.is_available ?? true,
+                    dimensions: room.dimensions,
+                    maxOccupancy: room.maxOccupancy || room.max_occupancy,
+                    isPrivateToilet: room.isPrivateToilet ?? room.is_private_toilet,
+                    model3dUrl: room.model3dUrl || room.model_3d_url,
                 }));
                 await Room.insertMany(roomDocs);
             }
@@ -212,12 +277,10 @@ export const deleteListing = async (req: Request, res: Response): Promise<void> 
     try {
         const ownerId = (req as any).user?._id?.toString();
         const listing = await Listing.findById(req.params.id);
-
         if (!listing) {
             res.status(404).json({ message: 'Listing not found' });
             return;
         }
-
         if (listing.ownerId.toString() !== ownerId) {
             res.status(403).json({ message: 'Forbidden' });
             return;
@@ -225,11 +288,9 @@ export const deleteListing = async (req: Request, res: Response): Promise<void> 
 
         await Room.deleteMany({ listingId: listing._id });
         await Listing.deleteOne({ _id: listing._id });
-
         res.json({ message: 'Listing deleted' });
     } catch (error) {
         console.error('Error deleting listing:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
-

@@ -19,10 +19,11 @@ export function PropertyCard({ listing }: PropertyCardProps) {
   const { user, favorites, toggleFavorite } = useAuth();
   const { toast } = useToast();
 
-  const isFavorite = favorites.includes(listing.id);
+  const listingId = (listing as any)._id || listing.id;
+  const isFavorite = favorites.includes(listingId);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to listing page
+    e.preventDefault(); 
     e.stopPropagation();
     if (!user) {
       toast({
@@ -32,69 +33,78 @@ export function PropertyCard({ listing }: PropertyCardProps) {
       });
       return;
     }
-    toggleFavorite(listing.id);
+    toggleFavorite(listingId);
     toast({
       title: isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
-      description: `${listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
+      description: `${listing.listingName || listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
     })
   };
 
+  const reviews = listing.reviews || [];
   const averageRating =
-    listing.reviews.length > 0
-      ? (listing.reviews.reduce((acc, review) => acc + review.rating, 0) / listing.reviews.length).toFixed(1)
+    reviews.length > 0
+      ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
       : 'New';
+
+  const price = listing.monthlyRent || listing.priceMin || 0;
+  const availableRooms = listing.availableRooms ?? 0;
+  const totalRooms = listing.bedrooms || '1';
+
+  const photoUrl = (listing.photos && listing.photos.length > 0) 
+    ? listing.photos[0] 
+    : 'https://placehold.co/400x300.png?text=No+Photo';
 
   return (
     <Card className="flex flex-col overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full">
-      <CardHeader className="p-0 relative">
-        <Link href={`/listings/${listing.id}`}>
-          <div className="aspect-video relative">
+      <CardHeader className="p-0 relative group">
+        <Link href={`/listings/${listingId}`}>
+          <div className="aspect-video relative overflow-hidden bg-muted">
             <Image
-              src={listing.photos?.[0]?.url || 'https://placehold.co/400x300.png?text=No+Photo'}
-              alt={listing.name}
-              layout="fill"
-              objectFit="cover"
-              className="hover:scale-105 transition-transform duration-300"
-              data-ai-hint="apartment room"
+              src={photoUrl || 'https://placehold.co/400x300.png?text=No+Photo'}
+              alt={listing.listingName || listing.name || 'Property'}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-            <Button
-              size="icon"
-              className={cn(
-                'absolute top-2 right-2 rounded-full h-8 w-8 bg-black/50 hover:bg-black/75',
-                { 'text-red-500 hover:text-red-400': isFavorite }
-              )}
-              onClick={handleFavoriteClick}
-            >
-              <Heart className={cn('h-5 w-5', { 'fill-current': isFavorite })} />
-            </Button>
           </div>
-          <Badge variant="secondary" className="absolute top-2 left-2 flex items-center gap-1">
-            <Star className="w-4 h-4 text-primary" />
-            <span>{averageRating}</span>
+          <Badge variant="secondary" className="absolute top-2 left-2 flex items-center gap-1 z-10 shadow-sm bg-white/90">
+            <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
+            <span className="font-bold">{averageRating}</span>
           </Badge>
         </Link>
+        <Button
+          size="icon"
+          variant="ghost"
+          className={cn(
+            'absolute top-2 right-2 rounded-full h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm z-10 transition-colors',
+            { 'text-red-500': isFavorite, 'text-gray-500': !isFavorite }
+          )}
+          onClick={handleFavoriteClick}
+        >
+          <Heart className={cn('h-4 w-4', { 'fill-current text-red-500': isFavorite })} />
+        </Button>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
-        <CardTitle className="text-xl font-headline hover:text-primary transition-colors">
-          <Link href={`/listings/${listing.id}`}>{listing.name}</Link>
+        <CardTitle className="text-xl font-headline hover:text-primary transition-colors line-clamp-1">
+          <Link href={`/listings/${listingId}`}>{listing.listingName || listing.name}</Link>
         </CardTitle>
         <div className="mt-2 flex items-center text-muted-foreground text-sm">
           <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span className="truncate">{listing.address}</span>
+          <span className="truncate">{listing.fullAddress || listing.address}</span>
         </div>
         <div className="mt-2 flex items-center text-muted-foreground text-sm">
           <BedDouble className="h-4 w-4 mr-2 flex-shrink-0" />
           <span>
-            {listing.available_rooms} of {listing.total_rooms} rooms available
+            {availableRooms} {listing.propertyType === 'Bed Spacer' ? 'beds' : 'rooms'} available
           </span>
         </div>
       </CardContent>
       <CardFooter className="p-4 bg-secondary/50 flex justify-between items-center">
         <p className="text-lg font-bold text-primary-foreground">
           <span className="text-sm font-normal">₱</span>
-          {listing.price_min.toLocaleString()} - {listing.price_max.toLocaleString()}
+          {price.toLocaleString()}/mo
         </p>
-        <Link href={`/listings/${listing.id}`} passHref>
+        <Link href={`/listings/${listingId}`} passHref>
           <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
             View
           </Button>

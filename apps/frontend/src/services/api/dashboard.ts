@@ -43,5 +43,9 @@ export const dashboardService = {
 
     bulkDeleteUsers: (userIds: string[]) => {
         return api.delete('/admin/users/bulk', { data: { userIds } });
+    },
+
+    bulkNotifyUsers: (userIds: string[], message: string) => {
+        return api.post('/admin/users/bulk-notify', { userIds, message });
     }
 };

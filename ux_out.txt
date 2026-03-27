@@ -1,0 +1,32 @@
+
+[UX AUDIT] 127 files checked
+--------------------------------------------------
+[!] ISSUES (15):
+  - [Cognitive Load] test.css: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] globals.css: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+  - [Color] page.tsx: PURPLE DETECTED ('purple'). Banned by Maestro rules. Use Teal/Cyan/Emerald instead.
+  - [Cognitive Load] page.tsx: Form inputs without labels. Use <label> for accessibility and clarity.
+[*] WARNINGS (687):
+  - [Fitts' Law] index.html: Small targets (< 44px)
+  - [Serial Position] index.html: Last nav item may not be important. Place key actions at start/end.
+  - [Persuasion] index.html: Prices without anchoring. Show original price to frame discount value.
+  - [Typography] index.html: Fixed font sizes without clamp(). Consider fluid typography: clamp(MIN, PREFERRED, MAX)
+  - [Color] index.html: Pure black (#000000) detected. Use #1a1a1a or darker grays for better dark mode.
+  - [Color] index.html: Color variables without HSL. Consider HSL for easier palette adjustment (Hue, Saturation, Lightness).
+  - [Trust] test.css: Form without security indicators. Add 'SSL Secure' or lock icon.
+  - [Color] test.css: Color variables without HSL. Consider HSL for easier palette adjustment (Hue, Saturation, Lightness).
+  - [Fitts' Law] out.css: Small targets (< 44px)
+  - [Cognitive Load] out.css: High visual noise detected. Many colors and borders increase cognitive load.
+  - [Typography] out.css: Heading has line-height 2 (>1.3). Headings should be tighter (1.1-1.3).
+  - [Typography] out.css: Heading has line-height 2.25 (>1.3). Headings should be tighter (1.1-1.3).
+  - [Typography] out.css: Heading has line-height 2.5 (>1.3). Headings should be tighter (1.1-1.3).
+  - [Typography] out.css: Heading has line-height 1.75 (>1.3). Headings should be tighter (1.1-1.3).
+  - [Typography] out.css: Heading has line-height 1.75 (>1.3). Headings should be tighter (1.1-1.3).
+[+] PASSED CHECKS: 39
+STATUS: FAIL

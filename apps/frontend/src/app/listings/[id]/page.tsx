@@ -23,26 +23,23 @@ const MarzipanoViewer = dynamic(() => import('@/components/MarzipanoViewer'), {
   loading: () => <div className="h-[500px] w-full flex items-center justify-center bg-gray-light text-gray-text rounded-lg">Loading 3D Tour...</div>,
 });
 
-interface User { _id: string; name: string; avatar?: string; }
-interface Room { _id: string; type?: string; price: number; inclusions: string[]; isAvailable: boolean; }
+import type { Listing } from '@/lib/types';
+
+interface User { _id: string; name: string; avatar?: string; email?: string; }
 interface Review { _id: string; rating: number; comment: string; userId: User; createdAt: string; }
-interface LocalListing {
-  _id: string; name: string; address: string;
-  location?: { type: string; coordinates: [number, number] };
-  description?: string; priceMin: number; priceMax: number;
-  totalRooms: number; availableRooms: number;
-  amenities: string[]; rules: string[]; photos: string[];
-  ownerId: User; rooms: Room[]; reviews: Review[];
-}
 
 const PAGE_NAV = ['Pricing', 'About', 'Amenities', 'Fees & Policies', 'Location', 'Reviews'];
+
+/** Return a valid photo URL or a placeholder */
+const safePhoto = (url?: any, fallback = 'https://placehold.co/800x500.png') =>
+  typeof url === 'string' && url.startsWith('http') ? url : fallback;
 
 function ListingDetailContent() {
   const params = useParams();
   const listingId = params.id as string;
   const { user } = useAuth();
   const { toast } = useToast();
-  const [listing, setListing] = useState<LocalListing | null>(null);
+  const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [favorited, setFavorited] = useState(false);
   const [activeSection, setActiveSection] = useState('Pricing');
@@ -56,6 +53,10 @@ function ListingDetailContent() {
       setListing(data);
     }).catch(console.error).finally(() => setLoading(false));
   }, [listingId]);
+
+  // Move safePhoto here to ensure it's available
+  const safePhotoUrl = (url?: any, fallback = 'https://placehold.co/800x500.png') =>
+    typeof url === 'string' && url.startsWith('http') ? url : fallback;
 
   if (loading) return (
     <div className="max-w-[1400px] mx-auto px-5 py-10 animate-pulse space-y-4">
@@ -71,18 +72,37 @@ function ListingDetailContent() {
     </div>
   );
 
-  const avgRating = listing.reviews.length > 0
-    ? listing.reviews.reduce((a, r) => a + r.rating, 0) / listing.reviews.length
+  const reviews = listing.reviews || [];
+  const rooms = listing.rooms || [];
+  const photos = listing.photos || [];
+
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length
     : 0;
 
   const ratingsCount: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  listing.reviews.forEach(r => { ratingsCount[Math.round(r.rating)] = (ratingsCount[Math.round(r.rating)] || 0) + 1; });
+  reviews.forEach(r => { ratingsCount[Math.round(r.rating)] = (ratingsCount[Math.round(r.rating)] || 0) + 1; });
 
   const handleReviewSubmit = async () => {
     if (!user || rating === 0) return;
     try {
-      const newReview = await api.post<Review>(`/reviews/${listingId}`, { rating, comment, userId: user.id });
-      setListing(prev => prev ? { ...prev, reviews: [{ ...newReview, userId: { _id: user.id, name: user.name || 'User' } }, ...prev.reviews] } : null);
+      const resp = await api.post<any>(`/reviews/${listingId}`, { rating, comment, userId: user.id });
+      const newReview: any = {
+        review_id: resp.id || resp._id || Date.now().toString(),
+        user_id: user.id,
+        listing_id: listingId,
+        rating,
+        comment,
+        created_at: new Date().toISOString(),
+        user: { name: user.name || 'User', avatar: '' }
+      };
+      setListing(prev => {
+        if (!prev) return null;
+        return { 
+          ...prev, 
+          reviews: [newReview, ...(prev.reviews || [])] 
+        };
+      });
       setRating(0); setComment('');
       toast({ title: 'Review submitted!' });
     } catch {
@@ -132,26 +152,33 @@ function ListingDetailContent() {
           {/* Media tags overlay */}
           <div className="absolute bottom-4 left-4 z-10 flex gap-2">
             <span className="bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 cursor-pointer">
-              <Camera className="h-3.5 w-3.5" /> {listing.photos.length} Photos
+              <Camera className="h-3.5 w-3.5" /> {(listing.photos || []).length} Photos
             </span>
-            <span className="bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 cursor-pointer">
-              <Video className="h-3.5 w-3.5" /> Video
-            </span>
+            {listing.video && (
+              <a href={listing.video} target="_blank" className="bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 cursor-pointer">
+                <Video className="h-3.5 w-3.5" /> Video
+              </a>
+            )}
+            {listing.virtualTour360 && (
+              <span className="bg-primary-green text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 cursor-pointer shadow-lg animate-pulse" onClick={() => scrollTo('views')}>
+                <Maximize2 className="h-3.5 w-3.5" /> 360° Virtual Tour
+              </span>
+            )}
           </div>
 
           {/* Photo grid */}
           <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden h-[400px]">
             <div className="col-span-2 relative">
               <Image
-                src={listing.photos[0] || 'https://placehold.co/800x500.png'}
-                alt={listing.name} fill className="object-cover"
+                src={safePhotoUrl(photos[0], 'https://placehold.co/800x500.png')}
+                alt={listing.listingName || 'Listing Image'} fill className="object-cover"
               />
             </div>
             <div className="grid grid-rows-2 gap-2">
               {[1, 2].map(i => (
                 <div key={i} className="relative overflow-hidden">
                   <Image
-                    src={listing.photos[i] || 'https://placehold.co/400x250.png'}
+                    src={safePhotoUrl(photos[i], 'https://placehold.co/400x250.png')}
                     alt={`View ${i + 1}`} fill className="object-cover"
                   />
                 </div>
@@ -190,13 +217,13 @@ function ListingDetailContent() {
             {/* Property Header Info */}
             <div>
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-3xl font-bold text-text-dark">{listing.name}</h1>
-                {listing.reviews.length > 0 && (
+                <h1 className="text-3xl font-bold text-text-dark">{listing.listingName || listing.name}</h1>
+                {reviews.length > 0 && (
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {[1, 2, 3, 4, 5].map(s => (
                       <Star key={s} className={`h-5 w-5 ${s <= Math.round(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-border'}`} />
                     ))}
-                    <span className="text-sm text-gray-text ml-1">({listing.reviews.length} Reviews)</span>
+                    <span className="text-sm text-gray-text ml-1">({reviews.length} Reviews)</span>
                   </div>
                 )}
               </div>
@@ -205,13 +232,15 @@ function ListingDetailContent() {
               </p>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 p-4 bg-gray-light rounded-lg">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5 p-4 bg-gray-light rounded-lg">
                 {[
-                  { label: 'Monthly Rent', value: `₱${listing.priceMin.toLocaleString()} – ₱${listing.priceMax.toLocaleString()}` },
-                  { label: 'Available Rooms', value: `${listing.availableRooms} of ${listing.totalRooms}` },
+                  { label: 'Monthly Rent', value: `₱${listing.monthlyRent?.toLocaleString() || '---'}` },
+                  { label: 'Bedrooms', value: listing.bedrooms || '---' },
+                  { label: 'Bathrooms', value: listing.bathrooms || '---' },
+                  { label: 'Area', value: `${listing.squareFeet || '---'} sqft` },
                 ].map(stat => (
                   <div key={stat.label}>
-                    <span className="text-xs text-gray-text block">{stat.label}</span>
+                    <span className="text-xs text-gray-text block uppercase tracking-wider font-bold mb-1">{stat.label}</span>
                     <span className="text-lg font-bold text-text-dark">{stat.value}</span>
                   </div>
                 ))}
@@ -220,20 +249,20 @@ function ListingDetailContent() {
 
             {/* Pricing & Floor Plans */}
             <section id="pricing">
-              <h2 className="text-2xl font-bold text-text-dark mb-5">Pricing & Floor Plans</h2>
+              <h2 className="text-2xl font-bold text-text-dark mb-5">Pricing & Unit Details</h2>
               <div className="space-y-3">
-                {listing.rooms.length > 0 ? listing.rooms.map((room, i) => (
-                  <div key={room._id} className="flex items-center justify-between p-4 border border-gray-border rounded-lg hover:shadow-[0_1px_3px_rgba(0,0,0,0.12)] transition-shadow">
+                {rooms.length > 0 ? rooms.map((room, i) => (
+                  <div key={room.room_id || i} className="flex items-center justify-between p-4 border border-gray-border rounded-lg hover:shadow-[0_1px_3px_rgba(0,0,0,0.12)] transition-shadow">
                     <div>
                       <h3 className="font-semibold text-text-dark">{room.type || `Room ${i + 1}`}</h3>
-                      <p className="text-sm text-gray-text">{room.inclusions.join(' · ')}</p>
+                      <p className="text-sm text-gray-text">{(room.inclusions || []).join(' · ')}</p>
                       <p className="text-lg font-bold text-primary-green mt-1">₱{room.price.toLocaleString()}/mo</p>
                     </div>
                     <div className="text-right">
-                      <span className={`text-sm font-medium px-3 py-1 rounded-full ${room.isAvailable ?? (room as any).is_available ? 'bg-green-50 text-primary-green' : 'bg-red-50 text-red-alert'}`}>
-                        {room.isAvailable ?? (room as any).is_available ? 'Available Now' : 'Occupied'}
+                      <span className={`text-sm font-medium px-3 py-1 rounded-full ${room.is_available ? 'bg-green-50 text-primary-green' : 'bg-red-50 text-red-alert'}`}>
+                        {room.is_available ? 'Available Now' : 'Occupied'}
                       </span>
-                      {(room.isAvailable ?? (room as any).is_available) && (
+                      {room.is_available && (
                         <button className="block mt-2 text-sm font-medium px-4 py-1.5 border border-gray-border rounded hover:bg-gray-light transition-colors">
                           Apply Now
                         </button>
@@ -241,93 +270,137 @@ function ListingDetailContent() {
                     </div>
                   </div>
                 )) : (
-                  <p className="text-gray-text">Contact the owner for pricing details.</p>
+                  <div className="p-4 border border-gray-border rounded-lg bg-gray-light/10">
+                    <p className="text-sm font-medium text-text-dark">Primary Listing Price: <span className="text-primary-green font-bold text-lg ml-2">₱{listing.monthlyRent?.toLocaleString()}</span></p>
+                    <p className="text-xs text-gray-text mt-1">Contact owner for specific room availability.</p>
+                  </div>
                 )}
               </div>
             </section>
 
             {/* About */}
             <section id="about">
-              <h2 className="text-2xl font-bold text-text-dark mb-4">About {listing.name}</h2>
-              <p className="text-text-dark leading-relaxed">{listing.description || 'No description provided.'}</p>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-text-dark">About {listing.listingName}</h2>
+                <span className="px-3 py-1 bg-primary-green/10 text-primary-green font-bold rounded-lg text-sm">{listing.propertyType}</span>
+              </div>
+              <p className="text-text-dark leading-relaxed whitespace-pre-line">{listing.description || 'No description provided.'}</p>
 
-              {/* Property Highlights */}
-              {listing.rules.length > 0 && (
-                <>
-                  <h3 className="text-lg font-bold text-text-dark mt-6 mb-3">Property Highlights</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {listing.rules.map((rule, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm font-medium text-text-dark bg-gray-light px-3 py-2.5 rounded-lg">
-                        <span className="text-primary-green">✦</span> {rule}
-                      </div>
-                    ))}
+              {/* Property House Rules */}
+              <h3 className="text-lg font-bold text-text-dark mt-8 mb-4">House Rules</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { icon: '🕒', label: 'Curfew', value: listing.hasCurfew ? 'Yes' : 'No Curfew' },
+                  { icon: '👥', label: 'Visitors', value: listing.visitorsAllowed ? 'Allowed' : 'No Visitors' },
+                  { icon: '🚭', label: 'Smoking', value: listing.smokingAllowed ? 'Allowed' : 'Strictly No Smoking' },
+                  { icon: '🍳', label: 'Cooking', value: listing.cookingAllowed ? 'Allowed' : 'No Cooking' },
+                  { icon: '🤫', label: 'Quiet Hours', value: listing.quietHours || 'None' },
+                ].map((rule, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 border border-gray-border rounded-lg bg-gray-light/20">
+                    <span className="text-sm font-semibold text-gray-text flex items-center gap-2">
+                       {rule.icon} {rule.label}
+                    </span>
+                    <span className={`text-sm font-bold ${rule.value.includes('No') ? 'text-red-alert' : 'text-primary-green'}`}>{rule.value}</span>
                   </div>
-                </>
-              )}
+                ))}
+              </div>
             </section>
 
             {/* Amenities */}
             <section id="amenities">
               <h2 className="text-2xl font-bold text-text-dark mb-5">Property Amenities</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Unit Features */}
                 <AmenityCard
-                  icon="🏠" title="Unit Features"
-                  items={listing.amenities.slice(0, Math.ceil(listing.amenities.length / 2))}
+                  icon="🏠" title="Core Features"
+                  items={[
+                    listing.airConditioning && 'Air Conditioning',
+                    listing.wifi && 'High Speed WiFi',
+                    listing.washer && 'Washer',
+                    listing.dryer && 'Dryer',
+                    listing.utilitiesIncluded && 'Utilities Included',
+                    listing.kitchen && 'Shared/Private Kitchen',
+                  ].filter(Boolean) as string[]}
                 />
-                {/* Community (remaining) */}
                 <AmenityCard
-                  icon="🏢" title="Community Amenities"
-                  items={listing.amenities.slice(Math.ceil(listing.amenities.length / 2))}
+                  icon="🏢" title="Facilities"
+                  items={[
+                    listing.laundryFacilities && 'Laundry Facilities',
+                    listing.dishwasher && 'Dishwasher',
+                    listing.parkingType !== 'None' && `Parking (${listing.parkingType})`,
+                    listing.appliancesIncluded && 'Kitchen Appliances Included',
+                  ].filter(Boolean) as string[]}
                 />
               </div>
             </section>
 
             {/* 3D Virtual Tour */}
             <section id="views">
-              <h2 className="text-2xl font-bold text-text-dark mb-5">3D Virtual Tour</h2>
-              <MarzipanoViewer 
-                scenes={listing.rooms.filter(r => (r as any).model_3d_url).length > 0 ? listing.rooms.filter(r => (r as any).model_3d_url).map((r, i) => ({
-                    id: r._id,
-                    name: r.type || `Room ${i + 1}`,
-                    imageUrl: (r as any).model_3d_url,
-                    hotspots: []
-                })) : [
-                  {
-                    id: 'living-room',
-                    name: 'Living Room',
-                    imageUrl: 'https://www.marzipano.net/media/equirect/angra.jpg',
-                    hotspots: [{ pitch: 0.1, yaw: -0.4, label: 'Kitchen', sceneId: 'kitchen' }]
-                  }
-                ]} 
-              />
+              <h2 className="text-2xl font-bold text-text-dark mb-5">Virtual Tours & Views</h2>
+              {listing.virtualTour360 || rooms.some(r => r.model_3d_url) ? (
+                <MarzipanoViewer 
+                  scenes={rooms.filter(r => r.model_3d_url).length > 0 ? rooms.filter(r => r.model_3d_url).map((r, i) => ({
+                      id: String(r.room_id || i),
+                      name: r.type || `Room ${i + 1}`,
+                      imageUrl: r.model_3d_url!,
+                      hotspots: []
+                  })) : [
+                    {
+                      id: 'main-tour',
+                      name: 'Main Property Tour',
+                      imageUrl: listing.virtualTour360 || 'https://www.marzipano.net/media/equirect/angra.jpg',
+                      hotspots: []
+                    }
+                  ]} 
+                />
+              ) : (
+                <div className="p-10 border-2 border-dashed border-gray-border rounded-lg text-center bg-gray-light/5">
+                  <Maximize2 className="h-10 w-10 text-gray-border mx-auto mb-3" />
+                  <p className="text-gray-text font-medium">No 3D virtual tour available for this listing.</p>
+                </div>
+              )}
             </section>
 
             {/* Fees & Policies */}
             <section id="fees-policies">
               <h2 className="text-2xl font-bold text-text-dark mb-5">Fees and Policies</h2>
-              <div className="border border-gray-border rounded-lg p-5 space-y-3">
-                {[
-                  { label: 'Security Deposit', value: '1 Month\'s Rent' },
-                  { label: 'Advance Payment', value: '1 Month\'s Rent' },
-                  { label: 'Application Review', value: '3–5 Business Days' },
-                ].map(row => (
-                  <div key={row.label} className="flex justify-between py-2 border-b border-gray-border last:border-0">
-                    <span className="text-gray-text">{row.label}</span>
-                    <span className="font-medium text-text-dark">{row.value}</span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="border border-gray-border rounded-lg p-5 space-y-3">
+                  <h4 className="font-bold text-text-dark border-b pb-2 mb-2">Financials</h4>
+                  {[
+                    { label: 'Security Deposit', value: `₱${listing.securityDeposit?.toLocaleString() || '0'}` },
+                    { label: 'Advance Payment', value: `${listing.advancePayment || '0'} Month(s)` },
+                    { label: 'Application Fee', value: `₱${listing.applicationReviewFee?.toLocaleString() || '0'}` },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between py-2 border-b border-gray-border last:border-0">
+                      <span className="text-gray-text text-sm">{row.label}</span>
+                      <span className="font-bold text-text-dark"> {row.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border border-gray-border rounded-lg p-5 space-y-3">
+                  <h4 className="font-bold text-text-dark border-b pb-2 mb-2">Policies</h4>
+                  {[
+                    { label: 'Pet Policy', value: listing.petPolicy || 'No Pets' },
+                    { label: 'Specialty Type', value: listing.specialtyProperty || 'None' },
+                    { label: 'Available From', value: listing.moveInDate ? new Date(listing.moveInDate).toLocaleDateString() : 'Immediate' },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between py-2 border-b border-gray-border last:border-0">
+                      <span className="text-gray-text text-sm">{row.label}</span>
+                      <span className="font-bold text-primary-green"> {row.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
 
             {/* Location */}
             <section id="location">
               <h2 className="text-2xl font-bold text-text-dark mb-5">Neighborhood & Location</h2>
-              {listing.location ? (
+              {listing.lat && listing.lng ? (
                 <Map
-                  center={[listing.location.coordinates[1], listing.location.coordinates[0]]}
+                  center={[listing.lat, listing.lng]}
                   zoom={15}
-                  markers={[{ position: [listing.location.coordinates[1], listing.location.coordinates[0]], title: listing.name }]}
+                  markers={[{ position: [listing.lat, listing.lng], title: listing.listingName || listing.name || 'Property' }]}
                   className="h-[280px] w-full rounded-lg mb-5"
                 />
               ) : (
@@ -338,16 +411,17 @@ function ListingDetailContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { icon: '🎓', title: 'Schools & Universities', items: ['See map above for nearby recommendations.'] },
-                  { icon: '🚌', title: 'Transportation', items: (listing as any).transportation && (listing as any).transportation.length > 0 ? (listing as any).transportation : ['Contact owner for transport options'] },
-                  { icon: '🏪', title: 'Points of Interest', items: ['See map above for nearby POIs.'] },
-                  { icon: '📊', title: 'Avg Prices in Area', items: [`Studio: ₱${listing.priceMin.toLocaleString()}/mo`, `Room: ₱${listing.priceMax.toLocaleString()}/mo`] },
+                  { icon: '🎓', title: 'Nearby Landmarks', items: listing.neighborhoodNear && listing.neighborhoodNear.length > 0 ? listing.neighborhoodNear : ['Walking distance to local schools.'] },
+                  { icon: '🚌', title: 'Transportation', items: listing.transportationOptions && listing.transportationOptions.length > 0 ? listing.transportationOptions : ['Accessible via Jeepney and Tricycle.'] },
+                  { icon: '🏪', title: 'Neighborhood', items: ['Friendly and safe environment.'] },
+                  { icon: '📊', title: 'Area Context', items: [`Type: ${listing.propertyType}`, `Location: Cabanatuan City`] },
                 ].map(info => (
-                  <div key={info.title}>
-                    <h3 className="font-semibold text-text-dark mb-2">{info.icon} {info.title}</h3>
+                  <div key={info.title} className="p-4 bg-gray-light/10 border border-gray-border rounded-lg">
+                    <h3 className="font-semibold text-text-dark mb-3 underline decoration-primary-green/30 underline-offset-4">{info.icon} {info.title}</h3>
                     <ul className="space-y-2">
                       {info.items.map((item: string, i: number) => (
-                        <li key={i} className="flex justify-between text-sm text-gray-text border-b border-gray-border pb-1.5">
+                        <li key={i} className="flex items-center gap-2 text-sm text-gray-text">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-green/50" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -360,7 +434,7 @@ function ListingDetailContent() {
             {/* Reviews */}
             <section id="reviews">
               <h2 className="text-2xl font-bold text-text-dark mb-5">Ratings & Reviews</h2>
-              {listing.reviews.length > 0 ? (
+              {reviews.length > 0 ? (
                 <>
                   {/* Scorecard */}
                   <div className="flex gap-8 p-5 bg-gray-light rounded-lg mb-6">
@@ -371,12 +445,12 @@ function ListingDetailContent() {
                           <Star key={s} className={`h-4 w-4 ${s <= Math.round(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-border'}`} />
                         ))}
                       </div>
-                      <div className="text-xs text-gray-text">From {listing.reviews.length} Reviews</div>
+                      <div className="text-xs text-gray-text">From {reviews.length} Reviews</div>
                     </div>
                     <div className="flex-1 space-y-1.5">
                       {[5, 4, 3, 2, 1].map(star => {
                         const count = ratingsCount[star] || 0;
-                        const pct = listing.reviews.length > 0 ? (count / listing.reviews.length) * 100 : 0;
+                        const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
                         return (
                           <div key={star} className="flex items-center gap-2 text-xs">
                             <span className="w-4 text-right text-gray-text">{star}</span>
@@ -393,11 +467,11 @@ function ListingDetailContent() {
 
                   {/* Review list */}
                   <div className="space-y-4">
-                    {listing.reviews.map(review => (
-                      <div key={review._id} className="p-4 border border-gray-border rounded-lg">
+                    {reviews.map(review => (
+                      <div key={review._id || review.review_id} className="p-4 border border-gray-border rounded-lg">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <span className="font-semibold text-text-dark">{review.userId?.name}</span>
+                            <span className="font-semibold text-text-dark">{review.user?.name}</span>
                             <span className="ml-2 text-xs text-primary-green">✓ Verified</span>
                             <div className="flex mt-1">
                               {[1, 2, 3, 4, 5].map(s => (
@@ -405,7 +479,7 @@ function ListingDetailContent() {
                               ))}
                             </div>
                           </div>
-                          <span className="text-xs text-gray-text">{new Date(review.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-gray-text">{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Recently'}</span>
                         </div>
                         <p className="text-sm text-text-dark leading-relaxed">{review.comment}</p>
                       </div>
@@ -456,7 +530,7 @@ function ListingDetailContent() {
             <div className="sticky top-[140px] border border-gray-border rounded-lg overflow-hidden shadow-[0_4px_6px_rgba(0,0,0,0.1)]">
               {/* Contact Header */}
               <div className="p-5 border-b border-gray-border">
-                <h3 className="text-2xl font-bold text-text-dark">{listing.name}</h3>
+                <h3 className="text-2xl font-bold text-text-dark">{listing.listingName || listing.name}</h3>
                 <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-text">
                   <Phone className="h-4 w-4" /> Contact via form below
                 </div>
@@ -467,7 +541,7 @@ function ListingDetailContent() {
 
               {/* CTA Buttons */}
               <div className="p-4 flex gap-2.5 border-b border-gray-border">
-                <a href={`/inbox?to=${listing.ownerId?._id || ''}&subject=${encodeURIComponent('Interested in ' + listing.name)}`} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary-green hover:bg-primary-green-hover text-white font-medium rounded transition-colors text-sm">
+                <a href={`/inbox?to=${listing.ownerId}&listingId=${listing.id}&subject=${encodeURIComponent('Interested in ' + (listing.listingName || listing.name))}`} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary-green hover:bg-primary-green-hover text-white font-medium rounded transition-colors text-sm">
                   <Mail className="h-4 w-4" /> Message
                 </a>
                 <button className="flex-1 flex items-center justify-center gap-1.5 py-3 border border-primary-green text-primary-green font-medium rounded hover:bg-[rgba(33,141,61,0.05)] transition-colors text-sm">

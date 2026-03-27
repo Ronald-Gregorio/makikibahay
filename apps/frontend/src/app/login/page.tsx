@@ -43,8 +43,8 @@ export default function LoginPage() {
     // If admin login fails, proceed with the selected role (user or owner)
     // The backend current expects 'email', but we can treat the identifier as email for now.
     // If the backend is updated to support username, this will work too.
-    const success = await login(identifier, password, role);
-    if (success) {
+    const result = await login(identifier, password, role);
+    if (result && typeof result !== 'boolean' && result.success) {
       toast({ title: 'Login Successful', description: `Welcome back, ${role}!` });
       if (role === 'owner') {
         router.push('/owner/dashboard');
@@ -52,13 +52,18 @@ export default function LoginPage() {
         router.push('/');
       }
     } else {
-      // Try to get specific error from last fetch response
-      // The login function returns boolean, so we show a general message
-      // but the backend now returns specific messages
+      const errMsg = (result as any)?.message || 'Login failed. Please check your credentials and try again.';
+      const errField = (result as any)?.field || 'general';
+      
+      let mappedField = errField;
+      if (errField === 'email' || errField === 'username') {
+        mappedField = 'identifier';
+      }
+
       setErrors({
-        general: 'Login failed. Please check your credentials and try again.'
+        [mappedField]: errMsg
       });
-      toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid credentials. Please check your email/username, password, and selected role.' });
+      toast({ variant: 'destructive', title: 'Login Failed', description: errMsg });
     }
   };
 

@@ -1,0 +1,23 @@
+# Task: Initialize Website
+
+- [x] Check environment variables
+    - [x] Check `apps/backend/.env`
+    - [x] Check `apps/frontend/.env`
+- [x] Install dependencies
+- [ ] Start development server [x] (Failed: MongoDB not running)
+- [ ] Verify application is running [ ] (Blocked by MongoDB)
+- [ ] Notify user to start MongoDB
+- [ ] Create API Setup Guide [x]
+- [ ] Refactor APIs and Features
+    - [x] Update `docs/API_SETUP_GUIDE.md`
+    - [x] Remove Payment APIs (Backend & Frontend)
+    - [x] Remove Facebook Login (Backend & Frontend)
+    - [x] Replace Mapbox/Google Maps with OpenStreetMap + Leaflet
+    - [x] Clean up `.env` files
+    - [ ] Verify functionality (Blocked: MongoDB not running)
+- [x] Switch to MongoDB Atlas
+    - [x] Update Backend `.env` with Atlas URI placeholder
+- [x] Replace Google Analytics with Umami
+    - [x] Remove Google Analytics from Frontend
+    - [x] Add Umami Analytics script/component
+    - [x] Update Frontend `.env`

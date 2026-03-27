@@ -15,18 +15,7 @@ const Map = dynamic(() => import('@/components/Map'), {
 
 import { useToast } from '@/hooks/use-toast';
 
-interface Listing {
-  _id?: string;
-  id?: string;
-  name: string;
-  address: string;
-  priceMin?: number;
-  priceMax?: number;
-  photos?: string[];
-  availableRooms?: number;
-  amenities?: string[];
-  location?: { coordinates?: [number, number] };
-}
+import type { Listing } from '@/lib/types';
 
 interface FilterState {
   priceMin: number;
@@ -42,6 +31,7 @@ interface FilterState {
   sqFtMin: string;
   sqFtMax: string;
   rating: number;
+  has3DView: boolean;
 }
 
 const propertyTypes = [
@@ -109,6 +99,7 @@ const defaultFilters: FilterState = {
   sqFtMin: '',
   sqFtMax: '',
   rating: 0,
+  has3DView: false,
 };
 
 export default function BrowsePage() {
@@ -131,30 +122,47 @@ export default function BrowsePage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const params = new URLSearchParams();
-      if (filters.priceMin > 0) params.append('priceMin', filters.priceMin.toString());
-      if (filters.priceMax < 20000) params.append('priceMax', filters.priceMax.toString());
-      filters.propertyTypes.forEach(t => params.append('type', t));
-      filters.popularAmenities.forEach(a => params.append('amenities', a));
-      filters.communityAmenities.forEach(a => params.append('amenities', a));
-      filters.specialtyProperty.forEach(s => params.append('specialty', s));
-      filters.petPolicy.forEach(p => params.append('pets', p));
       
-      if (filters.beds !== 'Any') params.append('beds', filters.beds);
-      if (filters.baths !== 'Any') params.append('baths', filters.baths);
-      params.append('sort', sortOrder);
+      // Map filters to Unified Data Model query params
+      if (filters.priceMin > 0) params.append('priceMin', filters.priceMin.toString());
+      if (filters.priceMax < 20000) params.append('monthlyRentMax', filters.priceMax.toString());
+      
+      filters.propertyTypes.forEach(t => params.append('propertyType', t));
+      
+      // Handle boolean amenities
+      if (filters.popularAmenities.includes('AC')) params.append('airConditioning', 'true');
+      if (filters.popularAmenities.includes('wifi')) params.append('wifi', 'true');
+      if (filters.popularAmenities.includes('washer')) params.append('washer', 'true');
+      if (filters.popularAmenities.includes('dryer')) params.append('dryer', 'true');
+      if (filters.popularAmenities.includes('utilities-included')) params.append('utilitiesIncluded', 'true');
+      if (filters.popularAmenities.includes('parking')) params.append('parking', 'Outside');
+      if (filters.popularAmenities.includes('garage')) params.append('parkingType', 'Garage');
+      if (filters.popularAmenities.includes('laundry')) params.append('laundryFacilities', 'true');
+      if (filters.popularAmenities.includes('kitchen')) params.append('kitchen', 'true');
 
+      filters.specialtyProperty.forEach(s => params.append('specialtyProperty', s));
+      filters.petPolicy.forEach(p => params.append('petPolicy', p));
+      
+      if (filters.beds !== 'Any') params.append('bedrooms', filters.beds);
+      if (filters.baths !== 'Any') params.append('bathrooms', filters.baths);
+      if (filters.has3DView) params.append('hasEnhancedViewing', 'true');
+      
+      params.append('sort', sortOrder);
       params.append('limit', '20');
+
       const res = await fetch(`${apiUrl}/api/listings?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setListings(data.listings || data || []);
+        // Since backend might still return some legacy structure, normalize if needed
+        const rawListings = data.listings || data.data || data || [];
+        setListings(rawListings);
       }
     } catch (err) {
       console.error('Search error:', err);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, sortOrder]);
 
   useEffect(() => { 
     if (q) {
@@ -196,10 +204,10 @@ export default function BrowsePage() {
   };
 
   const mapMarkers = listings
-    .filter(l => l.location?.coordinates)
+    .filter(l => l.lat && l.lng)
     .map(l => ({
-      position: [l.location!.coordinates![1], l.location!.coordinates![0]] as [number, number],
-      title: l.name,
+      position: [l.lat, l.lng] as [number, number],
+      title: l.listingName || l.name || 'Property',
     }));
 
   return (
@@ -414,6 +422,16 @@ export default function BrowsePage() {
                 </div>
               </FilterSection>
 
+              {/* 3D View Filter */}
+              <FilterSection title="Enhanced Viewing">
+                 <CheckOption 
+                    id="has3DView" 
+                    label="Has 3D/360° View" 
+                    checked={filters.has3DView} 
+                    onChange={() => setFilters(p => ({ ...p, has3DView: !p.has3DView }))}
+                 />
+              </FilterSection>
+
               {/* Actions */}
               <div className="flex flex-col gap-2 pt-2">
                 <div className="flex gap-2">
@@ -523,7 +541,7 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
     toggleFavorite(id);
     toast({
       title: isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
-      description: `${listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
+      description: `${listing.listingName || listing.name} has been ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
     });
   };
 
@@ -550,25 +568,22 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
         <div className="flex items-start justify-between mb-3">
           <div>
             <Link href={`/listings/${id}`}>
-              <h3 className="text-[20px] font-bold text-text-dark hover:text-primary-green transition-colors">
-                {listing.name}
+              <h3 className="text-[20px] font-bold text-text-dark hover:text-primary-green transition-colors line-clamp-1">
+                {listing.listingName || listing.name}
               </h3>
             </Link>
-            <p className="text-sm text-gray-text mt-0.5">{listing.address}</p>
+            <p className="text-sm text-gray-text mt-0.5 line-clamp-1">{listing.fullAddress || listing.address}</p>
           </div>
         </div>
 
         {/* Price & Stats */}
         <div className="mb-3">
           <div className="text-[22px] font-bold text-primary-green">
-            ₱{(listing.priceMin || 0).toLocaleString()}
-            {listing.priceMax && listing.priceMax !== listing.priceMin
-              ? ` – ₱${listing.priceMax.toLocaleString()}`
-              : ''}
+            ₱{(listing.monthlyRent || listing.priceMin || 0).toLocaleString()}
           </div>
           <div className="flex items-center gap-1.5 text-sm font-medium text-text-dark mt-0.5">
             <BedDouble className="h-4 w-4" />
-            <span>{listing.availableRooms ?? 0} rooms available</span>
+            <span>{listing.availableRooms ?? 0} {listing.propertyType === 'Bed Spacer' ? 'beds' : 'rooms'} available</span>
           </div>
         </div>
 
@@ -586,7 +601,7 @@ function BrowseCard({ listing, id }: { listing: Listing; id: string }) {
         {/* Actions */}
         <div className="mt-auto flex gap-2.5">
           <a
-            href={`/inbox?to=${(listing as any).ownerId?._id || (listing as any).ownerId || ''}&subject=${encodeURIComponent('Interested in ' + listing.name)}`}
+            href={`/inbox?to=${listing.ownerId}&subject=${encodeURIComponent('Interested in ' + (listing.listingName || listing.name))}`}
             className="flex items-center justify-center gap-1.5 flex-1 py-2.5 border border-primary-green text-primary-green rounded font-bold text-sm hover:bg-[rgba(33,141,61,0.05)] transition-colors"
           >
             <Mail className="h-4 w-4" /> Email

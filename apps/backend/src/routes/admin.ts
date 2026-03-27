@@ -9,6 +9,7 @@ import {
     getAdminListings,
     bulkUpdateUsersStatus,
     bulkDeleteUsers,
+    bulkNotifyUsers,
     bulkUpdateListingsStatus,
     bulkDeleteListings,
     getAdminListingById,
@@ -22,6 +23,7 @@ router.get('/metrics', protect, admin, getAdminMetrics);
 router.get('/users', protect, admin, getAdminUsers);
 router.patch('/users/bulk-status', protect, admin, bulkUpdateUsersStatus);
 router.delete('/users/bulk', protect, admin, bulkDeleteUsers);
+router.post('/users/bulk-notify', protect, admin, bulkNotifyUsers);
 router.get('/listings', protect, admin, getAdminListings);
 router.patch('/listings/bulk-status', protect, admin, bulkUpdateListingsStatus);
 router.delete('/listings/bulk', protect, admin, bulkDeleteListings);

@@ -1,0 +1,29 @@
+issues makikibahay deployed 2
+
+the default map coordinate changed
+favourites not working
+the listing edit on the owner dashboard is still showing error 404
+profiles should be different for owner and for user
+the notification still shows a placeholder notification. remove this
+also add a action for admin to send users a batch notification in the user management page
+for the admin there is still missing bulk actions
+also in the user management there is no edit action button
+in the listing edit on the admin dashboard update it to better reflect the filters
+for metrics use this as a guide for the dashboard, this is taken from umami dashboard
+
+
+
+when sending email this error shows up
+Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+2content.js:148 [Redirect Blocker] Stopping to prevent same tab redirects
+:5000/api/auth/login:1 Failed to load resource: the server responded with a status of 401
+(Unauthorized)Understand this error
+:5000/api/auth/login:1 Failed to load resource: the server responded with a status of 401
+(Unauthorized)Understand this error
+4521-431153657b1f5058.js:1 Warning: Missing Description or aria-describedby=
+{undefined} for {DialogContent}.
+(anonymous) @ 4521-431153657b1f5058.js:1Understand this warning
+:5000/api/messages:1 Failed to load resource: the server responded with a status of 500
+(Internal Server Error)
+user, owner and admin user journey is confusing, thus leading to higher bounce rates,
+investigate the userflow and the friction point and improve this

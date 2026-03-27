@@ -17,7 +17,7 @@ const MessageSchema: Schema = new Schema({
     roomId: { type: String, required: true, index: true },
     senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     receiverId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    listingId: { type: Schema.Types.ObjectId, ref: 'Listing', required: true },
+    listingId: { type: Schema.Types.ObjectId, ref: 'Listing', required: false },
     content: { type: String, required: true, maxlength: 1000 },
     isRead: { type: Boolean, default: false },
     isStarred: { type: Boolean, default: false },

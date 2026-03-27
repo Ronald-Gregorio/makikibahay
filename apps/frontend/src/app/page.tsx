@@ -116,11 +116,10 @@ export default function HomePage() {
                 <FeaturedCard
                   key={listingId}
                   id={listingId}
-                  name={listing.name}
-                  address={listing.address}
-                  priceMin={listing.priceMin || 0}
-                  priceMax={listing.priceMax || 0}
-                  rooms={listing.totalRooms || 0}
+                  name={listing.listingName || listing.name}
+                  address={listing.fullAddress || listing.address}
+                  price={listing.monthlyRent || listing.priceMin || 0}
+                  rooms={listing.availableRooms || listing.totalRooms || 0}
                   photo={listing.photos?.[0]}
                 />
               );
@@ -169,10 +168,10 @@ export default function HomePage() {
 
 /** Featured listing card */
 function FeaturedCard({
-  id, name, address, priceMin, priceMax, rooms, photo,
+  id, name, address, price, rooms, photo,
 }: {
   id: string; name: string; address: string;
-  priceMin: number; priceMax: number; rooms: number; photo?: string;
+  price: number; rooms: number; photo?: string;
 }) {
   return (
     <article className="border border-gray-border rounded-lg overflow-hidden flex flex-col hover:shadow-[0_10px_15px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 transition-all duration-200">
@@ -190,8 +189,7 @@ function FeaturedCard({
       <div className="p-5 flex flex-col flex-1">
         {/* Price */}
         <div className="text-[22px] font-bold text-text-dark mb-1">
-          ₱{priceMin.toLocaleString()}
-          {priceMax && priceMax !== priceMin ? ` – ₱${priceMax.toLocaleString()}` : ''}
+          ₱{price.toLocaleString()}
         </div>
 
         {/* Rooms */}

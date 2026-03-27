@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/index";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/index";
-import { BarChart, LineChart, PieChart, Pie, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, BarChart, LineChart, PieChart, Pie, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Users, Home, DollarSign, Activity, Download, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/index";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/index";
@@ -204,103 +204,110 @@ export default function AdminMetricsPage() {
             </header>
 
             {loading ? (
-                <div className="container mx-auto px-4 py-12 text-center">Loading metrics...</div>
+                <div className="container mx-auto px-4 py-12 text-center h-[50vh] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
             ) : (
-                <>
-                    {/* Stat Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{totalUsers}</div>
-                                <p className="text-xs text-muted-foreground">+2 since last month</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-                                <Home className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{totalListings}</div>
-                                <p className="text-xs text-muted-foreground">+1 since last month</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">₱{Number(totalRevenue || 0).toLocaleString()}</div>
-                                <p className="text-xs text-muted-foreground">Total platform earnings</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-                                <Activity className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{activeUsers}</div>
-                                <p className="text-xs text-muted-foreground">Currently online</p>
-                            </CardContent>
-                        </Card>
+                <div className="space-y-8">
+                    {/* Umami-style Minimal Stat Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                        <div className="flex flex-col space-y-1 p-2">
+                            <span className="text-3xl font-bold tracking-tight">{totalUsers.toLocaleString()}</span>
+                            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Users</span>
+                        </div>
+                        <div className="flex flex-col space-y-1 p-2">
+                            <span className="text-3xl font-bold tracking-tight">{totalListings.toLocaleString()}</span>
+                            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Listings</span>
+                        </div>
+                        <div className="flex flex-col space-y-1 p-2">
+                            <span className="text-3xl font-bold tracking-tight">{activeUsers.toLocaleString()}</span>
+                            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Active Visitors</span>
+                        </div>
+                        <div className="flex flex-col space-y-1 p-2">
+                            <span className="text-3xl font-bold tracking-tight text-primary-green">₱{(Number(totalRevenue) || 0).toLocaleString()}</span>
+                            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Revenue</span>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>User Growth</CardTitle>
-                                <CardDescription>New users over the last 6 months.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                                    <LineChart data={userGrowthData} accessibilityLayer>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                                        <YAxis />
-                                        <Tooltip
-                                            cursor={false}
-                                            content={<ChartTooltipContent indicator="dot" />}
-                                        />
-                                        <Line dataKey="users" type="monotone" stroke="var(--color-users)" strokeWidth={2} dot={false} />
-                                    </LineChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
+                    {/* Main Umami Chart */}
+                    <Card className="border-none shadow-none bg-transparent">
+                        <CardHeader className="px-0 pt-0 pb-4">
+                            <CardTitle className="text-lg font-medium">Platform Growth</CardTitle>
+                        </CardHeader>
+                        <CardContent className="px-0 h-[400px]">
+                            <ChartContainer config={chartConfig} className="h-full w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={userGrowthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="var(--color-users)" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="var(--color-users)" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
+                                        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} fontSize={12} opacity={0.5} />
+                                        <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={12} opacity={0.5} />
+                                        <Tooltip content={<ChartTooltipContent />} />
+                                        <Area type="monotone" dataKey="users" stroke="var(--color-users)" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Listing Status</CardTitle>
-                                <CardDescription>The current status of all properties.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex items-center justify-center">
-                                <ChartContainer
-                                    config={chartConfig}
-                                    className="mx-auto aspect-square h-[250px]"
-                                >
-                                    <PieChart>
-                                        <Tooltip
-                                            cursor={false}
-                                            content={<ChartTooltipContent hideLabel />}
-                                        />
-                                        <Pie
-                                            data={listingStatusData}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            innerRadius={60}
-                                            strokeWidth={5}
-                                        />
-                                    </PieChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
+                    {/* Bottom Categorical Lists */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 pt-4">
+                        {/* Mock Pages / Listings List */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4 pb-2 border-b">
+                                <h3 className="font-semibold text-sm tracking-wide uppercase">Top Viewed Listings</h3>
+                                <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">Views</span>
+                            </div>
+                            <div className="space-y-4">
+                                {[
+                                    { name: "/listings/manila-luxury", views: 1245, percentage: 85 },
+                                    { name: "/listings/qc-studio", views: 982, percentage: 65 },
+                                    { name: "/listings/bgc-solo-room", views: 754, percentage: 45 },
+                                    { name: "/listings/makati-condo", views: 512, percentage: 30 },
+                                    { name: "/listings/cabanatuan-house", views: 341, percentage: 20 },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex flex-col relative group">
+                                        <div className="absolute top-0 left-0 h-full bg-primary/10 rounded-sm -z-10 transition-all duration-500 ease-out" style={{ width: `${item.percentage}%` }}></div>
+                                        <div className="flex items-center justify-between px-2 py-1.5">
+                                            <span className="text-sm truncate w-3/4">{item.name}</span>
+                                            <span className="text-sm tabular-nums text-muted-foreground">{item.views.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Mock Referrers / Sources List */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4 pb-2 border-b">
+                                <h3 className="font-semibold text-sm tracking-wide uppercase">Top Referrers</h3>
+                                <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">Visitors</span>
+                            </div>
+                            <div className="space-y-4">
+                                {[
+                                    { name: "Google", views: 3421, percentage: 90 },
+                                    { name: "Direct", views: 1845, percentage: 55 },
+                                    { name: "Facebook", views: 1205, percentage: 40 },
+                                    { name: "Twitter", views: 854, percentage: 25 },
+                                    { name: "makikibahay.com", views: 231, percentage: 10 },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex flex-col relative group">
+                                        <div className="absolute top-0 left-0 h-full bg-primary/10 rounded-sm -z-10 transition-all duration-500 ease-out" style={{ width: `${item.percentage}%` }}></div>
+                                        <div className="flex items-center justify-between px-2 py-1.5">
+                                            <span className="text-sm truncate w-3/4">{item.name}</span>
+                                            <span className="text-sm tabular-nums text-muted-foreground">{item.views.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                </>
+                </div>
             )}
         </>
     );

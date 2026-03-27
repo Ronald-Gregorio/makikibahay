@@ -10,7 +10,7 @@ interface LocationPickerMapProps {
     onLocationSelect: (lat: number, lng: number, address?: string) => void;
 }
 
-export default function LocationPickerMap({ initialCenter = [14.5995, 120.9842], initialZoom = 13, onLocationSelect }: LocationPickerMapProps) {
+export default function LocationPickerMap({ initialCenter = [15.4865, 120.9734], initialZoom = 13, onLocationSelect }: LocationPickerMapProps) {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<L.Map | null>(null);
     const markerInstance = useRef<L.Marker | null>(null);

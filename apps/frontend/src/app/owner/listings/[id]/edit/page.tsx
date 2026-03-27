@@ -15,11 +15,10 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
   Combobox
 } from '@/components/ui/index';
-import { PlusCircle, Trash2, Upload, Box } from 'lucide-react';
+import { PlusCircle, Trash2, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { listingService } from '@/services/api/listings';
-import { walkthroughService, type WalkthroughConfig } from '@/services/api/walkthroughs';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
 
@@ -28,60 +27,79 @@ const LocationPickerMap = dynamic(() => import('@/components/LocationPickerMap')
   loading: () => <div className="h-[400px] w-full bg-slate-100 animate-pulse rounded-lg" />
 });
 
-const WalkthroughBuilder = dynamic(() => import('@/components/WalkthroughBuilder'), {
-  ssr: false,
-  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-lg" />
-});
-
 const roomSchema = z.object({
   type: z.string().min(1, 'Room type is required'),
   price: z.coerce.number().min(1, 'Price is required'),
   inclusions: z.string().min(1, 'Inclusions are required'),
-  is_available: z.boolean().default(true),
-  model_3d_url: z.string().optional(),
+  isAvailable: z.boolean().default(true),
+  dimensions: z.string().optional(),
+  maxOccupancy: z.coerce.number().optional(),
+  isPrivateToilet: z.boolean().default(false),
+  model3dUrl: z.string().optional(),
 });
 
 const listingFormSchema = z.object({
-  name: z.string().min(3, 'Listing name must be at least 3 characters.'),
-  address: z.string().min(10, 'Please enter a full address.'),
-  type: z.string().min(1, 'Property type is required'),
+  // 1. Core Property Info
+  listingName: z.string().min(3, 'Listing name must be at least 3 characters.'),
+  propertyType: z.enum(['Apartment', 'Condo', 'Studio Type', 'Bed Spacer', 'Boarding House', 'Up and Down']),
+  description: z.string().min(10, 'Description is required.'),
+  
+  // 2. Media & Virtual Viewing
+  video: z.string().url('Invalid video URL').or(z.literal('')).optional(),
+  virtualTour360: z.string().url('Invalid 3D tour URL').or(z.literal('')).optional(),
+  floorPlans: z.array(z.string()).optional(),
+
+  // 3. Location & Neighborhood
+  fullAddress: z.string().min(10, 'Please enter a full address.'),
   location: z.object({
     lat: z.number(),
     lng: z.number()
   }).optional(),
-  rules: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one rule.",
-  }),
-  amenities: z.array(z.string()).optional(),
-  rooms: z.array(roomSchema).min(1, 'Please add at least one room type.'),
+  neighborhoodNear: z.array(z.string()).optional(),
+  transportationOptions: z.array(z.string()).optional(),
+
+  // 4. Room, Unit Details & Pricing
+  roomType: z.string().min(1, 'Room type is required'),
+  availableRooms: z.coerce.number().min(0),
+  bedrooms: z.enum(['Studio', '1', '2', '3', '4+']),
+  bathrooms: z.enum(['1', '2', '3+']),
+  squareFeet: z.coerce.number().min(1),
+  monthlyRent: z.coerce.number().min(1),
+  moveInDate: z.string().min(1, 'Move in date is required'),
+
+  // 5. Fees & Policies
+  securityDeposit: z.coerce.number().default(0),
+  advancePayment: z.coerce.number().default(0),
+  applicationReviewFee: z.coerce.number().default(0),
+  specialtyProperty: z.enum(['Student Only', 'Worker Only', 'Income Restricted', 'Short-Term', 'None']),
+
+  // 6. Pet Policy
+  petPolicy: z.enum(['Cat Friendly', 'Dog Friendly', 'Any Pet Friendly', 'Small Dogs Only', 'No Pets']),
+
+  // 7. House Rules
+  hasCurfew: z.boolean().default(false),
+  visitorsAllowed: z.boolean().default(true),
+  smokingAllowed: z.boolean().default(false),
+  cookingAllowed: z.boolean().default(true),
+  quietHours: z.string().optional(),
+
+  // 8. Amenities
+  airConditioning: z.boolean().default(false),
+  wifi: z.boolean().default(false),
+  washer: z.boolean().default(false),
+  dryer: z.boolean().default(false),
+  utilitiesIncluded: z.boolean().default(false),
+  dishwasher: z.boolean().default(false),
+  parkingType: z.enum(['None', 'Outside', 'Garage']),
+  laundryFacilities: z.boolean().default(false),
+  kitchen: z.boolean().default(false),
+  appliancesIncluded: z.boolean().default(false),
+
+  // Additional rooms
+  rooms: z.array(roomSchema).optional(),
 });
 
 type ListingFormValues = z.infer<typeof listingFormSchema>;
-
-// These will be fetched dynamically from the settings API
-const defaultRulesOptions = ['No curfew', 'Visitors allowed until 10 PM', 'No smoking', 'No pets', 'Parking available', 'Quiet hours after 10 PM', 'Students only', 'Cooking not allowed'];
-
-const defaultPropertyTypeOptions = [
-  { value: 'Apartment', label: 'Apartment' },
-  { value: 'Condo', label: 'Condo' },
-  { value: 'Studio Type', label: 'Studio Type' },
-  { value: 'Bed Spacer', label: 'Bed Spacer' },
-  { value: 'Boarding House', label: 'Boarding House' },
-  { value: 'Up and Down', label: 'Up and Down' },
-];
-
-const defaultAmenityOptions = [
-  { value: 'Air Conditioning', label: 'Air Conditioning' },
-  { value: 'WiFi', label: 'WiFi' },
-  { value: 'Washer', label: 'Washer' },
-  { value: 'Dryer', label: 'Dryer' },
-  { value: 'Utilities Included', label: 'Utilities Included' },
-  { value: 'Parking', label: 'Parking' },
-  { value: 'Garage', label: 'Garage' },
-  { value: 'Laundry Facilities', label: 'Laundry Facilities' },
-  { value: 'Kitchen', label: 'Kitchen' },
-  { value: 'Appliances Included', label: 'Appliances Included' },
-];
 
 export default function EditListingPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -90,42 +108,51 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
   const [photos, setPhotos] = useState<string[]>([]);
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [propertyTypeOptions, setPropertyTypeOptions] = useState<{value: string, label: string}[]>(defaultPropertyTypeOptions);
-  const [amenityOptions, setAmenityOptions] = useState<{value: string, label: string}[]>(defaultAmenityOptions);
-  const [rulesOptions, setRulesOptions] = useState<string[]>(defaultRulesOptions);
-  const [existingWalkthrough, setExistingWalkthrough] = useState<WalkthroughConfig | null>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'photos' | 'tour'>('details');
-
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const settings = await api.get<any>('/settings');
-        if (settings.propertyTypes) {
-          setPropertyTypeOptions(settings.propertyTypes.map((t: string) => ({ value: t, label: t })));
-        }
-        if (settings.amenities) {
-          setAmenityOptions(settings.amenities.map((a: string) => ({ value: a, label: a })));
-        }
-        if (settings.houseRules) {
-          setRulesOptions(settings.houseRules);
-        }
-      } catch (err) {
-        console.error('Failed to fetch dynamic options:', err);
-      }
-    };
-    fetchOptions();
-  }, []);
+  const [propertyTypeOptions, setPropertyTypeOptions] = useState<{value: string, label: string}[]>([
+    { value: 'Apartment', label: 'Apartment' },
+    { value: 'Condo', label: 'Condo' },
+    { value: 'Studio Type', label: 'Studio Type' },
+    { value: 'Bed Spacer', label: 'Bed Spacer' },
+    { value: 'Boarding House', label: 'Boarding House' },
+    { value: 'Up and Down', label: 'Up and Down' },
+  ]);
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
     defaultValues: {
-      name: '',
-      address: '',
-      type: '',
-      rules: [],
-      amenities: [],
-      rooms: [{ type: '', price: 0, inclusions: '', is_available: true, model_3d_url: '' }],
+      listingName: '',
+      propertyType: 'Apartment',
+      description: '',
+      fullAddress: '',
+      location: { lat: 15.4865, lng: 120.9734 },
+      monthlyRent: 0,
+      availableRooms: 1,
+      bedrooms: '1',
+      bathrooms: '1',
+      squareFeet: 20,
+      moveInDate: new Date().toISOString().split('T')[0],
+      securityDeposit: 0,
+      advancePayment: 0,
+      applicationReviewFee: 0,
+      specialtyProperty: 'None',
+      petPolicy: 'No Pets',
+      hasCurfew: false,
+      visitorsAllowed: true,
+      smokingAllowed: false,
+      cookingAllowed: true,
+      airConditioning: false,
+      wifi: false,
+      washer: false,
+      dryer: false,
+      utilitiesIncluded: false,
+      dishwasher: false,
+      parkingType: 'None',
+      laundryFacilities: false,
+      kitchen: false,
+      appliancesIncluded: false,
+      rooms: [],
     },
   });
 
@@ -134,90 +161,102 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
     name: 'rooms',
   });
 
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchListing = async () => {
       try {
         const listing = await listingService.getById(params.id);
         if (listing) {
-          const defaultRooms = listing.rooms?.length ? listing.rooms.map((r: any) => ({
-              type: r.type,
-              price: r.price,
-              inclusions: Array.isArray(r.inclusions) ? r.inclusions.join(', ') : r.inclusions || '',
-              is_available: r.is_available ?? true,
-              model_3d_url: r.model_3d_url || ''
-          })) : [{ type: 'Solo Room', price: 0, inclusions: '', is_available: true, model_3d_url: '' }];
-
           form.reset({
-            name: listing.name || '',
-            address: listing.address || '',
+            listingName: listing.listingName || listing.name || '',
+            propertyType: (listing.propertyType || (listing as any).type || 'Apartment') as any,
+            description: listing.description || '',
+            fullAddress: listing.fullAddress || listing.address || '',
             location: {
               lat: listing.lat || 15.4865,
               lng: listing.lng || 120.9734
             },
-            type: (listing as any).type || 'Entire Property',
-            rules: Array.isArray(listing.rules) ? listing.rules : [],
-            amenities: listing.amenities || [],
-            rooms: defaultRooms
+            video: listing.video || '',
+            virtualTour360: listing.virtualTour360 || '',
+            floorPlans: listing.floorPlans || [],
+            neighborhoodNear: listing.neighborhoodNear || [],
+            transportationOptions: listing.transportationOptions || [],
+            roomType: listing.roomType || 'Standard Room',
+            availableRooms: listing.availableRooms || 0,
+            bedrooms: (listing.bedrooms || '1') as any,
+            bathrooms: (listing.bathrooms || '1') as any,
+            squareFeet: listing.squareFeet || 0,
+            monthlyRent: listing.monthlyRent || listing.priceMin || 0,
+            moveInDate: listing.moveInDate ? new Date(listing.moveInDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            securityDeposit: listing.securityDeposit || 0,
+            advancePayment: listing.advancePayment || 0,
+            applicationReviewFee: listing.applicationReviewFee || 0,
+            specialtyProperty: (listing.specialtyProperty || 'None') as any,
+            petPolicy: (listing.petPolicy || 'No Pets') as any,
+            hasCurfew: listing.hasCurfew || false,
+            visitorsAllowed: listing.visitorsAllowed !== false,
+            smokingAllowed: listing.smokingAllowed || false,
+            cookingAllowed: listing.cookingAllowed !== false,
+            quietHours: listing.quietHours || '',
+            airConditioning: listing.airConditioning || false,
+            wifi: listing.wifi || false,
+            washer: listing.washer || false,
+            dryer: listing.dryer || false,
+            utilitiesIncluded: listing.utilitiesIncluded || false,
+            dishwasher: listing.dishwasher || false,
+            parkingType: (listing.parkingType || 'None') as any,
+            laundryFacilities: listing.laundryFacilities || false,
+            kitchen: listing.kitchen || false,
+            appliancesIncluded: listing.appliancesIncluded || false,
+            rooms: (listing.rooms || []).map((r: any) => ({
+              type: r.type,
+              price: r.price,
+              inclusions: Array.isArray(r.inclusions) ? r.inclusions.join(', ') : (r.inclusions || ''),
+              isAvailable: r.is_available ?? true,
+              model3dUrl: r.model_3d_url || '',
+              dimensions: r.size_sqm ? `${r.size_sqm} sqm` : '',
+            })),
           });
-          if (listing.photos) setPhotos(listing.photos.map((p: any) => p.url));
+          if (listing.photos) {
+             setPhotos(listing.photos.map((p: any) => typeof p === 'string' ? p : (p.url || p)));
+          }
         }
       } catch (err) {
-        toast({ title: 'Error', description: 'Failed to load listing details', variant: 'destructive' });
+        toast({ title: 'Error', description: 'Failed to load listing', variant: 'destructive' });
       } finally {
         setIsLoading(false);
       }
     };
-
-    const fetchWalkthrough = async () => {
-      const wt = await walkthroughService.getWalkthrough(params.id);
-      setExistingWalkthrough(wt);
-    };
-
-    if (params.id) {
-      fetchListing();
-      fetchWalkthrough();
-    }
+    fetchListing();
   }, [params.id, form, toast]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setIsPhotoUploading(true);
       const files = Array.from(e.target.files);
-
       try {
         const uploadPromises = files.map(async (file) => {
           const formData = new FormData();
           formData.append('image', file);
-
-          // Use the new postForm method in our api client
           const response = await api.postForm<{ url: string }>('/upload', formData);
           return response.url;
         });
-
         const uploadedUrls = await Promise.all(uploadPromises);
         setPhotos(prev => [...prev, ...uploadedUrls]);
         toast({ title: 'Upload Successful', description: `${files.length} photo(s) uploaded.` });
       } catch (err: any) {
-        console.error('Upload Error:', err);
-        toast({
-          variant: 'destructive',
-          title: 'Upload Failed',
-          description: err.message || 'Could not upload images to server.'
-        });
+        toast({ title: 'Upload Failed', variant: 'destructive', description: err.message });
       } finally {
         setIsPhotoUploading(false);
       }
     }
   };
 
-  const handleDeletePhoto = (indexToRemove: number) => {
-    setPhotos(photos.filter((_, i) => i !== indexToRemove));
-  }
+  const handleDeletePhoto = (idx: number) => {
+    setPhotos(photos.filter((_, i) => i !== idx));
+  };
 
   const handleGeocodeAddress = async () => {
-    const address = form.getValues('address');
+    const address = form.getValues('fullAddress');
     if (!address) return;
     setIsGeocoding(true);
     try {
@@ -226,464 +265,172 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
       if (data && data.length > 0) {
         const { lat, lon } = data[0];
         form.setValue('location', { lat: parseFloat(lat), lng: parseFloat(lon) });
-        toast({ title: 'Location Found', description: 'Map has been updated based on the address.' });
-      } else {
-        toast({ variant: 'destructive', title: 'Location Not Found', description: 'Could not find the address on the map. Try to be more specific.' });
+        toast({ title: 'Location Updated', description: 'Map updated.' });
       }
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Geocoding Failed', description: 'An error occurred while finding the address.' });
+    } catch (err) {
+      toast({ title: 'Geocoding Failed', variant: 'destructive' });
     } finally {
       setIsGeocoding(false);
     }
   };
 
   async function onSubmit(data: ListingFormValues) {
-    if (!user) {
-      toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to create a listing.' });
-      return;
-    }
-
+    if (!user) return;
     try {
-      const priceMin = Math.min(...data.rooms.map(r => r.price));
-      const priceMax = Math.max(...data.rooms.map(r => r.price));
-      const availableRooms = data.rooms.filter(r => r.is_available).length;
-      
-      // Combine property-wide amenities and room-specific inclusions securely
-      const roomInclusions = data.rooms.flatMap(r => (typeof r.inclusions === 'string' && r.inclusions.trim().length > 0) ? r.inclusions.split(',').map(s => s.trim()) : []);
-      const allAmenities = Array.from(new Set([...(data.amenities || []), ...roomInclusions]));
-
       const payload = {
+        ...data,
         ownerId: user.id,
-        name: data.name,
-        address: data.address,
-        type: data.type,
-        location: {
+        mapLoc: {
           type: 'Point',
           coordinates: [data.location?.lng || 120.9734, data.location?.lat || 15.4865]
         },
-        totalRooms: data.rooms.length,
-        availableRooms: availableRooms,
-        priceMin: priceMin,
-        priceMax: priceMax,
-        rules: data.rules,
-        amenities: allAmenities,
-        rooms: data.rooms.map(room => ({
-          type: room.type,
-          size_sqm: 15,
-          price: room.price,
-          inclusions: (typeof room.inclusions === 'string' && room.inclusions.trim().length > 0) ? room.inclusions.split(',').map(s => s.trim()) : [],
-          is_available: room.is_available,
-          model_3d_url: room.model_3d_url,
-        })) as any,
-        photos: photos as any,
+        photos: photos,
       };
-
-      await listingService.create(payload);
-
-      toast({
-        title: 'Listing Created!',
-        description: `${data.name} has been successfully added to your properties.`,
-      });
+      if ((payload as any).location) delete (payload as any).location;
+      await listingService.update(params.id, payload as any);
+      toast({ title: 'Listing Updated!', description: 'Changes saved successfully.' });
       router.push('/owner/dashboard');
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Creation Failed',
-        description: 'Failed to create listing via API.',
-      });
+    } catch (err) {
+      toast({ title: 'Update Failed', variant: 'destructive' });
     }
   }
 
-  if (isLoading) return <div className="p-8 text-center text-gray-text font-semibold">Loading listing details...</div>;
+  if (isLoading) return <div className="p-12 text-center font-bold text-gray-text">Loading Listing...</div>;
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center">
+    <div className="container mx-auto px-4 py-12 flex justify-center">
       <Card className="w-full max-w-4xl shadow-lg border-gray-border">
-        <CardHeader className="border-b border-gray-border pb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="font-headline text-3xl text-text-dark">Edit Listing</CardTitle>
-              <CardDescription className="text-gray-text mt-1 text-lg">Update the details for your property.</CardDescription>
-            </div>
-            <Button variant="outline" onClick={() => router.push('/owner/listings')}>
-              Cancel
-            </Button>
+        <CardHeader className="border-b pb-6 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-3xl font-headline">Edit Listing</CardTitle>
+            <CardDescription className="text-lg">Update property details in the Unified Model.</CardDescription>
           </div>
-          {/* Tab Navigation */}
-          <div className="flex gap-1 mt-5 border border-gray-border rounded-lg p-1 bg-gray-50 self-start">
-            {(['details', 'photos', 'tour'] as const).map(tab => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-md text-sm font-semibold transition-colors capitalize ${
-                  activeTab === tab
-                    ? 'bg-white shadow text-primary-green'
-                    : 'text-gray-text hover:text-text-dark'
-                }`}
-              >
-                {tab === 'tour' ? '3D Virtual Tour' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
+          <Button variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-12 py-8">
-              {/* Tab: Details */}
-              <div className={activeTab !== 'details' ? 'hidden' : ''}>
               
-              {/* Section 1: Basic Information */}
               <section className="space-y-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
+                <div className="flex items-center gap-2 pb-2 border-b">
                   <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">1</div>
-                  <h3 className="font-bold text-xl text-text-dark">Basic Information</h3>
+                  <h3 className="font-bold text-xl">Basic Information</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-text-dark font-semibold">Listing Name</FormLabel>
-                        <FormControl>
-                          <Input className="focus:border-primary-green focus:ring-primary-green/20" placeholder="e.g., Sunnydale Apartments" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-text-dark font-semibold">Property Type</FormLabel>
-                        <FormControl>
-                          <Combobox 
-                            options={propertyTypeOptions} 
-                            value={field.value} 
-                            onChange={field.onChange}
-                            placeholder="Select property type..."
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="text-text-dark font-semibold">Full Address</FormLabel>
-                        <FormControl>
-                          <div className="flex gap-2 items-start">
-                            <Textarea className="flex-1 focus:border-primary-green focus:ring-primary-green/20 min-h-[100px]" placeholder="123 Main St, Barangay, Cabanatuan City, Nueva Ecija" {...field} />
-                            <Button type="button" variant="secondary" onClick={handleGeocodeAddress} disabled={isGeocoding} className="h-auto py-3">
-                              {isGeocoding ? "Searching..." : "Find on Map"}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-text-dark font-semibold">Map Location</FormLabel>
-                      <FormControl>
-                        <div className="relative border border-gray-border rounded-lg overflow-hidden">
-                          <LocationPickerMap
-                            initialCenter={[field.value?.lat || 15.4865, field.value?.lng || 120.9734]}
-                            onLocationSelect={(lat, lng, address) => {
-                              field.onChange({ lat, lng });
-                              if (address) {
-                                form.setValue('address', address);
-                              }
-                            }}
-                          />
-                          <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-md shadow-md border border-gray-border z-[1000]">
-                            <p className="text-xs text-gray-text flex items-center gap-2 italic">
-                              <span className="h-2 w-2 rounded-full bg-primary-green animate-pulse" />
-                              Drag the marker or click on the map to set the exact location.
-                            </p>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
+                  <FormField control={form.control} name="listingName" render={({ field }) => (
+                    <FormItem><FormLabel>Listing Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="propertyType" render={({ field }) => (
+                    <FormItem><FormLabel>Property Type</FormLabel><FormControl><Combobox options={propertyTypeOptions} value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem className="md:col-span-2"><FormLabel>Description</FormLabel><FormControl><Textarea className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="fullAddress" render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                       <FormLabel>Full Address</FormLabel>
+                       <div className="flex gap-2">
+                         <Textarea className="flex-1 min-h-[60px]" {...field} />
+                         <Button type="button" variant="secondary" onClick={handleGeocodeAddress} disabled={isGeocoding}>{isGeocoding ? '...' : 'Map'}</Button>
+                       </div>
+                       <FormMessage />
                     </FormItem>
-                  )}
-                />
+                  )} />
+                </div>
+                <FormField control={form.control} name="location" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Map Location</FormLabel>
+                    <div className="border rounded-lg overflow-hidden h-[300px]">
+                      <LocationPickerMap initialCenter={[field.value?.lat || 15.4865, field.value?.lng || 120.9734]} onLocationSelect={(lat, lng) => field.onChange({ lat, lng })} />
+                    </div>
+                  </FormItem>
+                )} />
               </section>
 
-              {/* Section 2: Room Details */}
               <section className="space-y-6">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-border">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">2</div>
-                    <h3 className="font-bold text-xl text-text-dark">Room Details</h3>
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => append({ type: '', price: 0, inclusions: '', is_available: true, model_3d_url: '' })} className="hover:border-primary-green hover:text-primary-green">
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Room Type
-                  </Button>
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">2</div>
+                  <h3 className="font-bold text-xl">Unit Details & Pricing</h3>
                 </div>
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <Card key={field.id} className="relative p-6 border-gray-border hover:border-gray-300 transition-colors shadow-sm">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <FormField
-                          control={form.control}
-                          name={`rooms.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-bold uppercase tracking-wider text-gray-text">Room Type</FormLabel>
-                              <FormControl>
-                                <Combobox 
-                                  options={[
-                                    { value: 'Solo Room', label: 'Solo Room' },
-                                    { value: 'Bedspacer', label: 'Bedspacer' },
-                                    { value: 'Studio Unit', label: 'Studio Unit' },
-                                    { value: 'Entire Apartment', label: 'Entire Apartment' },
-                                    { value: 'Family Room', label: 'Family Room' },
-                                  ]}
-                                  value={field.value} 
-                                  onChange={field.onChange}
-                                  placeholder="Select room type..."
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`rooms.${index}.price`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-bold uppercase tracking-wider text-gray-text">Monthly Price (₱)</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="e.g., 3500" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`rooms.${index}.inclusions`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-bold uppercase tracking-wider text-gray-text">Inclusions (Tagging)</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Bed, Fan, Wi-Fi" {...field} />
-                              </FormControl>
-                              <p className="text-[10px] text-muted-foreground mt-1 text-gray-text">Separate with commas</p>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-light">
-                        <FormField
-                          control={form.control}
-                          name={`rooms.${index}.is_available`}
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2 space-y-0">
-                              <FormControl>
-                                <Checkbox checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary-green data-[state=checked]:border-primary-green" />
-                              </FormControl>
-                              <FormLabel className="font-semibold text-text-dark cursor-pointer">
-                                Mark as Available
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                        {fields.length > 1 && (
-                          <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} className="text-red-alert hover:bg-red-alert/10">
-                            <Trash2 className="h-4 w-4 mr-2" /> Remove
-                          </Button>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 bg-primary-green/5 border rounded-lg">
+                  <FormField control={form.control} name="roomType" render={({ field }) => (<FormItem><FormLabel>Room Type</FormLabel><Input {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="monthlyRent" render={({ field }) => (<FormItem><FormLabel>Monthly Rent (₱)</FormLabel><Input type="number" {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="availableRooms" render={({ field }) => (<FormItem><FormLabel>Available Units</FormLabel><Input type="number" {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Bedrooms</FormLabel><Combobox options={['Studio', '1', '2', '3', '4+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /></FormItem>)} />
+                  <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Bathrooms</FormLabel><Combobox options={['1', '2', '3+'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /></FormItem>)} />
+                  <FormField control={form.control} name="squareFeet" render={({ field }) => (<FormItem><FormLabel>Area (sqft)</FormLabel><Input type="number" {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="moveInDate" render={({ field }) => (<FormItem><FormLabel>Move-in Date</FormLabel><Input type="date" {...field} /></FormItem>)} />
                 </div>
               </section>
 
-              {/* Section 3: House Rules & Amenities */}
               <section className="space-y-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
+                <div className="flex items-center gap-2 pb-2 border-b">
                   <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">3</div>
-                  <h3 className="font-bold text-xl text-text-dark">House Rules & Amenities</h3>
+                  <h3 className="font-bold text-xl">Rules & Amenities</h3>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <FormField
-                    control={form.control}
-                    name="rules"
-                    render={() => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base font-bold text-text-dark">House Rules</FormLabel>
-                          <p className="text-sm text-gray-text">Select all that apply to your property.</p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3">
-                          {rulesOptions.map((item) => (
-                            <FormField
-                              key={item}
-                              control={form.control}
-                              name="rules"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={item}
-                                    className="flex flex-row items-center space-x-3 space-y-0 p-3 border border-gray-border rounded-lg hover:bg-gray-light/30 transition-colors"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== item
-                                                )
-                                              )
-                                        }}
-                                        className="h-5 w-5 border-gray-border data-[state=checked]:bg-primary-green data-[state=checked]:border-primary-green"
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-medium leading-none cursor-pointer">
-                                      {item}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="amenities"
-                    render={() => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base font-bold text-text-dark">Property Amenities</FormLabel>
-                          <p className="text-sm text-gray-text">What facilities do you offer?</p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3">
-                          {amenityOptions.map((item) => (
-                            <FormField
-                              key={item.value}
-                              control={form.control}
-                              name="amenities"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={item.value}
-                                    className="flex flex-row items-center space-x-3 space-y-0 p-3 border border-gray-border rounded-lg hover:bg-gray-light/30 transition-colors"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(item.value)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...(field.value || []), item.value])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== item.value
-                                                )
-                                              )
-                                        }}
-                                        className="h-5 w-5 border-gray-border data-[state=checked]:bg-primary-green data-[state=checked]:border-primary-green"
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-medium leading-none cursor-pointer">
-                                      {item.label}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </section>
-              {/* Section 4: Photos */}
-              <section className="space-y-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
-                  <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">4</div>
-                  <h3 className="font-bold text-xl text-text-dark">Upload Photos</h3>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-2">
-                  {photos.map((photoUrl, idx) => (
-                    <Card key={idx} className="group relative aspect-square overflow-hidden bg-muted border-gray-border shadow-sm ring-primary-green/20 hover:ring-2 transition-all">
-                      <img src={photoUrl} alt="Listing photo" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button type="button" variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => handleDeletePhoto(idx)}>
-                          <Trash2 className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                  <div className="relative flex flex-col items-center justify-center aspect-square border-2 border-dashed border-primary-green/30 bg-primary-green/5 rounded-lg text-center hover:bg-primary-green/10 hover:border-primary-green/50 transition-all cursor-pointer overflow-hidden group">
-                    <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className="flex flex-col items-center animate-in zoom-in duration-300">
-                      <Upload className="h-10 w-10 text-primary-green mb-2 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-bold text-primary-green uppercase tracking-tighter">{isPhotoUploading ? 'Uploading...' : 'Add Photo'}</span>
+                  <div className="space-y-4">
+                    <Label className="font-bold">House Rules</Label>
+                    <div className="space-y-2">
+                       <FormField control={form.control} name="hasCurfew" render={({ field }) => (<FormItem className="flex items-center gap-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} /><Label>Has Curfew</Label></FormItem>)} />
+                       <FormField control={form.control} name="visitorsAllowed" render={({ field }) => (<FormItem className="flex items-center gap-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} /><Label>Visitors Allowed</Label></FormItem>)} />
+                       <FormField control={form.control} name="smokingAllowed" render={({ field }) => (<FormItem className="flex items-center gap-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} /><Label>Smoking Allowed</Label></FormItem>)} />
+                       <FormField control={form.control} name="cookingAllowed" render={({ field }) => (<FormItem className="flex items-center gap-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} /><Label>Cooking Allowed</Label></FormItem>)} />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <Label className="font-bold">Policies</Label>
+                    <FormField control={form.control} name="petPolicy" render={({ field }) => (<FormItem><FormLabel>Pets</FormLabel><Combobox options={['Cat Friendly', 'Dog Friendly', 'Any Pet Friendly', 'Small Dogs Only', 'No Pets'].map(v => ({value:v, label:v}))} value={field.value} onChange={field.onChange} /></FormItem>)} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField control={form.control} name="securityDeposit" render={({ field }) => (<FormItem><FormLabel>Deposit (₱)</FormLabel><Input type="number" {...field} /></FormItem>)} />
+                      <FormField control={form.control} name="advancePayment" render={({ field }) => (<FormItem><FormLabel>Advance (Mo)</FormLabel><Input type="number" {...field} /></FormItem>)} />
                     </div>
                   </div>
                 </div>
-              </section>
-            </div>{/* end details tab */}
-
-            {/* Tab: Photos (standalone) – already shown inside details, this tab shows nothing extra */}
-
-            {/* Tab: 3D Virtual Tour */}
-            <div className={activeTab !== 'tour' ? 'hidden' : ''}>
-              <section className="space-y-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-border">
-                  <Box className="h-5 w-5 text-primary-green" />
-                  <h3 className="font-bold text-xl text-text-dark">3D Virtual Tour Builder</h3>
+                <div className="pt-6">
+                   <Label className="font-bold mb-4 block">Amenities</Label>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {[
+                       {name:'airConditioning', label:'AC'}, {name:'wifi', label:'WiFi'},
+                       {name:'washer', label:'Washer'}, {name:'dryer', label:'Dryer'},
+                       {name:'utilitiesIncluded', label:'Bills Included'}, {name:'kitchen', label:'Kitchen'},
+                       {name:'laundryFacilities', label:'Laundry Facilities'}, {name:'appliancesIncluded', label:'Appliances'}
+                     ].map(a => (
+                       <FormField key={a.name} control={form.control} name={a.name as any} render={({ field }) => (
+                         <FormItem className="flex items-center gap-2 border p-2 rounded"><Checkbox checked={field.value} onCheckedChange={field.onChange} /><Label className="text-xs">{a.label}</Label></FormItem>
+                       )} />
+                     ))}
+                   </div>
                 </div>
-                <p className="text-sm text-gray-text">
-                  Upload 360° equirectangular images, navigate between scenes, link them with hotspots, then save your tour. It will be visible to tenants on the listing page.
-                </p>
-                <WalkthroughBuilder
-                  listingId={params.id}
-                  initialConfig={existingWalkthrough}
-                  onSaved={wt => setExistingWalkthrough(wt)}
-                />
               </section>
-            </div>
+
+              <section className="space-y-6">
+                 <div className="flex items-center gap-2 pb-2 border-b">
+                  <div className="h-8 w-8 rounded-full bg-primary-green/10 flex items-center justify-center text-primary-green font-bold">4</div>
+                  <h3 className="font-bold text-xl">Media & Tours</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {photos.map((url, idx) => (
+                    <Card key={idx} className="relative aspect-square overflow-hidden group">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100" onClick={() => handleDeletePhoto(idx)}><Trash2 className="h-4 w-4" /></Button>
+                    </Card>
+                  ))}
+                  <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-primary-green/30 bg-primary-green/5 rounded-lg cursor-pointer hover:bg-primary-green/10 transition-all">
+                    <Upload className="h-8 w-8 text-primary-green mb-1" />
+                    <span className="text-[10px] font-bold text-primary-green">Add Photo</span>
+                    <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                  </label>
+                </div>
+                <div className="space-y-4 pt-4">
+                  <FormField control={form.control} name="video" render={({ field }) => (<FormItem><FormLabel>Video URL</FormLabel><Input {...field} /></FormItem>)} />
+                  <FormField control={form.control} name="virtualTour360" render={({ field }) => (<FormItem><FormLabel>360° Tour URL</FormLabel><Input {...field} /></FormItem>)} />
+                </div>
+              </section>
             </CardContent>
-            <CardFooter className="flex justify-between items-center py-10 border-t border-gray-border bg-gray-light/10">
-              <p className="text-sm text-gray-text italic">
-                All fields are required unless otherwise noted.
-              </p>
-              <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => router.push('/owner/dashboard')} className="px-8 h-12">
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isPhotoUploading || isLoading} className="bg-primary-green hover:bg-primary-green-hover text-white px-10 h-12 font-bold text-lg shadow-md hover:shadow-lg transition-all">
-                  Save Changes
-                </Button>
-              </div>
+            <CardFooter className="flex justify-between items-center py-10 border-t bg-gray-50">
+               <Button type="button" variant="outline" onClick={() => router.push('/owner/dashboard')}>Cancel</Button>
+               <Button type="submit" disabled={isPhotoUploading} className="bg-primary-green hover:bg-primary-green-hover text-white px-12 h-12 font-bold shadow-md">Save Changes</Button>
             </CardFooter>
           </form>
         </Form>

@@ -314,7 +314,7 @@ function InboxComponent() {
             <div className="flex flex-col gap-1 p-2">
               {filteredMessages.length > 0 ? filteredMessages.map(message => (
                 <button
-                  key={message.id}
+                  key={message._id || message.id}
                   className={cn(
                     "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
                     selectedMessage?.id === message.id && "bg-accent"
@@ -339,7 +339,7 @@ function InboxComponent() {
                     <div className="text-xs font-medium">{message.subject}</div>
                   </div>
                   <div className="line-clamp-2 text-xs text-muted-foreground">
-                    {message.text.substring(0, 300)}
+                    {(message.content ?? message.text ?? '').substring(0, 300)}
                   </div>
                 </button>
               )) : (
@@ -468,11 +468,11 @@ function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onTogg
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <Avatar>
-              <AvatarFallback>{message.type === 'sent' ? 'Me' : message.from.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{message.type === 'sent' ? 'Me' : (message.from || message.senderId?.name || '?').charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="grid gap-1">
-              <p className="font-semibold">{message.type === 'sent' ? 'Me' : message.from}</p>
-              <p className="text-xs text-muted-foreground">To: {message.type === 'sent' ? message.to : 'me <user@example.com>'}</p>
+              <p className="font-semibold">{message.type === 'sent' ? 'Me' : (message.from || message.senderId?.name || 'Unknown')}</p>
+              <p className="text-xs text-muted-foreground">To: {message.type === 'sent' ? (message.to || message.receiverId?.name || message.receiverId?.email || 'Recipient') : 'me'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -490,7 +490,7 @@ function MessageView({ message, mailbox, onTrash, onArchive, onUnarchive, onTogg
         <Separator className="my-4" />
         <h1 className="text-2xl font-bold font-headline mb-4">{message.subject}</h1>
         <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-          {message.text}
+          {message.content ?? message.text ?? ''}
         </div>
       </div>
     </div>
@@ -509,13 +509,13 @@ function ComposeView({ composeState, onSend, onClose }: { composeState: ComposeS
     switch (mode) {
       case 'reply':
       case 'reply-all':
-        to = message.email;
-        subject = message.subject.startsWith('Re:') ? message.subject : `Re: ${message.subject}`;
-        body = `\n\n---- On ${message.date}, ${message.from} wrote: ----\n>${message.text.split('\n').join('\n>')}`;
+        to = message.email || message.senderId?.email || '';
+        subject = message.subject?.startsWith('Re:') ? message.subject : `Re: ${message.subject || ''}`;
+        body = `\n\n---- On ${message.date || message.sentAt || ''}, ${message.from || message.senderId?.name || 'them'} wrote: ----\n>${(message.content ?? message.text ?? '').split('\n').join('\n>')}`;
         break;
       case 'forward':
-        subject = `Fwd: ${message.subject}`;
-        body = `\n\n---- Forwarded message ----\nFrom: ${message.from}\nDate: ${message.date}\nSubject: ${message.subject}\n\n${message.text}`;
+        subject = `Fwd: ${message.subject || ''}`;
+        body = `\n\n---- Forwarded message ----\nFrom: ${message.from || message.senderId?.name || 'Unknown'}\nDate: ${message.date || message.sentAt || ''}\nSubject: ${message.subject || ''}\n\n${message.content ?? message.text ?? ''}`;
         break;
     }
   }
