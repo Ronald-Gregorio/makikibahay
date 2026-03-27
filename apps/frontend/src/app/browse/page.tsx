@@ -35,26 +35,26 @@ interface FilterState {
 }
 
 const propertyTypes = [
-  { id: 'apartment', label: 'Apartment' },
-  { id: 'condo', label: 'Condo' },
-  { id: 'studio', label: 'Studio Type' },
-  { id: 'bed-spacer', label: 'Bed Spacer' },
-  { id: 'boarding-house', label: 'Boarding House' },
-  { id: 'up-and-down', label: 'Up and Down' },
+  { id: 'Apartment', label: 'Apartment' },
+  { id: 'Condo', label: 'Condo' },
+  { id: 'Studio Type', label: 'Studio Type' },
+  { id: 'Bed Spacer', label: 'Bed Spacer' },
+  { id: 'Boarding House', label: 'Boarding House' },
+  { id: 'Up and Down', label: 'Up and Down' },
 ];
 
 const specialtyOptions = [
-  { id: 'student-only', label: 'Student Only' },
-  { id: 'worker-only', label: 'Worker Only' },
-  { id: 'income-restricted', label: 'Income Restricted' },
-  { id: 'short-term', label: 'Short-Term' },
+  { id: 'Student Only', label: 'Student Only' },
+  { id: 'Worker Only', label: 'Worker Only' },
+  { id: 'Income Restricted', label: 'Income Restricted' },
+  { id: 'Short-Term', label: 'Short-Term' },
 ];
 
 const petPolicyOptions = [
-  { id: 'cat-friendly', label: 'Cat Friendly' },
-  { id: 'dog-friendly', label: 'Dog Friendly' },
-  { id: 'any-pet', label: 'Any Pet Friendly' },
-  { id: 'small-dogs', label: 'Small Dogs Only' },
+  { id: 'Cat Friendly', label: 'Cat Friendly' },
+  { id: 'Dog Friendly', label: 'Dog Friendly' },
+  { id: 'Any Pet Friendly', label: 'Any Pet Friendly' },
+  { id: 'Small Dogs Only', label: 'Small Dogs Only' },
 ];
 
 const popularAmenities = [
