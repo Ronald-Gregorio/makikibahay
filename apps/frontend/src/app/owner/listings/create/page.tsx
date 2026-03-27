@@ -15,7 +15,7 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
   Combobox
 } from '@/components/ui/index';
-import { PlusCircle, Trash2, Upload } from 'lucide-react';
+import { Trash2, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { listingService } from '@/services/api/listings';
@@ -174,14 +174,10 @@ export default function CreateListingPage() {
       kitchen: false,
       appliancesIncluded: false,
       location: { lat: 15.4865, lng: 120.9734 },
-      rooms: [{ type: '', price: 0, inclusions: '', isAvailable: true, model3dUrl: '', dimensions: '', maxOccupancy: 1, isPrivateToilet: false }],
+      rooms: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'rooms',
-  });
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {

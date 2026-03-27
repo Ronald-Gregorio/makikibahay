@@ -15,7 +15,7 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
   Combobox
 } from '@/components/ui/index';
-import { PlusCircle, Trash2, Upload } from 'lucide-react';
+import { Trash2, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { listingService } from '@/services/api/listings';
@@ -156,10 +156,6 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'rooms',
-  });
 
   useEffect(() => {
     const fetchListing = async () => {
