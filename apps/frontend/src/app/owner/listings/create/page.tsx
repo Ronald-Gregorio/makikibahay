@@ -448,7 +448,7 @@ export default function CreateListingPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {photos.map((url, idx) => (
                     <Card key={idx} className="relative aspect-square overflow-hidden group">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img src={url} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
                       <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100" onClick={() => handleDeletePhoto(idx)}><Trash2 className="h-4 w-4" /></Button>
                     </Card>
                   ))}

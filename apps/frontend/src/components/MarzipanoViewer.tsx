@@ -42,8 +42,8 @@ export default function MarzipanoViewer({ scenes, initialSceneId }: MarzipanoVie
     const marzipanoScenes: Record<string, any> = {};
 
     scenes.forEach(sceneConfig => {
-      // Create source
-      const source = Marzipano.ImageUrlSource.fromString(sceneConfig.imageUrl);
+      // Create source with anonymous cross-origin to prevent tracking prevention block
+      const source = Marzipano.ImageUrlSource.fromString(sceneConfig.imageUrl, { crossOrigin: 'anonymous' });
 
       // Create geometry
       // Using an equirectangular geometry

@@ -21,6 +21,7 @@ export function ListingCard({ listing }: ListingCardProps) {
           <img
             src={(listing.photos && listing.photos.length > 0) ? listing.photos[0] : '/placeholder-property.jpg'}
             alt={listing.listingName || listing.name || 'Property'}
+            crossOrigin="anonymous"
             className="w-full h-full object-cover"
           />
           <div className="absolute top-4 right-4">
