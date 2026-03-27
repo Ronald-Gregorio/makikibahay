@@ -57,20 +57,87 @@ export const UserSchema = z.object({
 
 export const ListingSchema = z.object({
   _id: z.string().optional(),
-  ownerId: z.string(),
-  name: z.string().min(1),
-  address: z.string().min(1),
+  ownerId: z.union([
+    z.string(),
+    z.object({
+      id: z.string().optional(),
+      _id: z.string().optional(),
+      name: z.string(),
+      avatar: z.string().optional(),
+      email: z.string().optional(),
+    }),
+  ]),
+  
+  // 1. Core Property Info
+  listingName: z.string().min(1),
+  propertyType: z.enum(['Apartment', 'Condo', 'Studio Type', 'Bed Spacer', 'Boarding House', 'Up and Down']),
+  description: z.string().min(1),
+  rating: z.number().default(0),
+  
+  // 2. Media & Virtual Viewing
+  photos: z.array(z.string()).default([]),
+  video: z.string().optional(),
+  virtualTour360: z.string().optional(),
+  hasEnhancedViewing: z.boolean().default(false),
+  floorPlans: z.array(z.string()).default([]),
+
+  // 3. Location & Neighborhood
+  fullAddress: z.string().min(1),
   location: LocationSchema,
-  totalRooms: z.number().min(1),
+  neighborhoodNear: z.array(z.string()).default([]),
+  transportationOptions: z.array(z.string()).default([]),
+
+  // 4. Room, Unit Details & Pricing
+  roomType: z.string(),
   availableRooms: z.number().min(0),
-  priceMin: z.number().min(0),
-  priceMax: z.number().min(0),
-  rules: z.array(z.string()),
-  amenities: z.array(z.string()),
-  coverPhoto: z.string().url().optional(),
-  photos: z.array(z.string().url()).optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  bedrooms: z.enum(['Studio', '1', '2', '3', '4+']),
+  bathrooms: z.enum(['1', '2', '3+']),
+  squareFeet: z.number(),
+  monthlyRent: z.number().min(0),
+  moveInDate: z.string(),
+
+  // 5. Fees & Policies
+  securityDeposit: z.number().default(0),
+  advancePayment: z.number().default(0),
+  applicationReviewFee: z.number().default(0),
+  specialtyProperty: z.enum(['Student Only', 'Worker Only', 'Income Restricted', 'Short-Term', 'None']).default('None'),
+
+  // 6. Pet Policy
+  petPolicy: z.enum(['Cat Friendly', 'Dog Friendly', 'Any Pet Friendly', 'Small Dogs Only', 'No Pets']).default('No Pets'),
+
+  // 7. House Rules
+  hasCurfew: z.boolean().default(false),
+  visitorsAllowed: z.boolean().default(true),
+  smokingAllowed: z.boolean().default(false),
+  cookingAllowed: z.boolean().default(true),
+  quietHours: z.string().optional(),
+
+  // 8. Amenities
+  airConditioning: z.boolean().default(false),
+  wifi: z.boolean().default(false),
+  washer: z.boolean().default(false),
+  dryer: z.boolean().default(false),
+  utilitiesIncluded: z.boolean().default(false),
+  dishwasher: z.boolean().default(false),
+  parkingType: z.enum(['None', 'Outside', 'Garage']).default('None'),
+  laundryFacilities: z.boolean().default(false),
+  kitchen: z.boolean().default(false),
+  appliancesIncluded: z.boolean().default(false),
+
+  // Meta
+  status: z.enum(['Active', 'Unpublished', 'Pending']).default('Active'),
+  createdAt: z.union([z.date(), z.string()]).optional(),
+  updatedAt: z.union([z.date(), z.string()]).optional(),
+
+  // Legacy fields for compatibility
+  name: z.string().optional(),
+  address: z.string().optional(),
+  priceMin: z.number().optional(),
+  priceMax: z.number().optional(),
+  totalRooms: z.number().optional(),
+  amenities: z.array(z.string()).optional(),
+  rules: z.array(z.string()).optional(),
+  owner_name: z.string().optional(),
 });
 
 export const RoomSchema = z.object({
@@ -156,9 +223,9 @@ export const SearchListingsQuerySchema = z.object({
   lat: z.coerce.number(),
   lng: z.coerce.number(),
   maxDistance: z.coerce.number().optional(),
-  priceMin: z.coerce.number().optional(),
-  priceMax: z.coerce.number().optional(),
-  type: AccommodationTypeSchema.optional(),
+  monthlyRentMin: z.coerce.number().optional(),
+  monthlyRentMax: z.coerce.number().optional(),
+  propertyType: z.enum(['Apartment', 'Condo', 'Studio Type', 'Bed Spacer', 'Boarding House', 'Up and Down']).optional(),
   amenities: z.array(z.string()).optional(),
   limit: z.coerce.number().min(1).max(100).default(20),
   offset: z.coerce.number().min(0).default(0),

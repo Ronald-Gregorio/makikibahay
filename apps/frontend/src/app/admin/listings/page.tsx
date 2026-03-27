@@ -63,10 +63,12 @@ export default function ListingsManagementPage() {
 
         // Filter by search query (name or address)
         if (searchQuery) {
-            result = result.filter(listing =>
-                listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                listing.address.toLowerCase().includes(searchQuery.toLowerCase())
-            );
+            result = result.filter(listing => {
+                const name = (listing.listingName || listing.name || '').toLowerCase();
+                const address = (listing.fullAddress || listing.address || '').toLowerCase();
+                const query = searchQuery.toLowerCase();
+                return name.includes(query) || address.includes(query);
+            });
         }
 
         // Filter by status
@@ -293,8 +295,7 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
     );
 
     const selectedRoom = roomsWith3d.find(room => room.room_id?.toString() === selectedRoomId);
-    const coverPhoto = safePhotos.find(p => p.is_cover) || safePhotos[0];
-    const photoUrl = coverPhoto?.url || 'https://placehold.co/64x64.png?text=No+Photo';
+    const photoUrl = safePhotos[0] || 'https://placehold.co/64x64.png?text=No+Photo';
 
     return (
         <Dialog>
@@ -303,21 +304,30 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
                     <Checkbox
                         checked={isSelected}
                         onCheckedChange={(checked) => onSelectRow(listing.id?.toString() || '', !!checked)}
-                        aria-label={`Select listing ${listing.name}`}
+                        aria-label={`Select listing ${listing.listingName || listing.name || 'Property'}`}
                     />
                 </TableCell>
                 <DialogTrigger asChild>
                     <TableCell className="cursor-pointer">
                         <div className="flex items-center gap-4">
-                            <Image src={photoUrl} alt={listing.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="apartment room" />
+                            <Image 
+                                src={photoUrl} 
+                                alt={listing.listingName || listing.name || 'Property'} 
+                                width={64} 
+                                height={64} 
+                                className="rounded-md object-cover" 
+                                data-ai-hint="apartment room" 
+                            />
                             <div>
-                                <div className="font-semibold hover:underline">{listing.name}</div>
-                                <p className="text-sm text-muted-foreground">{listing.address}</p>
+                                <div className="font-semibold hover:underline">{listing.listingName || listing.name || 'Untitled Listing'}</div>
+                                <p className="text-sm text-muted-foreground">{listing.fullAddress || listing.address || 'No address provided'}</p>
                             </div>
                         </div>
                     </TableCell>
                 </DialogTrigger>
-                <TableCell>{listing.owner_name}</TableCell>
+                <TableCell>
+                    {typeof listing.ownerId === 'object' ? listing.ownerId.name : (listing.owner_name || 'System')}
+                </TableCell>
                 <TableCell>
                     <Badge variant={listing.status === 'Active' ? 'default' : listing.status === 'Pending' ? 'secondary' : 'outline'} 
                            className={listing.status === 'Active' ? 'bg-green-500 hover:bg-green-600 text-white' : ''}>
@@ -351,22 +361,21 @@ function ListingRow({ listing, isSelected, onSelectRow }: { listing: Listing, is
             </TableRow>
             <DialogContent className="max-w-4xl h-[90vh]">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-headline">{listing.name}</DialogTitle>
-                    <DialogDescription>{listing.address}</DialogDescription>
+                    <DialogTitle className="text-2xl font-headline">{listing.listingName || listing.name || 'Untitled Listing'}</DialogTitle>
+                    <DialogDescription>{listing.fullAddress || listing.address || 'No address provided'}</DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="h-full">
                     <div className="grid gap-6 py-4 pr-6">
                         <div>
                             <h4 className="font-semibold mb-2">Photos</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                {safePhotos.length > 0 ? safePhotos.map((photo) => (
-                                    <div key={photo.photo_id} className="aspect-square relative">
+                                {safePhotos.length > 0 ? safePhotos.map((photoUrl, index) => (
+                                    <div key={index} className="aspect-square relative">
                                         <Image
-                                            src={photo.url || 'https://placehold.co/200x200.png?text=No+Photo'}
-                                            alt={`${listing.name} photo`}
+                                            src={photoUrl || 'https://placehold.co/200x200.png?text=No+Photo'}
+                                            alt={`${listing.listingName || 'Property'} photo ${index + 1}`}
                                             fill
-                                            objectFit="cover"
-                                            className="rounded-md"
+                                            className="rounded-md object-cover"
                                             data-ai-hint="apartment interior"
                                         />
                                     </div>

@@ -18,6 +18,18 @@ import type {
   CreateMessageRequest,
   CreateReportRequest
 } from '@makikibahay/types';
+import {
+  SearchListingsQuerySchema,
+  NearbyListingsQuerySchema,
+  CreateListingRequestSchema,
+  UpdateListingRequestSchema,
+  CreateUserRequestSchema,
+  UpdateUserRequestSchema,
+  CreateRoomRequestSchema,
+  CreateReviewRequestSchema,
+  CreateMessageRequestSchema,
+  CreateReportRequestSchema
+} from '@makikibahay/types';
 
 export class ValidationError extends Error {
   constructor(message: string, public details?: any) {
@@ -28,17 +40,7 @@ export class ValidationError extends Error {
 
 export function validateSearchQuery(query: unknown): SearchListingsQuery {
   try {
-    return z.object({
-      lat: z.coerce.number(),
-      lng: z.coerce.number(),
-      maxDistance: z.coerce.number().optional(),
-      priceMin: z.coerce.number().optional(),
-      priceMax: z.coerce.number().optional(),
-      type: z.enum(['solo', 'shared', 'studio', 'bed-space']).optional(),
-      amenities: z.array(z.string()).optional(),
-      limit: z.coerce.number().min(1).max(100).default(20),
-      offset: z.coerce.number().min(0).default(0),
-    }).parse(query);
+    return SearchListingsQuerySchema.parse(query);
   } catch (error) {
     throw new ValidationError('Invalid search query', error);
   }
@@ -46,12 +48,7 @@ export function validateSearchQuery(query: unknown): SearchListingsQuery {
 
 export function validateNearbyQuery(query: unknown): NearbyListingsQuery {
   try {
-    return z.object({
-      lat: z.coerce.number(),
-      lng: z.coerce.number(),
-      proximityMinutes: z.union([z.literal(5), z.literal(10), z.literal(15)]).default(10),
-      limit: z.coerce.number().min(1).max(100).default(10),
-    }).parse(query);
+    return NearbyListingsQuerySchema.parse(query);
   } catch (error) {
     throw new ValidationError('Invalid nearby query', error);
   }
@@ -59,23 +56,7 @@ export function validateNearbyQuery(query: unknown): NearbyListingsQuery {
 
 export function validateCreateListing(data: unknown): CreateListingRequest {
   try {
-    return z.object({
-      ownerId: z.string(),
-      name: z.string().min(1),
-      address: z.string().min(1),
-      location: z.object({
-        type: z.literal('Point'),
-        coordinates: z.tuple([z.number(), z.number()]),
-      }),
-      totalRooms: z.number().min(1),
-      availableRooms: z.number().min(0),
-      priceMin: z.number().min(0),
-      priceMax: z.number().min(0),
-      rules: z.array(z.string()),
-      amenities: z.array(z.string()),
-      coverPhoto: z.string().url().optional(),
-      photos: z.array(z.string().url()).optional(),
-    }).parse(data);
+    return CreateListingRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid listing data', error);
   }
@@ -83,22 +64,7 @@ export function validateCreateListing(data: unknown): CreateListingRequest {
 
 export function validateUpdateListing(data: unknown): UpdateListingRequest {
   try {
-    return z.object({
-      name: z.string().min(1).optional(),
-      address: z.string().min(1).optional(),
-      location: z.object({
-        type: z.literal('Point'),
-        coordinates: z.tuple([z.number(), z.number()]),
-      }).optional(),
-      totalRooms: z.number().min(1).optional(),
-      availableRooms: z.number().min(0).optional(),
-      priceMin: z.number().min(0).optional(),
-      priceMax: z.number().min(0).optional(),
-      rules: z.array(z.string()).optional(),
-      amenities: z.array(z.string()).optional(),
-      coverPhoto: z.string().url().optional(),
-      photos: z.array(z.string().url()).optional(),
-    }).parse(data);
+    return UpdateListingRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid listing update data', error);
   }
@@ -106,24 +72,7 @@ export function validateUpdateListing(data: unknown): UpdateListingRequest {
 
 export function validateCreateUser(data: unknown): CreateUserRequest {
   try {
-    return z.object({
-      email: z.string().email(),
-      name: z.string().min(1),
-      role: z.enum(['user', 'owner', 'admin']).default('user'),
-      avatar: z.string().url().optional(),
-      preferences: z.object({
-        isStudent: z.boolean(),
-        accommodationType: z.enum(['solo', 'shared', 'studio', 'bed-space']),
-        priceMin: z.number().min(0),
-        priceMax: z.number().min(0),
-        amenities: z.array(z.string()),
-        location: z.object({
-          type: z.literal('Point'),
-          coordinates: z.tuple([z.number(), z.number()]),
-        }),
-        proximityMinutes: z.union([z.literal(5), z.literal(10), z.literal(15)]).default(10),
-      }).optional(),
-    }).parse(data);
+    return CreateUserRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid user data', error);
   }
@@ -131,24 +80,7 @@ export function validateCreateUser(data: unknown): CreateUserRequest {
 
 export function validateUpdateUser(data: unknown): UpdateUserRequest {
   try {
-    return z.object({
-      name: z.string().min(1).optional(),
-      role: z.enum(['user', 'owner', 'admin']).optional(),
-      avatar: z.string().url().optional(),
-      preferences: z.object({
-        isStudent: z.boolean(),
-        accommodationType: z.enum(['solo', 'shared', 'studio', 'bed-space']),
-        priceMin: z.number().min(0),
-        priceMax: z.number().min(0),
-        amenities: z.array(z.string()),
-        location: z.object({
-          type: z.literal('Point'),
-          coordinates: z.tuple([z.number(), z.number()]),
-        }),
-        proximityMinutes: z.union([z.literal(5), z.literal(10), z.literal(15)]).default(10),
-      }).optional(),
-      favorites: z.array(z.string()).optional(),
-    }).parse(data);
+    return UpdateUserRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid user update data', error);
   }
@@ -156,26 +88,7 @@ export function validateUpdateUser(data: unknown): UpdateUserRequest {
 
 export function validateCreateRoom(data: unknown): CreateRoomRequest {
   try {
-    return z.object({
-      listingId: z.string(),
-      sizeSqm: z.number().min(1),
-      price: z.number().min(0),
-      inclusions: z.array(z.string()),
-      isAvailable: z.boolean().default(true),
-      model3dUrl: z.string().url().optional(),
-      waypoints: z.array(z.object({
-        id: z.string(),
-        position: z.object({
-          x: z.number(),
-          y: z.number(),
-          z: z.number(),
-        }),
-        hotspotCoordinates: z.object({
-          lat: z.number(),
-          lng: z.number(),
-        }),
-      })).optional(),
-    }).parse(data);
+    return CreateRoomRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid room data', error);
   }
@@ -183,12 +96,7 @@ export function validateCreateRoom(data: unknown): CreateRoomRequest {
 
 export function validateCreateReview(data: unknown): CreateReviewRequest {
   try {
-    return z.object({
-      userId: z.string(),
-      listingId: z.string(),
-      rating: z.number().min(1).max(5),
-      comment: z.string().min(1).max(1000),
-    }).parse(data);
+    return CreateReviewRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid review data', error);
   }
@@ -196,13 +104,7 @@ export function validateCreateReview(data: unknown): CreateReviewRequest {
 
 export function validateCreateMessage(data: unknown): CreateMessageRequest {
   try {
-    return z.object({
-      roomId: z.string().regex(/^listing_\d+_user_\d+_owner_\d+$/),
-      senderId: z.string(),
-      receiverId: z.string(),
-      listingId: z.string(),
-      content: z.string().min(1).max(1000),
-    }).parse(data);
+    return CreateMessageRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid message data', error);
   }
@@ -210,13 +112,7 @@ export function validateCreateMessage(data: unknown): CreateMessageRequest {
 
 export function validateCreateReport(data: unknown): CreateReportRequest {
   try {
-    return z.object({
-      reporterId: z.string(),
-      reportedUserId: z.string(),
-      reportType: z.enum(['listing', 'owner', 'user']),
-      targetId: z.string(),
-      description: z.string().min(10).max(500),
-    }).parse(data);
+    return CreateReportRequestSchema.parse(data);
   } catch (error) {
     throw new ValidationError('Invalid report data', error);
   }

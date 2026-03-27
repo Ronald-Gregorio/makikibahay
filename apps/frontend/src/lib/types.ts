@@ -23,7 +23,13 @@ export interface OnboardingSurvey {
 export interface Listing {
   id: string;
   _id?: string;
-  ownerId?: string;
+  ownerId?: string | {
+    id?: string;
+    _id?: string;
+    name: string;
+    avatar?: string;
+    email?: string;
+  };
   
   // 1. Core Property Info
   listingName: string;
@@ -99,6 +105,7 @@ export interface Listing {
   rules?: string[];
   reviews?: Review[];
   rooms?: Room[];
+  owner_name?: string; // Legacy field for admin table
 }
 
 export interface Room {

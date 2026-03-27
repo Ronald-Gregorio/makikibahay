@@ -6,12 +6,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
-    "start": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "clean": "turbo run clean",
+    "dev": "npx turbo run dev",
+    "start": "npx turbo run dev",
+    "build": "npx turbo run build",
+    "lint": "npx turbo run lint",
+    "typecheck": "npx turbo run typecheck",
+    "clean": "npx turbo run clean",
     "db:setup": "cd apps/backend && npm run db:setup",
     "db:seed": "cd apps/backend && npm run db:seed",
     "deploy:frontend": "cd apps/frontend && npm run deploy",
